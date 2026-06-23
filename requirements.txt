@@ -1,0 +1,10 @@
+groq
+sounddevice
+soundfile
+numpy
+pynput
+pyperclip
+python-dotenv
+pytest
+pytest-cov
+ruff
