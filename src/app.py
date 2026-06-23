@@ -1,6 +1,7 @@
 import threading
 
 import rumps
+from AppKit import NSApplication, NSApplicationActivationPolicyAccessory
 from groq import Groq
 from pynput import keyboard
 
@@ -60,6 +61,9 @@ class VozMenuBar(rumps.App):
 
 
 def main():
+    NSApplication.sharedApplication().setActivationPolicy_(
+        NSApplicationActivationPolicyAccessory
+    )
     VozMenuBar(Config.from_env()).run()
 
 
