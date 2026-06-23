@@ -1,14 +1,17 @@
 import queue
 import tempfile
 from pathlib import Path
+from typing import Callable
 
+import numpy as np
 import sounddevice as sd
 import soundfile as sf
 
 
 class AudioRecorder:
-    def __init__(self, sample_rate: int):
+    def __init__(self, sample_rate: int, sample_callback: Callable | None = None):
         self._sample_rate = sample_rate
+        self._sample_callback = sample_callback
         self._queue: queue.Queue = queue.Queue()
         self._stream = None
 
@@ -29,6 +32,9 @@ class AudioRecorder:
 
     def _on_audio(self, indata, frames, time, status):
         self._queue.put(indata.copy())
+        if self._sample_callback is not None:
+            rms = float(np.sqrt(np.mean(indata ** 2)))
+            self._sample_callback(rms)
 
     def _drain(self) -> list:
         blocks = []
@@ -37,8 +43,6 @@ class AudioRecorder:
         return blocks
 
     def _write_wav(self, blocks: list) -> Path:
-        import numpy as np
-
         path = Path(tempfile.gettempdir()) / "voz_recording.wav"
         audio = np.concatenate(blocks) if blocks else np.zeros((1, 1))
         sf.write(path, audio, self._sample_rate)
