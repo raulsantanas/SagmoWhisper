@@ -2,6 +2,7 @@ import threading
 
 import objc
 from AppKit import (
+    NSAnimationContext,
     NSAttributedString,
     NSBackingStoreBuffered,
     NSBezierPath,
@@ -9,6 +10,7 @@ from AppKit import (
     NSFloatingWindowLevel,
     NSFont,
     NSFontAttributeName,
+    NSForegroundColorAttributeName,
     NSMakeRect,
     NSScreen,
     NSView,
@@ -24,7 +26,6 @@ _WIN_H = 80
 _BAR_MAX_H = 48
 _BAR_MIN_H = 4
 _MARGIN_LEFT = 16
-_MARGIN_TOP = 28
 
 
 def _hex_to_nscolor(hex_color: str) -> NSColor:
@@ -118,7 +119,7 @@ class _WaveformView(NSView):
         font = NSFont.systemFontOfSize_(11.0)
         attrs = {
             NSFontAttributeName: font,
-            "NSForegroundColorAttributeName": NSColor.colorWithWhite_alpha_(0.85, 1.0),
+            NSForegroundColorAttributeName: NSColor.colorWithWhite_alpha_(0.85, 1.0),
         }
         ns_label = NSAttributedString.alloc().initWithString_attributes_(label, attrs)
         ns_label.drawAtPoint_(NSMakeRect(12, _WIN_H - 18, 0, 0).origin)
@@ -151,7 +152,10 @@ class WaveformOverlay:
         self._window.orderFront_(None)
 
     def hide(self):
-        self._window.orderOut_(None)
+        NSAnimationContext.runAnimationGroup_completionHandler_(
+            lambda ctx: (ctx.setDuration_(0.3), self._window.animator().setAlphaValue_(0.0)),
+            lambda: self._window.orderOut_(None) or self._window.setAlphaValue_(1.0),
+        )
 
     def set_transcribing(self):
         self._view.freeze()
