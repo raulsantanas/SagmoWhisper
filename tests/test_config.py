@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 
 from src.config import Config
 
@@ -23,7 +24,8 @@ def test_from_env_reads_all_vars(monkeypatch):
     assert cfg.sample_rate == 16000
 
 
-def test_from_env_raises_clear_error_when_api_key_missing(monkeypatch):
+@patch("src.config.load_dotenv")
+def test_from_env_raises_clear_error_when_api_key_missing(mock_load_dotenv, monkeypatch):
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
 
     with pytest.raises(ValueError, match="GROQ_API_KEY"):
@@ -48,7 +50,8 @@ def test_enable_cleanup_is_case_insensitive(monkeypatch):
     assert cfg.enable_cleanup is True
 
 
-def test_defaults_applied_when_optional_vars_absent(monkeypatch):
+@patch("src.config.load_dotenv")
+def test_defaults_applied_when_optional_vars_absent(mock_load_dotenv, monkeypatch):
     monkeypatch.setenv("GROQ_API_KEY", "gsk_test")
     for var in (
         "TRANSCRIPTION_MODEL",

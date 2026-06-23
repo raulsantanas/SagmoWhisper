@@ -161,8 +161,9 @@ class WaveformOverlay:
         self._view.freeze()
 
     def update_bars(self, rms: float):
-        # Armazena rms e dispara redraw no main thread sem passar float como NSObject
-        self._view._pending_rms = rms
+        # Armazena rms sob lock e dispara redraw no main thread sem passar float como NSObject
+        with self._view._lock:
+            self._view._pending_rms = rms
         self._view.performSelectorOnMainThread_withObject_waitUntilDone_(
             "setNeedsDisplay:", True, False
         )
