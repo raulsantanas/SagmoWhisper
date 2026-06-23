@@ -1,3 +1,6 @@
+import threading
+
+import rumps
 from groq import Groq
 from pynput import keyboard
 
@@ -8,9 +11,14 @@ from src.pipeline import DictationPipeline
 from src.text_injector import TextInjector
 from src.transcriber import Transcriber
 
+ICON_IDLE = "🎙️"
+ICON_RECORDING = "🔴"
+ICON_PROCESSING = "⏳"
 
-class VozApp:
+
+class VozMenuBar(rumps.App):
     def __init__(self, config: Config):
+        super().__init__(ICON_IDLE, quit_button="Sair")
         self._config = config
         self._recording = False
         client = Groq(api_key=config.groq_api_key)
@@ -22,34 +30,37 @@ class VozApp:
             config.enable_cleanup,
         )
         self._hotkey = getattr(keyboard.Key, config.hotkey)
+        self._listener_thread = threading.Thread(
+            target=self._start_listener, daemon=True
+        )
+        self._listener_thread.start()
 
-    def on_press(self, key):
-        if key == self._hotkey and not self._recording:
-            self._recording = True
-            self._recorder.start()
-            print("🎙️  Gravando...")
-
-    def on_release(self, key):
-        if key == self._hotkey and self._recording:
-            self._recording = False
-            self._handle_recording()
-
-    def _handle_recording(self):
-        print("⏳ Transcrevendo...")
-        audio_path = self._recorder.stop()
-        text = self._pipeline.run(audio_path)
-        print(f"✅ {text}" if text else "⚠️  Nada captado.")
-
-    def run(self):
-        print(f"Voz ativo. Segure {self._config.hotkey.upper()} para ditar.")
+    def _start_listener(self):
         with keyboard.Listener(
-            on_press=self.on_press, on_release=self.on_release
+            on_press=self._on_press, on_release=self._on_release
         ) as listener:
             listener.join()
 
+    def _on_press(self, key):
+        if key == self._hotkey and not self._recording:
+            self._recording = True
+            self.title = ICON_RECORDING
+            self._recorder.start()
+
+    def _on_release(self, key):
+        if key == self._hotkey and self._recording:
+            self._recording = False
+            threading.Thread(target=self._handle_recording, daemon=True).start()
+
+    def _handle_recording(self):
+        self.title = ICON_PROCESSING
+        audio_path = self._recorder.stop()
+        self._pipeline.run(audio_path)
+        self.title = ICON_IDLE
+
 
 def main():
-    VozApp(Config.from_env()).run()
+    VozMenuBar(Config.from_env()).run()
 
 
 if __name__ == "__main__":
