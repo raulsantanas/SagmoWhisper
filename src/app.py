@@ -60,9 +60,11 @@ class VozMenuBar(rumps.App):
     def _handle_recording(self):
         self.title = ICON_PROCESSING
         audio_path = self._recorder.stop()
-        self._pipeline.run(audio_path)
-        self._overlay.hide()
-        self.title = ICON_IDLE
+        try:
+            self._pipeline.run(audio_path)
+        finally:
+            self._overlay.hide()
+            self.title = ICON_IDLE
 
 
 def main():
