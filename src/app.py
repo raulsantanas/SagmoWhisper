@@ -11,6 +11,7 @@ from src.config import Config
 from src.pipeline import DictationPipeline
 from src.text_injector import TextInjector
 from src.transcriber import Transcriber
+from src.waveform_overlay import WaveformOverlay
 
 ICON_IDLE = "🎙️"
 ICON_RECORDING = "🔴"
@@ -22,8 +23,12 @@ class VozMenuBar(rumps.App):
         super().__init__(ICON_IDLE, quit_button="Sair")
         self._config = config
         self._recording = False
+        self._overlay = WaveformOverlay()
         client = Groq(api_key=config.groq_api_key)
-        self._recorder = AudioRecorder(config.sample_rate)
+        self._recorder = AudioRecorder(
+            config.sample_rate,
+            sample_callback=self._overlay.update_bars,
+        )
         self._pipeline = DictationPipeline(
             Transcriber(client, config.transcription_model, config.language),
             Cleaner(client, config.cleanup_model),
@@ -31,10 +36,7 @@ class VozMenuBar(rumps.App):
             config.enable_cleanup,
         )
         self._hotkey = getattr(keyboard.Key, config.hotkey)
-        self._listener_thread = threading.Thread(
-            target=self._start_listener, daemon=True
-        )
-        self._listener_thread.start()
+        threading.Thread(target=self._start_listener, daemon=True).start()
 
     def _start_listener(self):
         with keyboard.Listener(
@@ -46,17 +48,20 @@ class VozMenuBar(rumps.App):
         if key == self._hotkey and not self._recording:
             self._recording = True
             self.title = ICON_RECORDING
+            self._overlay.show()
             self._recorder.start()
 
     def _on_release(self, key):
         if key == self._hotkey and self._recording:
             self._recording = False
+            self._overlay.set_transcribing()
             threading.Thread(target=self._handle_recording, daemon=True).start()
 
     def _handle_recording(self):
         self.title = ICON_PROCESSING
         audio_path = self._recorder.stop()
         self._pipeline.run(audio_path)
+        self._overlay.hide()
         self.title = ICON_IDLE
 
 
