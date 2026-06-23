@@ -1,19 +1,20 @@
 import threading
 
 import objc
-import numpy as np
 from AppKit import (
+    NSAttributedString,
     NSBackingStoreBuffered,
     NSBezierPath,
     NSColor,
     NSFloatingWindowLevel,
     NSFont,
+    NSFontAttributeName,
     NSMakeRect,
+    NSScreen,
     NSView,
     NSWindow,
     NSWindowStyleMaskBorderless,
 )
-from Foundation import NSTimer
 
 from src.bar_color import bar_color
 
@@ -51,9 +52,11 @@ class _WaveformView(NSView):
         self._draw_content(rect)
 
     def _apply_rms(self, rms: float):
-        height = min(max(rms * 120, _BAR_MIN_H), _BAR_MAX_H)
-        color_hex, label = bar_color(rms)
         with self._lock:
+            if self._transcribing:
+                return
+            height = min(max(rms * 120, _BAR_MIN_H), _BAR_MAX_H)
+            color_hex, label = bar_color(rms)
             self._bars.pop(0)
             self._bars.append(height)
             self._color_hex = color_hex
@@ -89,6 +92,10 @@ class _WaveformView(NSView):
             label = self._label
             transcribing = self._transcribing
 
+        self._draw_bars(bars, color_hex, transcribing)
+        self._draw_label(label)
+
+    def _draw_bars(self, bars, color_hex, transcribing):
         bar_color_ns = _hex_to_nscolor(color_hex)
         if transcribing:
             bar_color_ns = bar_color_ns.colorWithAlphaComponent_(0.4)
@@ -107,28 +114,21 @@ class _WaveformView(NSView):
             )
             bar_path.fill()
 
+    def _draw_label(self, label):
         font = NSFont.systemFontOfSize_(11.0)
         attrs = {
-            "NSFont": font,
+            NSFontAttributeName: font,
             "NSForegroundColorAttributeName": NSColor.colorWithWhite_alpha_(0.85, 1.0),
         }
-        from AppKit import NSAttributedString
         ns_label = NSAttributedString.alloc().initWithString_attributes_(label, attrs)
         ns_label.drawAtPoint_(NSMakeRect(12, _WIN_H - 18, 0, 0).origin)
 
 
 class WaveformOverlay:
     def __init__(self):
-        screen_frame = NSWindow.alloc() \
-            .initWithContentRect_styleMask_backing_defer_(
-                NSMakeRect(0, 0, 1, 1),
-                NSWindowStyleMaskBorderless,
-                NSBackingStoreBuffered,
-                False,
-            ).screen().frame()
-
-        x = screen_frame.origin.x + 20
-        y = screen_frame.origin.y + screen_frame.size.height - _WIN_H - 48
+        visible = NSScreen.mainScreen().visibleFrame()
+        x = visible.origin.x + 20
+        y = visible.origin.y + visible.size.height - _WIN_H - 20
 
         self._window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
             NSMakeRect(x, y, _WIN_W, _WIN_H),
