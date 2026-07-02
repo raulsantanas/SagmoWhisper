@@ -15,7 +15,7 @@ dB scale and warnings when your mic signal is genuinely too weak or too loud.
 - **Push-to-talk dictation anywhere** — one hotkey (F8 by default), works in every app
 - **Fast, free transcription** — Groq Whisper (`whisper-large-v3-turbo`), free tier friendly
 - **Optional cleanup** — hesitations and punctuation fixed by `llama-3.1-8b-instant`
-- **Live waveform overlay** — dB-scaled bars with weak/loud signal warnings
+- **Live orb overlay** — a pulsing AI-assistant-style orb with dB-scaled bars and weak/loud signal warnings
 - **Visible errors** — failures show a ⚠️ in the menu bar with a "Last error" entry and a one-click log
 - **Single instance** — a PID lock prevents duplicate menu-bar icons
 
@@ -109,8 +109,7 @@ design to allow a future Windows port.
 
 - **Providers + Settings** — native preferences window, pluggable providers
   (Groq / OpenAI / local faster-whisper), API keys stored in the macOS Keychain
-- **New visual + packaging** — pulsing-orb overlay, `pipx install sagmowhisper`,
-  CI
+- **New visual + packaging** — `pipx install sagmowhisper`, CI
 
 ## License
 

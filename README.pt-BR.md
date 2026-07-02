@@ -16,7 +16,7 @@ demais.
 - **Ditado push-to-talk em qualquer lugar** — uma tecla (F8 por padrão), funciona em todo app
 - **Transcrição rápida e gratuita** — Groq Whisper (`whisper-large-v3-turbo`), roda no tier grátis
 - **Limpeza opcional** — hesitações e pontuação corrigidas pelo `llama-3.1-8b-instant`
-- **Waveform ao vivo** — barras em escala dB com avisos de sinal fraco/alto
+- **Orbe ao vivo** — orbe pulsante estilo assistente de IA com barras em escala dB e avisos de sinal fraco/alto
 - **Erros visíveis** — falhas viram ⚠️ na barra de menu, com "Último erro" e log em um clique
 - **Instância única** — lock por PID impede ícones duplicados na barra
 
@@ -110,8 +110,7 @@ design, para permitir um port Windows futuro.
 
 - **Providers + Configurações** — janela nativa de preferências, providers
   plugáveis (Groq / OpenAI / faster-whisper local), API keys no Keychain do macOS
-- **Novo visual + empacotamento** — overlay com orbe pulsante,
-  `pipx install sagmowhisper`, CI
+- **Novo visual + empacotamento** — `pipx install sagmowhisper`, CI
 
 ## Licença
 
