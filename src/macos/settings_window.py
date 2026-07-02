@@ -17,12 +17,12 @@ from AppKit import (
 )
 from Foundation import NSObject
 
-from src.core import secrets
+from src.core import login_item, secrets
 from src.core.config import Config
 from src.core.providers import factory
 from src.core.providers.base import PROVIDER_CATALOG
 
-_W, _H = 440, 340
+_W, _H = 440, 380
 _LABEL_X, _LABEL_W = 20, 130
 _FIELD_X, _FIELD_W = 160, 260
 _ROW_H = 24
@@ -61,6 +61,15 @@ class SettingsWindowController(NSObject):
     @objc.python_method
     def _build_fields(self):
         content = self._window.contentView()
+        self._login_check = self._checkbox(346, "Abrir no login")
+        self._login_check.setTarget_(self)
+        self._login_check.setAction_("loginToggled:")
+        content.addSubview_(self._login_check)
+        self._login_hint = self._label(
+            "Instale o app (./install.sh) para ativar", 326, _FIELD_W
+        )
+        self._login_hint.setFrame_(NSMakeRect(_FIELD_X, 326, _FIELD_W, 18))
+        content.addSubview_(self._login_hint)
         self._provider_popup = self._popup(292, "providerChanged:")
         self._add_row(content, "Provider", 292, self._provider_popup)
         self._api_key_field = NSSecureTextField.alloc().initWithFrame_(
@@ -156,6 +165,14 @@ class SettingsWindowController(NSObject):
         self._hotkey_popup.selectItemWithTitle_(self._config.hotkey.upper())
         self._status_label.setStringValue_("")
         self._reload_provider_fields(self._config.provider)
+        self._refresh_login_controls()
+
+    @objc.python_method
+    def _refresh_login_controls(self):
+        installed = login_item.app_installed()
+        self._login_check.setEnabled_(installed)
+        self._login_check.setState_(1 if login_item.is_enabled() else 0)
+        self._login_hint.setHidden_(installed)
 
     @objc.python_method
     def _reload_provider_fields(self, provider_key):
@@ -208,6 +225,12 @@ class SettingsWindowController(NSObject):
         )
 
     # ---------- ações (selectors AppKit) ----------
+
+    def loginToggled_(self, sender):
+        if self._login_check.state():
+            login_item.enable()
+        else:
+            login_item.disable()
 
     def providerChanged_(self, sender):
         self._reload_provider_fields(self._selected_provider())

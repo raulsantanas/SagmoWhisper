@@ -27,7 +27,25 @@ demais.
 - Conta [Groq](https://console.groq.com) (tier gratuito funciona) para a API key
 - Libs de sistema: `portaudio`, `libsndfile`
 
-## Instalação
+## Instalação (app nativo — recomendado)
+
+Um único comando monta o SagmoWhisper.app no seu próprio Mac e instala em
+/Applications — sem conta Apple Developer, sem custo (o build é assinado
+localmente com assinatura ad-hoc gratuita):
+
+```bash
+brew install portaudio libsndfile
+git clone https://github.com/raulsantanas/SagmoWhisper.git
+cd SagmoWhisper
+./install.sh
+```
+
+O instalador também liga **Abrir no login** — mude quando quiser pelo checkbox
+"Abrir no login" em **🎙️ > Configurações…**. Para remover o app depois, rode
+`./install.sh --uninstall` (suas configurações e chaves no Keychain são
+preservadas).
+
+## Instalação (modo dev — rodar do código)
 
 ```bash
 # 1. Dependências de sistema
@@ -35,7 +53,7 @@ brew install portaudio libsndfile
 
 # 2. Clonar e preparar o ambiente Python
 git clone https://github.com/raulsantanas/SagmoWhisper.git
-cd SagmoWhisper/voz
+cd SagmoWhisper
 python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -71,12 +89,14 @@ A partir do Milestone 2, a configuração oficial é feita pelo menu **🎙️ >
 
 ## Permissões macOS obrigatórias
 
-Em **Ajustes do Sistema > Privacidade e Segurança**, conceda ao terminal (ou ao
-processo Python) estas três permissões:
+Em **Ajustes do Sistema > Privacidade e Segurança**, conceda ao **SagmoWhisper**
+(ou ao terminal em modo dev) estas três permissões:
 
-1. **Microfone** — para gravar o áudio.
-2. **Acessibilidade** — para o Cmd+V programático colar o texto.
-3. **Monitoramento de Entrada** — para capturar a tecla F8 globalmente.
+1. **Microfone** — pedido automaticamente na primeira gravação.
+2. **Acessibilidade** — adicione SagmoWhisper com o botão **+**, para que o
+   Cmd+V programático possa colar o texto.
+3. **Monitoramento de Entrada** — adicione SagmoWhisper com o botão **+**, para
+   que a tecla F8 global seja capturada.
 
 Sem as três, o app não captura a tecla, não grava, ou não cola. Reinicie o app
 após conceder.
@@ -102,7 +122,8 @@ nohup python -m src.app > /tmp/sagmowhisper.log 2>&1 &
 pkill -f "src.app"
 ```
 
-Para iniciar no login, crie um LaunchAgent em `~/Library/LaunchAgents/`.
+Para iniciar no login, use o checkbox **Abrir no login** em
+**🎙️ > Configurações…** (exige o app instalado).
 
 ## Desenvolvimento
 

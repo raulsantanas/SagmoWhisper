@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Instala dependências
+        run: pip install -r requirements.txt
+      - name: Testes (pytest + cobertura)
+        run: pytest
+      - name: Lint (ruff, CC <= 4)
+        run: ruff check src tests
+
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Monta o .app do zero
+        run: ./install.sh --build-only
+      - name: Verifica o bundle
+        run: |
+          test -x "dist/SagmoWhisper.app/Contents/MacOS/SagmoWhisper"
+          [ "$(plutil -extract LSUIElement raw dist/SagmoWhisper.app/Contents/Info.plist)" = "true" ]
+          [ "$(plutil -extract CFBundleIdentifier raw dist/SagmoWhisper.app/Contents/Info.plist)" = "com.raulsantana.sagmowhisper" ]
