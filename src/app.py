@@ -27,6 +27,7 @@ from src.core.single_instance import (
     acquire_lock,
     release_lock,
 )
+from src.hotkey import resolve_hotkey
 from src.macos.orb_overlay import OrbOverlay
 from src.macos.settings_window import SettingsWindowController
 from src.pipeline import DictationPipeline
@@ -97,7 +98,7 @@ class VozMenuBar:
                 config, self._apply_config
             )
         )
-        self._hotkey = self._resolve_hotkey(config.hotkey)
+        self._hotkey = resolve_hotkey(config.hotkey)
 
         self._dispatcher = (
             MainThreadDispatcher.alloc().initWithApp_(self)
@@ -221,12 +222,6 @@ class VozMenuBar:
             "showErrorOnMainThread:", message, False
         )
 
-    def _resolve_hotkey(self, name: str):
-        try:
-            return getattr(keyboard.Key, name.lower())
-        except AttributeError:
-            return keyboard.KeyCode.from_char(name)
-
     def _rebuild_pipeline(self):
         try:
             transcriber, cleaner = factory.build_components(self._config)
@@ -245,7 +240,7 @@ class VozMenuBar:
     def _apply_config(self, new_config):
         # chamado pela janela de Configurações (main thread) — aplica na hora
         self._config = new_config
-        self._hotkey = self._resolve_hotkey(new_config.hotkey)
+        self._hotkey = resolve_hotkey(new_config.hotkey)
         self._had_error = False
         self._set_title(ICON_IDLE)
         self._error_item.setHidden_(True)
