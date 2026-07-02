@@ -2,7 +2,7 @@
 
 > Última atualização: 2026-07-02
 
-## Estado atual: Milestone 2 (Providers + Settings + Keyring) — entregue — branch `feature/m2-providers-settings`
+## Estado atual: Milestone 3 (App Bundle) — entregue — branch `feature/m3-app-bundle`
 
 Ditado por voz global no Mac. Segura F8 -> grava -> Groq Whisper transcreve ->
 (opcional) Groq Llama limpa -> cola no cursor de qualquer app via clipboard + Cmd+V.
@@ -114,23 +114,74 @@ source .venv/bin/activate
 python -m src.app       # segura F8 para ditar
 ```
 
+---
+
+## Milestone 3 (App Bundle + LaunchAgent) — CONCLUÍDO
+
+Empacotamento nativo macOS com py2app, LaunchAgent para "Abrir no login" e
+script install.sh para one-command build + install (tasks 1-6):
+
+1. `ee9b1fd` — Infraestrutura `LoginItem` (TDD 100%, trata plist em ~/Library/LaunchAgents/).
+2. `d3a2a23` — Checkbox "Abrir no login" nas Settings (aplica na hora via LoginItem).
+3. `ebf5934` — py2app + launcher `SagmoWhisper.py` (`LSUIElement=true`, app sem Dock).
+4. `5e08c54` — `install.sh`: build + instala em /Applications + ativa login por padrão.
+5. `064ba97` — Fix: PID guard no kill_running (evita kill 0 se lock corrompido).
+6. `a47fb34` — CI: testes + lint + build do .app em todo PR e push na main.
+
+Verificado em 2026-07-02:
+- `pytest`: **92 passed** (cobertura 100% em `src/core/*`, incluindo `src/core/login_item.py`).
+- `ruff check`: sem erros (CC <= 4, LEI 8).
+- py2app build: **~34s**, gera `.app` assinado ad-hoc sem erro.
+- `install.sh --build-only`: ✓ (não mata nada, só builda).
+- `install.sh --uninstall`: ✓ (remove app + plist, preserva settings/Keychain).
+- CI workflow criado (`.github/workflows/ci.yml`) mas **NÃO YET EXECUTED** — primeira
+  execução será no PR desta milestone.
+- Full `./install.sh` (build + kill dev + instala + abre): PENDENTE, gate humano abaixo.
+
+Fumaça manual PENDENTE DE HUMANO antes do ship:
+- [ ] `.app` sobe, ícone 🎙️ na barra (sem Dock, sem "Python" visível)
+- [ ] Conceder Acessibilidade + Monitoramento de Entrada ao bundle
+- [ ] Prompt de Microfone na 1ª gravação
+- [ ] Checkbox "Abrir no login" habilitado + marcado; desmarcar/remarcar cria/remove plist
+- [ ] Ditado F8 real pelo bundle
+- [ ] Reiniciar Mac → app abre sozinho (RunAtLoad)
+
+Novo arquivo-chave: `src/core/login_item.py` (LaunchAgent, TDD 100%).
+
+## Trabalho não commitado
+
+Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
+
+## Testes (Milestone 3)
+
+- `pytest`: **92 passed** (2.5s).
+- `ruff check src tests`: **All checks passed** (CC <= 4, LEI 8).
+- Cobertura: 100% em todos os módulos `src/core/*`, incluindo novo `src/core/login_item.py`.
+  Adapters de I/O e AppKit (settings, orb, app) validados por build + fumaça manual.
+
+## Arquivos-chave (Milestone 3)
+
+| Arquivo | Responsabilidade | Status |
+|---------|------------------|--------|
+| `src/core/login_item.py` | LaunchAgent "Abrir no login" | TDD 100% ✓ |
+| `SagmoWhisper.py` | Launcher do app (entry point py2app) | validado build ✓ |
+| `setup.py` | Configuração py2app + Info.plist | validado build ✓ |
+| `install.sh` | Build + instala em /Applications + ativa login | validado build/fumaça ✓ |
+| `.github/workflows/ci.yml` | Testes + lint + build em PR/main | criado, não executado |
+| `src/macos/settings_window.py` | Checkbox "Abrir no login" + LoginItem | TDD + fumaça |
+
 ## Próxima task
 
-Milestone 2 merged em `main` via PR. Próximo:
+Milestone 3 aguardando: (a) revisão final do branch + PR; (b) fumaça humana
+pós-instalação — PENDENTE DE HUMANO:
+- [ ] `./install.sh` completo (mata instância dev, instala em /Applications, abre)
+- [ ] Ícone 🎙️ na barra, NENHUM ícone no Dock, nenhum "Python" visível
+- [ ] Conceder Acessibilidade + Monitoramento de Entrada ao SagmoWhisper; prompt de Microfone na 1ª gravação
+- [ ] Checkbox "Abrir no login" habilitado e marcado nas Configurações; desmarcar/remarcar cria/remove o plist em ~/Library/LaunchAgents/
+- [ ] Ditado F8 real pelo bundle
+- [ ] Reiniciar o Mac → app abre sozinho (RunAtLoad)
 
-**Milestone 3 (Empacotamento .app)** — requisito Raul (2026-07-02):
-Transformar em app nativo do macOS (bundle `.app`, py2app ou briefcase) para:
-- Não depender de rodar Python no terminal
-- Não aparecer "Python" no Dock
-- Iniciar no login via LaunchAgent + `LSUIElement`
-- (O app já usa `ActivationPolicyAccessory`; o bundle com `LSUIElement` fecha o restante)
-
-Tarefas do M3:
-1. Configurar py2app ou briefcase para gerar `.app` standalone.
-2. Criar LaunchAgent em `~/Library/LaunchAgents/com.raulsantanas.sagmowhisper.plist`.
-3. Packaging: versão, ícone, Info.plist com `LSUIElement=true`.
-4. Testar: `.app` sobe, menu aparece sem Python no Dock, reinicia no login.
-5. CI/CD opcional: release binários no GitHub.
+Após aprovação humana: push + PR para `main`, merge, tag release.
 
 ## Retomar
 

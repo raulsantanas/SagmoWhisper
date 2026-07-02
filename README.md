@@ -26,7 +26,24 @@ dB scale and warnings when your mic signal is genuinely too weak or too loud.
 - A [Groq](https://console.groq.com) account (free tier works) for the API key
 - System libraries: `portaudio`, `libsndfile`
 
-## Install
+## Install (native app — recommended)
+
+One command builds SagmoWhisper.app on your own Mac and installs it into
+/Applications — no Apple Developer account, no cost (the build is signed
+locally with a free ad-hoc signature):
+
+```bash
+brew install portaudio libsndfile
+git clone https://github.com/raulsantanas/SagmoWhisper.git
+cd SagmoWhisper
+./install.sh
+```
+
+The installer also turns on **Open at login** — toggle it any time with the
+"Abrir no login" checkbox in **🎙️ > Configurações…**. To remove the app later
+run `./install.sh --uninstall` (your settings and Keychain keys are kept).
+
+## Install (dev mode — run from source)
 
 ```bash
 # 1. System dependencies
@@ -34,7 +51,7 @@ brew install portaudio libsndfile
 
 # 2. Clone and set up the Python environment
 git clone https://github.com/raulsantanas/SagmoWhisper.git
-cd SagmoWhisper/voz
+cd SagmoWhisper
 python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -70,12 +87,14 @@ Starting from Milestone 2, configuration is official via the menu **🎙️ > Co
 
 ## Required macOS permissions
 
-In **System Settings > Privacy & Security**, grant your terminal (or the Python
-process) these three permissions:
+In **System Settings > Privacy & Security**, grant **SagmoWhisper** (or your
+terminal, when running in dev mode) these three permissions:
 
-1. **Microphone** — to record audio.
-2. **Accessibility** — so the programmatic Cmd+V can paste the text.
-3. **Input Monitoring** — so the global F8 hotkey can be captured.
+1. **Microphone** — asked automatically on the first recording.
+2. **Accessibility** — add SagmoWhisper with the **+** button, so the
+   programmatic Cmd+V can paste the text.
+3. **Input Monitoring** — add SagmoWhisper with the **+** button, so the
+   global F8 hotkey can be captured.
 
 Without all three the app can't capture the key, record, or paste. Restart the
 app after granting them.
@@ -101,7 +120,8 @@ nohup python -m src.app > /tmp/sagmowhisper.log 2>&1 &
 pkill -f "src.app"
 ```
 
-To start at login, create a LaunchAgent in `~/Library/LaunchAgents/`.
+To start at login, use the **Abrir no login** checkbox in
+**🎙️ > Configurações…** (requires the installed app).
 
 ## Development
 
