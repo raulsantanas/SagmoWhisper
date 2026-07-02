@@ -1,11 +1,13 @@
 from types import SimpleNamespace
 
 import pytest
+from groq import Groq
 
 from src.core.providers.base import CLEANUP_SYSTEM_PROMPT, TranscriptionError
 from src.core.providers.groq_provider import (
     GroqCleaner,
     GroqTranscriber,
+    make_client,
 )
 
 
@@ -101,3 +103,8 @@ def test_test_connection_falha_vira_transcription_error():
     with pytest.raises(TranscriptionError) as exc:
         test_connection("gsk_x", client_factory=boom)
     assert exc.value.provider == "groq"
+
+
+def test_make_client_retorna_cliente_groq():
+    client = make_client("gsk_x")
+    assert isinstance(client, Groq)
