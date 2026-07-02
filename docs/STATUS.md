@@ -2,7 +2,7 @@
 
 > Última atualização: 2026-07-02
 
-## Estado atual: Milestone 1 (Fundação) entregue — branch `main` criado
+## Estado atual: Overlay Orbe + Barras entregue — branch `feature/orb-overlay`
 
 Ditado por voz global no Mac. Segura F8 -> grava -> Groq Whisper transcreve ->
 (opcional) Groq Llama limpa -> cola no cursor de qualquer app via clipboard + Cmd+V.
@@ -24,19 +24,36 @@ Verificado em 2026-07-02:
 - `.env` com GROQ_API_KEY válida; `VOZ_ENABLE_CLEANUP` desligado.
 - `rumps` removido (migração para AppKit puro concluída e commitada).
 
+Overlay "Orbe + Barras" (mockup D) entregue em `feature/orb-overlay` (3 tasks):
+
+1. `69838f4` — `src/core/orb_animation.py`: matemática pura da animação (escala,
+   brilho, progresso do anel, ângulo de rotação) — 100% TDD.
+2. `2a29835` — `src/macos/orb_overlay.py`: classe `OrbOverlay` (AppKit puro),
+   estados listening/transcribing/error, 30fps via `NSTimer` — fumaça manual.
+3. Este commit — `src/app.py` troca `WaveformOverlay` por `OrbOverlay`; erro do
+   pipeline também aparece na orbe (`show_error`); `src/waveform_overlay.py`
+   deletado.
+
+Fumaça real feita nesta task: instância antiga derrubada (`pkill -f src.app`),
+nova instância subida com `.venv/bin/python -u -m src.app`, processo único
+confirmado via `pgrep`, sem erros em `/tmp/sagmowhisper.log` nem em
+`~/Library/Logs/SagmoWhisper.log`. Teste de ditado por voz (F8 real) fica para
+o humano — instância deixada rodando ao final desta task.
+
 ## Trabalho não commitado
 
 Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
 
 ## Testes
 
-- `pytest`: **32 passed** (0.41s).
-- `ruff check .`: **All checks passed** (CC <= 4, LEI 8).
+- `pytest`: **45 passed** (0.42s).
+- `ruff check src tests`: **All checks passed** (CC <= 4, LEI 8).
 - Cobertura: 100% em `src/core/audio_level.py`, `src/core/app_logging.py`,
-  `src/core/single_instance.py`, `src/cleaner.py`, `src/config.py`, `src/pipeline.py`,
-  `src/transcriber.py`. Adapters de I/O (`audio_recorder` parcial, `text_injector`,
-  `app`, `waveform_overlay`) sem teste automático por decisão de design — validados
-  por fumaça manual (I/O de hardware/SO).
+  `src/core/single_instance.py`, `src/core/orb_animation.py`, `src/cleaner.py`,
+  `src/config.py`, `src/pipeline.py`, `src/transcriber.py`. Adapters de I/O
+  (`audio_recorder` parcial, `text_injector`, `app`, `macos/orb_overlay`) sem
+  teste automático por decisão de design — validados por fumaça manual (I/O de
+  hardware/SO/AppKit).
 
 ## Arquivos-chave
 
@@ -49,9 +66,10 @@ Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
 | `src/core/audio_level.py` | Escala dB de nível de áudio | sim (TDD, 100% cobertura) |
 | `src/core/app_logging.py` | Log estruturado em `~/Library/Logs/SagmoWhisper.log` | sim (TDD, 100% cobertura) |
 | `src/core/single_instance.py` | Trava de instância única | sim (TDD, 100% cobertura) |
+| `src/core/orb_animation.py` | Matemática pura da animação da orbe | sim (TDD, 100% cobertura) |
 | `src/audio_recorder.py` | sounddevice -> .wav + RMS callback | parcial (callback) |
 | `src/text_injector.py` | clipboard + Cmd+V | fumaça manual |
-| `src/waveform_overlay.py` | Overlay AppKit com barras em tempo real | fumaça manual |
+| `src/macos/orb_overlay.py` | Overlay AppKit "Orbe + Barras" (listening/transcribing/error) | fumaça manual |
 | `src/app.py` | NSStatusBar + listener F8 (glue) | fumaça manual |
 
 ## Como rodar (dev)
@@ -71,6 +89,9 @@ python -m src.app       # segura F8 para ditar
 ```
 
 ## Próxima task
+
+`feature/orb-overlay` está pronta para merge em `main` (3 tasks concluídas,
+suíte verde, fumaça real validada). Depois do merge, próximo milestone:
 
 Milestone 2 (Providers + Settings + Keyring):
 1. Arquitetura: contratos de provider (Groq/OpenAI/fallback) e policy de seleção.

@@ -7,7 +7,7 @@ Your audio is transcribed by Groq Whisper, optionally cleaned up by Groq Llama,
 and pasted right where your cursor is — via clipboard + Cmd+V (accents and
 non-ASCII text are preserved).
 
-A floating waveform overlay shows your voice level in real time, with a proper
+A floating orb overlay shows your voice level in real time, with a proper
 dB scale and warnings when your mic signal is genuinely too weak or too loud.
 
 ## Features
@@ -15,7 +15,7 @@ dB scale and warnings when your mic signal is genuinely too weak or too loud.
 - **Push-to-talk dictation anywhere** — one hotkey (F8 by default), works in every app
 - **Fast, free transcription** — Groq Whisper (`whisper-large-v3-turbo`), free tier friendly
 - **Optional cleanup** — hesitations and punctuation fixed by `llama-3.1-8b-instant`
-- **Live waveform overlay** — dB-scaled bars with weak/loud signal warnings
+- **Live orb overlay** — a pulsing AI-assistant-style orb with dB-scaled bars and weak/loud signal warnings
 - **Visible errors** — failures show a ⚠️ in the menu bar with a "Last error" entry and a one-click log
 - **Single instance** — a PID lock prevents duplicate menu-bar icons
 
@@ -101,7 +101,7 @@ ruff check src tests    # lint + cyclomatic complexity <= 4
 
 Architecture: pure units (`src/core/`, `config`, `transcriber`, `cleaner`,
 `pipeline`) are TDD-covered with 100% coverage on core modules; AppKit/I-O
-adapters (`audio_recorder`, `text_injector`, `waveform_overlay`, `app`) are
+adapters (`audio_recorder`, `text_injector`, `macos/orb_overlay`, `app`) are
 validated by documented manual smoke tests. The core is platform-agnostic by
 design to allow a future Windows port.
 
@@ -109,8 +109,7 @@ design to allow a future Windows port.
 
 - **Providers + Settings** — native preferences window, pluggable providers
   (Groq / OpenAI / local faster-whisper), API keys stored in the macOS Keychain
-- **New visual + packaging** — pulsing-orb overlay, `pipx install sagmowhisper`,
-  CI
+- **New visual + packaging** — `pipx install sagmowhisper`, CI
 
 ## License
 

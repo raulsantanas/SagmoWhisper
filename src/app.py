@@ -27,10 +27,10 @@ from src.core.single_instance import (
     acquire_lock,
     release_lock,
 )
+from src.macos.orb_overlay import OrbOverlay
 from src.pipeline import DictationPipeline
 from src.text_injector import TextInjector
 from src.transcriber import Transcriber
-from src.waveform_overlay import WaveformOverlay
 
 ICON_IDLE = "🎙️"
 ICON_RECORDING = "🔴"
@@ -62,13 +62,17 @@ class MainThreadDispatcher(NSObject):
         self._app._set_title(ICON_PROCESSING)
 
     def finishRecordingOnMainThread(self):
+        if self._app._had_error:
+            # overlay em estado de erro se esconde sozinho após 2s;
+            # ícone ⚠️ e item "Último erro" permanecem no menu
+            return
         self._app._overlay.hide()
-        if not self._app._had_error:
-            self._app._set_title(ICON_IDLE)
-            self._app._error_item.setHidden_(True)
+        self._app._set_title(ICON_IDLE)
+        self._app._error_item.setHidden_(True)
 
     def showErrorOnMainThread_(self, message):
         self._app._show_error(str(message))
+        self._app._overlay.show_error(str(message))
 
     def openLog_(self, sender):
         subprocess.run(["open", str(LOG_PATH)])
@@ -79,7 +83,7 @@ class VozMenuBar:
         self._config = config
         self._recording = False
         self._had_error = False
-        self._overlay = WaveformOverlay()
+        self._overlay = OrbOverlay()
         client = Groq(api_key=config.groq_api_key)
         self._recorder = AudioRecorder(
             config.sample_rate,
