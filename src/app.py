@@ -19,9 +19,9 @@ from groq import Groq
 from pynput import keyboard
 
 from src.audio_recorder import AudioRecorder
-from src.cleaner import Cleaner
 from src.config import Config
 from src.core.app_logging import setup_logging
+from src.core.providers.groq_provider import GroqCleaner, GroqTranscriber
 from src.core.single_instance import (
     AlreadyRunningError,
     acquire_lock,
@@ -30,7 +30,6 @@ from src.core.single_instance import (
 from src.macos.orb_overlay import OrbOverlay
 from src.pipeline import DictationPipeline
 from src.text_injector import TextInjector
-from src.transcriber import Transcriber
 
 ICON_IDLE = "🎙️"
 ICON_RECORDING = "🔴"
@@ -90,10 +89,10 @@ class VozMenuBar:
             sample_callback=self._overlay.update_bars,
         )
         self._pipeline = DictationPipeline(
-            Transcriber(
+            GroqTranscriber(
                 client, config.transcription_model, config.language
             ),
-            Cleaner(client, config.cleanup_model),
+            GroqCleaner(client, config.cleanup_model),
             TextInjector(),
             config.enable_cleanup,
         )
