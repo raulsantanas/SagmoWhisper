@@ -184,18 +184,27 @@ Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
 | `.github/workflows/ci.yml` | Testes + lint + build em PR/main | criado, não executado |
 | `src/macos/settings_window.py` | Checkbox "Abrir no login" + LoginItem | TDD + fumaça |
 
+## Fechamento (2026-07-02): PRs #5, #6 e #7 mergeados — M3 CONCLUÍDO
+
+- PR #5 (feature/m3-app-bundle): milestone completo, CI verde na 1ª execução.
+- PR #7 (fix/py2app-pynput-backend): fix do launch (pynput/keyring em `packages`),
+  revisado e mergeado — o app instalado e a main agora têm o mesmo código.
+- PR #6 (chore/docs-guia-usuario): READMEs user-first + `docs/superpowers/`
+  removido do repo público (gitignorado; specs/planos seguem locais e no histórico).
+- Zero PRs abertos; branches remotos deletados; CI verde nos dois últimos PRs
+  (test + build do .app no runner).
+
 ## Próxima task
 
-Milestone 3 aguardando: (a) revisão final do branch + PR; (b) fumaça humana
-pós-instalação — PENDENTE DE HUMANO:
-- [ ] `./install.sh` completo (mata instância dev, instala em /Applications, abre)
+Fumaça humana pós-instalação — PENDENTE DE HUMANO (app já instalado e rodando):
 - [ ] Ícone 🎙️ na barra, NENHUM ícone no Dock, nenhum "Python" visível
 - [ ] Conceder Acessibilidade + Monitoramento de Entrada ao SagmoWhisper; prompt de Microfone na 1ª gravação
+- [ ] Configurar chave em 🎙️ → Configurações… e ditar com F8 pelo bundle
 - [ ] Checkbox "Abrir no login" habilitado e marcado nas Configurações; desmarcar/remarcar cria/remove o plist em ~/Library/LaunchAgents/
-- [ ] Ditado F8 real pelo bundle
 - [ ] Reiniciar o Mac → app abre sozinho (RunAtLoad)
 
-Após aprovação humana: push + PR para `main`, merge, tag release.
+Depois da fumaça: considerar tag de release e itens do backlog (hardening do
+install.sh, ícone custom, notarização se houver demanda).
 
 ## Retomar
 
