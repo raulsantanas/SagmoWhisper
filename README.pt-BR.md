@@ -123,6 +123,14 @@ de novo: o texto aparece no cursor.
 Sem as três, o app não captura a tecla, não grava, ou não cola. Em modo dev
 (rodando do código), conceda as mesmas permissões ao seu terminal.
 
+> ⚠️ **Depois de toda reinstalação** (rodar `./install.sh` de novo — ex.
+> para atualizar), o app reconstruído ganha uma assinatura ad-hoc nova e o
+> macOS silenciosamente para de honrar as permissões antigas de
+> Acessibilidade e Monitoramento de Entrada — as chavinhas *parecem*
+> ligadas, e desligar/ligar **não** basta. **Remova** o SagmoWhisper das
+> duas listas (selecione → **−**) e **adicione de novo** com **+**, depois
+> reinicie o app. O Microfone não é afetado.
+
 ## Uso
 
 1. Abra o **SagmoWhisper** em /Applications (ele também abre no login, quando

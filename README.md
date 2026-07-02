@@ -120,6 +120,13 @@ Without all three the app can't capture the key, record, or paste. When
 running in dev mode (from source), grant the same permissions to your
 terminal instead.
 
+> ⚠️ **After every reinstall** (running `./install.sh` again — e.g. to
+> update), the rebuilt app gets a new ad-hoc signature and macOS silently
+> stops honoring the old Accessibility and Input Monitoring grants — the
+> switches still *look* on, and toggling them off/on is **not** enough.
+> **Remove** SagmoWhisper from both lists (select it → **−**) and **re-add**
+> it with **+**, then restart the app. Microphone is unaffected.
+
 ## Usage
 
 1. Open **SagmoWhisper** from /Applications (it also starts at login when

@@ -205,6 +205,16 @@ HTTPS real ao Groq com a key do Keychain). PR #9 documenta o passo a passo
 das permissões nos READMEs, com as pegadinhas reais (duas telas
 "Acessibilidade"; Microfone só via prompt; reinício obrigatório).
 
+## Pós-ícone (2026-07-02, ~20h): TCC invalidado pela reinstalação — diagnosticado e resolvido
+
+A reinstalação do PR #10 (ícone) reassinou o app e o macOS parou de honrar as
+permissões antigas em silêncio: F8 sem nenhum rastro no log. Diagnóstico via
+TCC.db: o `csreq` guardado apontava para o cdhash da assinatura anterior, e
+**desligar/ligar a chavinha NÃO atualiza o csreq** — só remover e readicionar
+o app (ou `tccutil reset <serviço> com.raulsantana.sagmowhisper`). Feito isso
+e reaberto o app, **ditado F8 voltou a funcionar** (confirmado pelo Raul).
+Gotcha documentado nos READMEs e no output final do install.sh.
+
 ## Próxima task
 
 - [ ] Reiniciar o Mac → app abre sozinho (RunAtLoad) — último item da fumaça (HUMANO)
