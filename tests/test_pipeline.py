@@ -32,16 +32,16 @@ class _SpyInjector:
 
 
 def test_cleanup_enabled_injects_cleaned_text():
-    transcriber = _SpyTranscriber("texto cru")
-    cleaner = _SpyCleaner("texto limpo")
+    transcriber = _SpyTranscriber("é texto cru né")
+    cleaner = _SpyCleaner("Texto cru.")
     injector = _SpyInjector()
     pipeline = DictationPipeline(transcriber, cleaner, injector, enable_cleanup=True)
 
     result = pipeline.run(Path("rec.wav"))
 
-    assert cleaner.calls == ["texto cru"]
-    assert injector.calls == ["texto limpo"]
-    assert result == "texto limpo"
+    assert cleaner.calls == ["é texto cru né"]
+    assert injector.calls == ["Texto cru."]
+    assert result == "Texto cru."
 
 
 def test_cleanup_disabled_injects_raw_text_and_skips_cleaner():
@@ -80,3 +80,15 @@ def test_cleanup_yielding_empty_text_skips_injector():
 
     assert injector.calls == []
     assert result == ""
+
+
+def test_limpeza_que_virou_resposta_cai_para_transcricao_crua():
+    transcriber = _SpyTranscriber("quanto é dois mais dois")
+    cleaner = _SpyCleaner("Quatro.")
+    injector = _SpyInjector()
+    pipeline = DictationPipeline(transcriber, cleaner, injector, enable_cleanup=True)
+
+    result = pipeline.run(Path("rec.wav"))
+
+    assert injector.calls == ["quanto é dois mais dois"]
+    assert result == "quanto é dois mais dois"

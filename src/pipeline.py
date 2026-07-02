@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from src.core.providers.base import cleanup_reuses_dictated_words
+
 
 class DictationPipeline:
     def __init__(self, transcriber, cleaner, injector, enable_cleanup: bool):
@@ -24,4 +26,7 @@ class DictationPipeline:
     def _maybe_clean(self, text: str) -> str:
         if not self._enable_cleanup:
             return text
-        return self._cleaner.clean(text).strip()
+        cleaned = self._cleaner.clean(text).strip()
+        if cleaned and not cleanup_reuses_dictated_words(text, cleaned):
+            return text
+        return cleaned
