@@ -7,7 +7,7 @@ Your audio is transcribed by Groq Whisper, optionally cleaned up by Groq Llama,
 and pasted right where your cursor is — via clipboard + Cmd+V (accents and
 non-ASCII text are preserved).
 
-A floating waveform overlay shows your voice level in real time, with a proper
+A floating orb overlay shows your voice level in real time, with a proper
 dB scale and warnings when your mic signal is genuinely too weak or too loud.
 
 ## Features
@@ -101,7 +101,7 @@ ruff check src tests    # lint + cyclomatic complexity <= 4
 
 Architecture: pure units (`src/core/`, `config`, `transcriber`, `cleaner`,
 `pipeline`) are TDD-covered with 100% coverage on core modules; AppKit/I-O
-adapters (`audio_recorder`, `text_injector`, `waveform_overlay`, `app`) are
+adapters (`audio_recorder`, `text_injector`, `macos/orb_overlay`, `app`) are
 validated by documented manual smoke tests. The core is platform-agnostic by
 design to allow a future Windows port.
 
