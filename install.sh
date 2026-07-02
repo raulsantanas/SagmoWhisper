@@ -18,7 +18,9 @@ kill_running() {
   if [ -f "$LOCK_FILE" ]; then
     local pid
     pid=$(cat "$LOCK_FILE" 2>/dev/null || true)
-    if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+    # lock corrompido com "0" ou lixo viraria "kill 0" (grupo inteiro)
+    [[ "$pid" =~ ^[1-9][0-9]*$ ]] || return 0
+    if kill -0 "$pid" 2>/dev/null; then
       echo "Encerrando instância em execução (PID $pid)..."
       kill "$pid" 2>/dev/null || true
       sleep 1
