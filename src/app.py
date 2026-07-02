@@ -1,4 +1,5 @@
 import signal
+import subprocess
 import sys
 import threading
 from pathlib import Path
@@ -28,6 +29,7 @@ from src.waveform_overlay import WaveformOverlay
 ICON_IDLE = "🎙️"
 ICON_RECORDING = "🔴"
 ICON_PROCESSING = "⏳"
+ICON_ERROR = "⚠️"
 
 LOG_PATH = Path.home() / "Library" / "Logs" / "SagmoWhisper.log"
 logger = setup_logging(LOG_PATH)
@@ -51,13 +53,22 @@ class MainThreadDispatcher(NSObject):
 
     def finishRecordingOnMainThread(self):
         self._app._overlay.hide()
-        self._app._set_title(ICON_IDLE)
+        if not self._app._had_error:
+            self._app._set_title(ICON_IDLE)
+            self._app._error_item.setHidden_(True)
+
+    def showErrorOnMainThread_(self, message):
+        self._app._show_error(str(message))
+
+    def openLog_(self, sender):
+        subprocess.run(["open", str(LOG_PATH)])
 
 
 class VozMenuBar:
     def __init__(self, config: Config):
         self._config = config
         self._recording = False
+        self._had_error = False
         self._overlay = WaveformOverlay()
         client = Groq(api_key=config.groq_api_key)
         self._recorder = AudioRecorder(
@@ -101,6 +112,18 @@ class VozMenuBar:
 
     def _setup_menu(self):
         menu = NSMenu.alloc().init()
+        self._error_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "", None, ""
+        )
+        self._error_item.setHidden_(True)
+        menu.addItem_(self._error_item)
+
+        open_log_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Abrir log", "openLog:", ""
+        )
+        open_log_item.setTarget_(self._dispatcher)
+        menu.addItem_(open_log_item)
+
         quit_item = (
             NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
                 "Sair", "terminate:", "q"
@@ -153,6 +176,7 @@ class VozMenuBar:
         )
         audio_path = self._recorder.stop()
         try:
+            self._had_error = False
             self._pipeline.run(audio_path)
         except Exception as e:
             logger.exception("Falha no ditado")
@@ -162,8 +186,16 @@ class VozMenuBar:
                 "finishRecordingOnMainThread", None, False
             )
 
+    def _show_error(self, message: str):
+        self._had_error = True
+        self._set_title(ICON_ERROR)
+        self._error_item.setTitle_(f"Último erro: {message[:80]}")
+        self._error_item.setHidden_(False)
+
     def _notify_error(self, message: str):
-        pass
+        self._dispatcher.performSelectorOnMainThread_withObject_waitUntilDone_(
+            "showErrorOnMainThread:", message, False
+        )
 
 
 def main():
