@@ -1,6 +1,7 @@
 import signal
 import sys
 import threading
+from pathlib import Path
 
 import objc
 from AppKit import (
@@ -11,19 +12,14 @@ from AppKit import (
     NSStatusBar,
     NSVariableStatusItemLength,
 )
-from Foundation import (
-    NSDate,
-    NSObject,
-    NSRunLoop,
-    NSUserNotification,
-    NSUserNotificationCenter,
-)
+from Foundation import NSDate, NSObject, NSRunLoop
 from groq import Groq
 from pynput import keyboard
 
 from src.audio_recorder import AudioRecorder
 from src.cleaner import Cleaner
 from src.config import Config
+from src.core.app_logging import setup_logging
 from src.pipeline import DictationPipeline
 from src.text_injector import TextInjector
 from src.transcriber import Transcriber
@@ -32,6 +28,9 @@ from src.waveform_overlay import WaveformOverlay
 ICON_IDLE = "🎙️"
 ICON_RECORDING = "🔴"
 ICON_PROCESSING = "⏳"
+
+LOG_PATH = Path.home() / "Library" / "Logs" / "SagmoWhisper.log"
+logger = setup_logging(LOG_PATH)
 
 
 class MainThreadDispatcher(NSObject):
@@ -156,20 +155,15 @@ class VozMenuBar:
         try:
             self._pipeline.run(audio_path)
         except Exception as e:
-            print(f"Erro na transcrição: {e}")
-            self._show_notification("Voz — Erro", str(e))
+            logger.exception("Falha no ditado")
+            self._notify_error(str(e))
         finally:
             self._dispatcher.performSelectorOnMainThread_withObject_waitUntilDone_(
                 "finishRecordingOnMainThread", None, False
             )
 
-    def _show_notification(self, title: str, message: str):
-        notification = NSUserNotification.alloc().init()
-        notification.setTitle_(title)
-        notification.setInformativeText_(message)
-        NSUserNotificationCenter.defaultUserNotificationCenter().deliverNotification_(
-            notification
-        )
+    def _notify_error(self, message: str):
+        pass
 
 
 def main():
