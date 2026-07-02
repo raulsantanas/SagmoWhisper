@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import pytest
 from openai import OpenAI
 
-from src.core.providers.base import CLEANUP_SYSTEM_PROMPT, TranscriptionError
+from src.core.providers.base import TranscriptionError
 from src.core.providers.openai_provider import (
     OpenAICleaner,
     OpenAITranscriber,
@@ -73,11 +73,9 @@ def test_clean_usa_prompt_e_temperatura_baixa():
     assert result == "texto corrigido"
     call = client.calls[0]
     assert call["temperature"] == 0.2
-    assert call["messages"][0] == {
-        "role": "system",
-        "content": CLEANUP_SYSTEM_PROMPT,
-    }
-    assert call["messages"][1] == {"role": "user", "content": "texto bruto"}
+    from src.core.providers.base import cleanup_messages
+
+    assert call["messages"] == cleanup_messages("texto bruto")
 
 
 def test_clean_embrulha_falha_em_transcription_error():

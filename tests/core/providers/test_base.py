@@ -36,3 +36,54 @@ def test_local_sem_key_e_sem_limpeza():
     assert info.transcription_models == ("small",)
     assert info.cleanup_models == ()
     assert info.needs_api_key is False
+
+
+def test_cleanup_messages_comeca_no_system_e_termina_no_texto_bruto():
+    from src.core.providers.base import CLEANUP_SYSTEM_PROMPT, cleanup_messages
+
+    messages = cleanup_messages("texto bruto")
+    assert messages[0] == {"role": "system", "content": CLEANUP_SYSTEM_PROMPT}
+    assert messages[-1] == {"role": "user", "content": "texto bruto"}
+
+
+def test_cleanup_messages_tem_exemplo_de_pergunta_nao_respondida():
+    from src.core.providers.base import cleanup_messages
+
+    messages = cleanup_messages("qualquer coisa")
+    exemplos = [
+        (messages[i], messages[i + 1])
+        for i in range(1, len(messages) - 1, 2)
+    ]
+    assert len(exemplos) >= 2
+    perguntas = [
+        (u, a) for u, a in exemplos if a["content"].strip().endswith("?")
+    ]
+    assert perguntas, "precisa de exemplo em que a pergunta continua pergunta"
+    u, a = perguntas[0]
+    assert u["role"] == "user" and a["role"] == "assistant"
+    assert "capital" in u["content"] and "capital" in a["content"]
+
+
+def test_limpeza_que_reusa_palavras_ditadas_e_aceita():
+    from src.core.providers.base import cleanup_reuses_dictated_words
+
+    assert cleanup_reuses_dictated_words(
+        "é qual é a capital da frança né", "Qual é a capital da França?"
+    )
+    assert cleanup_reuses_dictated_words(
+        "hm me manda o relatório até amanhã por favor tipo sem falta",
+        "Me manda o relatório até amanhã, por favor, sem falta.",
+    )
+    assert cleanup_reuses_dictated_words("e ai tudo bem", "E aí, tudo bem?")
+
+
+def test_resposta_gerada_introduz_palavra_nova_e_e_rejeitada():
+    from src.core.providers.base import cleanup_reuses_dictated_words
+
+    assert not cleanup_reuses_dictated_words("quanto é dois mais dois", "Quatro.")
+    assert not cleanup_reuses_dictated_words(
+        "quanto é dois mais dois", "Quanto é dois mais dois? Quatro."
+    )
+    assert not cleanup_reuses_dictated_words(
+        "qual é a capital da frança", "A capital da França é Paris."
+    )
