@@ -240,13 +240,19 @@ class OrbOverlay:
         )
         self._window.setContentView_(self._view)
         self._timer = None
+        self._error_timer = None
+        self._hiding = False
 
     def show(self):
+        self._cancel_error_timer()
+        self._hiding = False
         self._view.reset()
         self._window.orderFront_(None)
         self._start_timer()
 
     def hide(self):
+        self._cancel_error_timer()
+        self._hiding = True
         self._stop_timer()
 
         def animate(ctx):
@@ -254,8 +260,9 @@ class OrbOverlay:
             self._window.animator().setAlphaValue_(0.0)
 
         def complete():
-            self._window.orderOut_(None)
-            self._window.setAlphaValue_(1.0)
+            if self._hiding:
+                self._window.orderOut_(None)
+                self._window.setAlphaValue_(1.0)
 
         NSAnimationContext.runAnimationGroup_completionHandler_(
             animate, complete
@@ -268,9 +275,14 @@ class OrbOverlay:
         self._view.set_error(message)
         self._window.orderFront_(None)
         self._start_timer()
-        NSTimer.scheduledTimerWithTimeInterval_repeats_block_(
+        self._error_timer = NSTimer.scheduledTimerWithTimeInterval_repeats_block_(
             _ERROR_HIDE_S, False, lambda timer: self.hide()
         )
+
+    def _cancel_error_timer(self):
+        if self._error_timer is not None:
+            self._error_timer.invalidate()
+            self._error_timer = None
 
     def update_bars(self, rms: float):
         # Chamado no thread de áudio: só armazena; o timer de 30fps desenha.
