@@ -87,19 +87,41 @@ A configuração é feita pelo menu **🎙️ > Configurações…** (escolha de
 | `HOTKEY` | `f8` | tecla de gravação (`pynput.keyboard.Key`) |
 | `SAMPLE_RATE` | `16000` | taxa de amostragem do áudio |
 
-## Permissões macOS obrigatórias
+## Permissões macOS obrigatórias — passo a passo
 
-Em **Ajustes do Sistema > Privacidade e Segurança**, conceda ao **SagmoWhisper**
-(ou ao terminal em modo dev) estas três permissões:
+O SagmoWhisper precisa de três permissões, concedidas uma única vez. Todas
+ficam em **Ajustes do Sistema > Privacidade e Segurança** — role a barra
+lateral para baixo até encontrar.
 
-1. **Microfone** — pedido automaticamente na primeira gravação.
-2. **Acessibilidade** — adicione SagmoWhisper com o botão **+**, para que o
-   Cmd+V programático possa colar o texto.
-3. **Monitoramento de Entrada** — adicione SagmoWhisper com o botão **+**, para
-   que a tecla F8 global seja capturada.
+> ⚠️ **Atenção:** o item "Acessibilidade" no topo da barra lateral é a área de
+> recursos assistivos (VoiceOver, Zoom…) e não tem lista de permissões. O
+> caminho certo fica *dentro* de **Privacidade e Segurança**.
 
-Sem as três, o app não captura a tecla, não grava, ou não cola. Reinicie o app
-após conceder.
+1. **Acessibilidade** — permite colar o texto transcrito no cursor
+   (Cmd+V programático).
+   Abra **Ajustes do Sistema > Privacidade e Segurança > Acessibilidade** e
+   ative o **SagmoWhisper.app**. Se não estiver na lista, clique em **+**,
+   escolha `/Applications/SagmoWhisper.app` e depois ative a chavinha.
+
+2. **Monitoramento de Entrada** — permite capturar a tecla F8 global em
+   qualquer app.
+   Ainda em **Privacidade e Segurança**, abra **Monitoramento de Entrada** e
+   ative o **SagmoWhisper.app** do mesmo jeito.
+
+3. **Microfone** — grava sua voz. Este *não* dá para adicionar manualmente:
+   o macOS mostra o pedido sozinho na primeira gravação — é só aceitar
+   (o SagmoWhisper então aparece em **Privacidade e Segurança > Microfone**).
+
+4. **Reinicie o app** — as permissões só valem depois de reiniciar:
+   clique em **🎙️ > Sair** na barra de menu e abra o SagmoWhisper de novo
+   em /Applications.
+
+Depois faça o primeiro teste: clique em qualquer campo de texto, segure
+**F8**, fale uma frase, solte — aceite o pedido de Microfone — e segure **F8**
+de novo: o texto aparece no cursor.
+
+Sem as três, o app não captura a tecla, não grava, ou não cola. Em modo dev
+(rodando do código), conceda as mesmas permissões ao seu terminal.
 
 ## Uso
 
