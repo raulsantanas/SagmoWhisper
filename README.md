@@ -85,19 +85,40 @@ Configuration is done via the menu **🎙️ > Configurações…** (provider Gr
 | `HOTKEY` | `f8` | push-to-talk key (`pynput.keyboard.Key`) |
 | `SAMPLE_RATE` | `16000` | audio sample rate |
 
-## Required macOS permissions
+## Required macOS permissions — step by step
 
-In **System Settings > Privacy & Security**, grant **SagmoWhisper** (or your
-terminal, when running in dev mode) these three permissions:
+SagmoWhisper needs three permissions, granted once. All of them live in
+**System Settings > Privacy & Security** — scroll the sidebar down to find it.
 
-1. **Microphone** — asked automatically on the first recording.
-2. **Accessibility** — add SagmoWhisper with the **+** button, so the
-   programmatic Cmd+V can paste the text.
-3. **Input Monitoring** — add SagmoWhisper with the **+** button, so the
-   global F8 hotkey can be captured.
+> ⚠️ **Careful:** the "Accessibility" item near the top of the sidebar is the
+> assistive-features area (VoiceOver, Zoom…) and has no permission list. The
+> one you want is *inside* **Privacy & Security**.
 
-Without all three the app can't capture the key, record, or paste. Restart the
-app after granting them.
+1. **Accessibility** — lets the app paste the transcribed text at your cursor
+   (programmatic Cmd+V).
+   Open **System Settings > Privacy & Security > Accessibility** and turn on
+   **SagmoWhisper.app**. If it is not listed, click **+**, pick
+   `/Applications/SagmoWhisper.app` and then turn it on.
+
+2. **Input Monitoring** — lets the global F8 hotkey be captured in any app.
+   Still in **Privacy & Security**, open **Input Monitoring** and turn on
+   **SagmoWhisper.app** the same way.
+
+3. **Microphone** — records your voice. This one *cannot* be added manually:
+   macOS shows a prompt by itself on your first recording — just accept it
+   (SagmoWhisper then appears in **Privacy & Security > Microphone**).
+
+4. **Restart the app** — permissions only take effect after a restart:
+   click **🎙️ > Sair** in the menu bar, then open SagmoWhisper again from
+   /Applications.
+
+Then do a first test: click into any text field, hold **F8**, say a sentence,
+release — accept the Microphone prompt — and hold **F8** again: the text
+appears at your cursor.
+
+Without all three the app can't capture the key, record, or paste. When
+running in dev mode (from source), grant the same permissions to your
+terminal instead.
 
 ## Usage
 

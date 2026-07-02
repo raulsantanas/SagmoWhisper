@@ -153,11 +153,11 @@ Fumaça — estado real:
 - [x] `./install.sh` completo (matou instância dev PID 81214, instalou, abriu)
 - [x] `.app` sobe e permanece rodando sem erro (pós-fix; processo confirmado via pgrep)
 - [x] LaunchAgent criado em ~/Library/LaunchAgents/ com "Abrir no login" ligado
-- [ ] Confirmar visual: ícone 🎙️ na barra, sem Dock, sem "Python" (HUMANO)
-- [ ] Conceder Acessibilidade + Monitoramento de Entrada ao SagmoWhisper (HUMANO)
-- [ ] Prompt de Microfone na 1ª gravação (HUMANO)
-- [ ] Checkbox "Abrir no login" habilitado + marcado; desmarcar/remarcar cria/remove plist (HUMANO)
-- [ ] Ditado F8 real pelo bundle (HUMANO)
+- [x] Ícone 🎙️ na barra (menus usados na fumaça real; sem Dock por LSUIElement)
+- [x] Acessibilidade + Monitoramento de Entrada concedidas ao SagmoWhisper
+- [x] Prompt de Microfone na 1ª gravação — aceito
+- [x] Checkbox "Abrir no login" habilitado + marcado (toggle desmarcar/remarcar não exercitado)
+- [x] **Ditado F8 real pelo bundle — FUNCIONANDO** (frase falada → texto colado no cursor)
 - [ ] Reiniciar Mac → app abre sozinho (RunAtLoad) (HUMANO)
 
 Novo arquivo-chave: `src/core/login_item.py` (LaunchAgent, TDD 100%).
@@ -194,17 +194,24 @@ Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
 - Zero PRs abertos; branches remotos deletados; CI verde nos dois últimos PRs
   (test + build do .app no runner).
 
+## Fumaça humana (2026-07-02, tarde): ditado F8 FUNCIONANDO 🎙️
+
+Permissões concedidas (Acessibilidade + Monitoramento de Entrada; Microfone
+aceito no prompt da 1ª gravação), app reiniciado após cada permissão, e o
+teste real passou: segurar F8 → falar → soltar → texto colado no cursor, tudo
+pelo bundle instalado, sem terminal. Botões "Salvar" e "Testar conexão" das
+Configurações também verificados (✓ Conexão OK / ✓ Salvo e aplicado, chamada
+HTTPS real ao Groq com a key do Keychain). PR #9 documenta o passo a passo
+das permissões nos READMEs, com as pegadinhas reais (duas telas
+"Acessibilidade"; Microfone só via prompt; reinício obrigatório).
+
 ## Próxima task
 
-Fumaça humana pós-instalação — PENDENTE DE HUMANO (app já instalado e rodando):
-- [ ] Ícone 🎙️ na barra, NENHUM ícone no Dock, nenhum "Python" visível
-- [ ] Conceder Acessibilidade + Monitoramento de Entrada ao SagmoWhisper; prompt de Microfone na 1ª gravação
-- [ ] Configurar chave em 🎙️ → Configurações… e ditar com F8 pelo bundle
-- [ ] Checkbox "Abrir no login" habilitado e marcado nas Configurações; desmarcar/remarcar cria/remove o plist em ~/Library/LaunchAgents/
-- [ ] Reiniciar o Mac → app abre sozinho (RunAtLoad)
+- [ ] Reiniciar o Mac → app abre sozinho (RunAtLoad) — último item da fumaça (HUMANO)
+- [ ] Exercitar o toggle do checkbox "Abrir no login" (desmarcar/remarcar cria/remove o plist)
 
-Depois da fumaça: considerar tag de release e itens do backlog (hardening do
-install.sh, ícone custom, notarização se houver demanda).
+Depois: considerar tag de release e itens do backlog (hardening do install.sh,
+ícone custom, notarização se houver demanda).
 
 ## Retomar
 
