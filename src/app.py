@@ -184,8 +184,8 @@ class VozMenuBar:
         self._dispatcher.performSelectorOnMainThread_withObject_waitUntilDone_(
             "setProcessingOnMainThread", None, False
         )
-        audio_path = self._recorder.stop()
         try:
+            audio_path = self._recorder.stop()
             self._had_error = False
             self._pipeline.run(audio_path)
         except Exception as e:

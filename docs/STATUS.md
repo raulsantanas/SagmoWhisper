@@ -46,7 +46,9 @@ Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
 | `src/transcriber.py` | Groq Whisper -> texto | sim (TDD) |
 | `src/cleaner.py` | Groq Llama limpa transcrição PT-BR | sim (TDD) |
 | `src/pipeline.py` | Orquestra transcrição -> limpeza -> injeção | sim (TDD) |
-| `src/bar_color.py` | Cor das barras por qualidade de áudio | sim (TDD) |
+| `src/core/audio_level.py` | Escala dB de nível de áudio | sim (TDD, 100% cobertura) |
+| `src/core/app_logging.py` | Log estruturado em `~/Library/Logs/SagmoWhisper.log` | sim (TDD, 100% cobertura) |
+| `src/core/single_instance.py` | Trava de instância única | sim (TDD, 100% cobertura) |
 | `src/audio_recorder.py` | sounddevice -> .wav + RMS callback | parcial (callback) |
 | `src/text_injector.py` | clipboard + Cmd+V | fumaça manual |
 | `src/waveform_overlay.py` | Overlay AppKit com barras em tempo real | fumaça manual |
