@@ -24,6 +24,7 @@ setup(
     options={
         "py2app": {
             "plist": _PLIST,
+            "iconfile": "assets/SagmoWhisper.icns",
             # pynput e keyring escolhem backend por import dinâmico em runtime;
             # o modulegraph do py2app não os enxerga — sem forçar o pacote
             # inteiro, o .app quebra no launch (pynput.keyboard._darwin) ou ao
