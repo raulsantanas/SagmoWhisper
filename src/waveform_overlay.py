@@ -18,7 +18,7 @@ from AppKit import (
     NSWindowStyleMaskBorderless,
 )
 
-from src.core.audio_level import classify, rms_to_level
+from src.core.audio_level import RecentPeakClassifier, rms_to_level
 
 _BAR_COUNT = 30
 _WIN_W = 320
@@ -50,6 +50,7 @@ class _WaveformView(NSView):
         self._transcribing = False
         self._lock = threading.Lock()
         self._pending_rms = 0.0
+        self._classifier = RecentPeakClassifier()
         return self
 
     def drawRect_(self, rect):
@@ -63,7 +64,7 @@ class _WaveformView(NSView):
                 return
             level = rms_to_level(rms)
             height = _BAR_MIN_H + level * (_BAR_MAX_H - _BAR_MIN_H)
-            color_hex, label = _STATE_STYLES[classify(rms)]
+            color_hex, label = _STATE_STYLES[self._classifier.classify(rms)]
             self._bars.pop(0)
             self._bars.append(height)
             self._color_hex = color_hex
@@ -81,6 +82,7 @@ class _WaveformView(NSView):
             self._transcribing = False
             self._label = "🎙️ Ouvindo..."
             self._color_hex = "#4A90E2"
+            self._classifier.reset()
 
     def triggerRedraw(self):
         self.setNeedsDisplay_(True)

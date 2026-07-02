@@ -14,7 +14,7 @@ from AppKit import (
     NSStatusBar,
     NSVariableStatusItemLength,
 )
-from Foundation import NSDate, NSObject, NSRunLoop
+from Foundation import NSObject, NSTimer
 from groq import Groq
 from pynput import keyboard
 
@@ -143,11 +143,15 @@ class VozMenuBar:
         self._status_item.setMenu_(menu)
 
     def run(self):
-        run_loop = NSRunLoop.currentRunLoop()
-        while True:
-            run_loop.runUntilDate_(
-                NSDate.dateWithTimeIntervalSinceNow_(0.1)
-            )
+        # NSRunLoop.runUntilDate_ processa timers/selectors mas NÃO despacha
+        # eventos de clique do AppKit — o menu da barra ficava morto. Só o
+        # event loop do NSApplication.run() entrega cliques ao status item.
+        # O timer devolve controle ao Python a cada 0.5s para o handler de
+        # SIGINT rodar (Ctrl+C em dev).
+        NSTimer.scheduledTimerWithTimeInterval_repeats_block_(
+            0.5, True, lambda timer: None
+        )
+        NSApplication.sharedApplication().run()
 
     def _start_listener(self):
         with keyboard.Listener(

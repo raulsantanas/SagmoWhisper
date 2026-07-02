@@ -1,6 +1,11 @@
 import pytest
 
-from src.core.audio_level import classify, rms_to_db, rms_to_level
+from src.core.audio_level import (
+    RecentPeakClassifier,
+    classify,
+    rms_to_db,
+    rms_to_level,
+)
 
 
 def test_rms_to_db_conversao_basica():
@@ -36,3 +41,53 @@ def test_classify_silencio_e_weak():
 
 def test_classify_grito_e_loud():
     assert classify(0.6) == "loud"     # ~-4.4dB
+
+
+class FakeClock:
+    def __init__(self):
+        self.now = 0.0
+
+    def __call__(self):
+        return self.now
+
+    def advance(self, seconds):
+        self.now += seconds
+
+
+def test_pausa_curta_entre_palavras_mantem_ok():
+    # Voz normal seguida de 1s de silêncio: o rótulo NÃO pode virar "weak"
+    clock = FakeClock()
+    classifier = RecentPeakClassifier(window_seconds=1.5, clock=clock)
+    assert classifier.classify(0.02) == "ok"
+    for _ in range(10):
+        clock.advance(0.1)
+        assert classifier.classify(0.001) == "ok"
+
+
+def test_silencio_sustentado_vira_weak():
+    clock = FakeClock()
+    classifier = RecentPeakClassifier(window_seconds=1.5, clock=clock)
+    classifier.classify(0.02)
+    clock.advance(2.0)  # pico de voz saiu da janela
+    assert classifier.classify(0.001) == "weak"
+
+
+def test_silencio_desde_o_inicio_e_weak():
+    clock = FakeClock()
+    classifier = RecentPeakClassifier(window_seconds=1.5, clock=clock)
+    assert classifier.classify(0.001) == "weak"
+
+
+def test_bloco_alto_vira_loud_imediatamente():
+    clock = FakeClock()
+    classifier = RecentPeakClassifier(window_seconds=1.5, clock=clock)
+    classifier.classify(0.02)
+    assert classifier.classify(0.6) == "loud"
+
+
+def test_reset_esquece_picos_anteriores():
+    clock = FakeClock()
+    classifier = RecentPeakClassifier(window_seconds=1.5, clock=clock)
+    classifier.classify(0.02)
+    classifier.reset()
+    assert classifier.classify(0.001) == "weak"
