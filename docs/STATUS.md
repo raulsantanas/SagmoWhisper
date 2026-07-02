@@ -46,21 +46,23 @@ o humano — instância deixada rodando ao final desta task.
 
 Arquitetura providers + settings nativa do macOS + Keychain (tasks 1-9):
 
-1. `<hash-T1>` — Contratos de provider (TranscriptionError, protocolos tipados).
-2. `<hash-T2>` — Suporte Keychain (secrets.py: set_api_key, get_api_key).
-3. `<hash-T3>` — Config novo (JSON persistente, override .env, migrate_env_key_if_needed).
-4. `<hash-T4>` — Provider Groq (Groq client factory, GroqTranscriber/GroqCleaner).
-5. `<hash-T5>` — Provider OpenAI (OpenAI client factory, OpenAITranscriber/OpenAICleaner).
-6. `<hash-T6>` — Provider Local (lazy-load faster-whisper, LocalTranscriber).
-7. `<hash-T7>` — Factory (build_components, test_connection, resolve_api_key).
-8. `<hash-T8>` — Settings window (nativa AppKit: provider, modelo, API key, hotkey, teste conexão).
-9. `<hash-T9>` — Menu "Configurações…" + aplicar na hora (config novo, ⚠️ sem API key).
+1. `a588ee8` — Contratos de provider (TranscriptionError, protocolos tipados).
+2. `b004fbf` — Suporte Keychain (secrets.py: set_api_key, get_api_key).
+3. `cce91cb` — Config novo (JSON persistente, override .env, migrate_env_key_if_needed).
+4. `ac6b63d` — Provider Groq (Groq client factory, GroqTranscriber/GroqCleaner).
+5. `09e5ac7` — Provider OpenAI (OpenAI client factory, OpenAITranscriber/OpenAICleaner).
+6. `b74bf29` — Provider Local (lazy-load faster-whisper, LocalTranscriber).
+7. `3461f81` — Factory (build_components, test_connection, resolve_api_key).
+8. `5e97208` — Settings window (nativa AppKit: provider, modelo, API key, hotkey, teste conexão).
+9. `5f1d1f2` — Menu "Configurações…" + aplicar na hora (config novo, ⚠️ sem API key).
 
 Verificado em 2026-07-02:
-- Testes: **84/84 green** (task 9: removidos 4 testes obsoletos de src/config.py antigo).
+- Testes: **83/83 green** (task 9: removidos 5 testes obsoletos de src/config.py antigo).
 - `ruff check`: sem erros (CC <= 4, LEI 8).
-- Fumaça: app sobe sem API key → ⚠️ no menu, clica "Configurações…", configura provider/hotkey,
-  salva → pipeline reconstruído na hora, tecla de atalho alterada sem reiniciar.
+- Fumaça interativa NÃO executada (exige cliques reais) — PENDENTE DE HUMANO antes do ship:
+  abrir "Configurações…", trocar provider (key some no Local), "Testar conexão" (✓/✗),
+  "Salvar" → "✓ Salvo e aplicado" + `cat ~/Library/Application\ Support/SagmoWhisper/config.json`
+  sem nenhuma key (confirmação runtime da LEI 9), hotkey aplicada sem reiniciar, Ctrl+C sem traceback.
 - Import clean: `python -c "from src.app import VozMenuBar; print('ok')"` ✓
 
 ## Trabalho não commitado
@@ -69,7 +71,7 @@ Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
 
 ## Testes (Milestone 2)
 
-- `pytest`: **84 passed** (2.3s).
+- `pytest`: **83 passed** (2.3s).
 - `ruff check src tests`: **All checks passed** (CC <= 4, LEI 8).
 - Cobertura: 100% em todos os módulos `src/core/*` (providers, config, secrets).
   Exemplos: `src/core/providers/base.py`, `src/core/providers/groq_provider.py`,
