@@ -17,7 +17,7 @@ class LocalTranscriber:
         self._model = None
 
     def _load_model(self):
-        # download automático do modelo no primeiro uso (aviso fica na UI)
+        # download automático do modelo no primeiro uso
         if self._model is not None:
             return self._model
         try:

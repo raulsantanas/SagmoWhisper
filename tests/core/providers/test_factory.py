@@ -90,3 +90,17 @@ def test_test_connection_despacha_para_o_provider(monkeypatch):
     )
     factory.test_connection("groq", "gsk_x")
     assert chamadas == [("groq", "gsk_x")]
+
+
+def test_build_components_provider_desconhecido_erro_tipado():
+    with pytest.raises(TranscriptionError) as exc:
+        factory.build_components(_cfg(provider="inexistente"))
+    assert "inexistente" in str(exc.value)
+    assert type(exc.value) is TranscriptionError
+
+
+def test_test_connection_provider_desconhecido_erro_tipado():
+    with pytest.raises(TranscriptionError) as exc:
+        factory.test_connection("inexistente", "chave")
+    assert "inexistente" in str(exc.value)
+    assert type(exc.value) is TranscriptionError

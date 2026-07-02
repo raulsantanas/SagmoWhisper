@@ -28,9 +28,18 @@ def resolve_api_key(
     return secrets.get_api_key(provider)
 
 
+def _provider_info(provider: str):
+    info = PROVIDER_CATALOG.get(provider)
+    if info is None:
+        raise TranscriptionError(
+            provider, "provider desconhecido; edite Configurações…"
+        )
+    return info
+
+
 def build_components(config: Config):
     """-> (transcriber, cleaner | None); cleaner None = sem limpeza."""
-    info = PROVIDER_CATALOG[config.provider]
+    info = _provider_info(config.provider)
     api_key = None
     if info.needs_api_key:
         api_key = resolve_api_key(config.provider)
@@ -76,4 +85,5 @@ def _build_cleaner(config: Config, api_key: str | None, info):
 
 
 def test_connection(provider: str, api_key: str | None) -> None:
+    _provider_info(provider)
     _MODULES[provider].test_connection(api_key or "")
