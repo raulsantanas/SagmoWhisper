@@ -220,7 +220,11 @@ class _OrbView(NSView):
 
 class OrbOverlay:
     def __init__(self):
-        visible = NSScreen.mainScreen().visibleFrame()
+        # screens()[0] é o monitor principal (o da barra de menu);
+        # mainScreen() seria a tela da janela com foco, que muda com o uso.
+        screens = NSScreen.screens()
+        primary = screens[0] if screens else NSScreen.mainScreen()
+        visible = primary.visibleFrame()
         x = visible.origin.x + 20
         y = visible.origin.y + visible.size.height - _WIN_H - 20
         self._window = (
@@ -306,9 +310,11 @@ class OrbOverlay:
 if __name__ == "__main__":
     # Fumaça manual: python -m src.macos.orb_overlay
     # 0-5s ouvindo com voz sintética; 5-7s transcrevendo; 7-9s erro; sai.
-    from AppKit import NSApplication
+    from AppKit import NSApplication, NSApplicationActivationPolicyAccessory
 
     app = NSApplication.sharedApplication()
+    # Accessory evita o ícone do Python no Dock durante a fumaça manual.
+    app.setActivationPolicy_(NSApplicationActivationPolicyAccessory)
     overlay = OrbOverlay()
     overlay.show()
     t0 = time.monotonic()
