@@ -73,3 +73,35 @@ def test_migracao_nao_roda_sem_key_no_env(tmp_path):
         path=tmp_path / "config.json", env={}, set_key=lambda *_: 1 / 0
     )
     assert ok is False
+
+
+def test_load_sem_env_explicito_le_o_ambiente_real(monkeypatch, tmp_path):
+    """Exercita Config.load() com env=None (linha 67: env = _real_env())"""
+    monkeypatch.setenv("HOTKEY", "F9")
+    # Limpar vars que podem estar no .env real para evitar flakiness
+    monkeypatch.delenv("PROVIDER", raising=False)
+    monkeypatch.delenv("TRANSCRIPTION_MODEL", raising=False)
+    monkeypatch.delenv("CLEANUP_MODEL", raising=False)
+    monkeypatch.delenv("LANGUAGE", raising=False)
+    monkeypatch.delenv("ENABLE_CLEANUP", raising=False)
+    monkeypatch.delenv("SAMPLE_RATE", raising=False)
+
+    cfg = Config.load(path=tmp_path / "config.json")
+    # Valida que o .env foi lido (sem env= explícito)
+    # e que a normalização para minúsculas funciona
+    assert cfg.hotkey == "f9"
+
+
+def test_migracao_sem_env_explicito_le_o_ambiente_real(monkeypatch, tmp_path):
+    """Exercita migrate_env_key_if_needed() com env=None.
+
+    Testa linha 90: env = _real_env()
+    """
+    monkeypatch.setenv("GROQ_API_KEY", "gsk_ambiente")
+    chamadas = []
+    ok = migrate_env_key_if_needed(
+        path=tmp_path / "config.json",
+        set_key=lambda prov, key: chamadas.append((prov, key)),
+    )
+    assert ok is True
+    assert chamadas == [("groq", "gsk_ambiente")]
