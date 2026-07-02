@@ -18,7 +18,7 @@ from AppKit import (
     NSWindowStyleMaskBorderless,
 )
 
-from src.bar_color import bar_color
+from src.core.audio_level import classify, rms_to_level
 
 _BAR_COUNT = 30
 _WIN_W = 320
@@ -26,6 +26,11 @@ _WIN_H = 80
 _BAR_MAX_H = 48
 _BAR_MIN_H = 4
 _MARGIN_LEFT = 16
+_STATE_STYLES = {
+    "weak": ("#F39C12", "⚠️ Áudio fraco"),
+    "loud": ("#E74C3C", "⚠️ Volume alto"),
+    "ok": ("#4A90E2", "🎙️ Ouvindo..."),
+}
 
 
 def _hex_to_nscolor(hex_color: str) -> NSColor:
@@ -56,8 +61,9 @@ class _WaveformView(NSView):
         with self._lock:
             if self._transcribing:
                 return
-            height = min(max(rms * 120, _BAR_MIN_H), _BAR_MAX_H)
-            color_hex, label = bar_color(rms)
+            level = rms_to_level(rms)
+            height = _BAR_MIN_H + level * (_BAR_MAX_H - _BAR_MIN_H)
+            color_hex, label = _STATE_STYLES[classify(rms)]
             self._bars.pop(0)
             self._bars.append(height)
             self._color_hex = color_hex
