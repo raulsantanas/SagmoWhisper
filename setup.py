@@ -24,7 +24,18 @@ setup(
     options={
         "py2app": {
             "plist": _PLIST,
-            "packages": ["numpy", "sounddevice", "soundfile", "src"],
+            # pynput e keyring escolhem backend por import dinâmico em runtime;
+            # o modulegraph do py2app não os enxerga — sem forçar o pacote
+            # inteiro, o .app quebra no launch (pynput.keyboard._darwin) ou ao
+            # acessar o Keychain (keyring.backends.macOS).
+            "packages": [
+                "numpy",
+                "sounddevice",
+                "soundfile",
+                "pynput",
+                "keyring",
+                "src",
+            ],
             "excludes": ["faster_whisper", "pytest", "ruff"],
         }
     },
