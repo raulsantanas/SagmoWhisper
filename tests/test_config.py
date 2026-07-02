@@ -25,7 +25,9 @@ def test_from_env_reads_all_vars(monkeypatch):
 
 
 @patch("src.config.load_dotenv")
-def test_from_env_raises_clear_error_when_api_key_missing(mock_load_dotenv, monkeypatch):
+def test_from_env_raises_clear_error_when_api_key_missing(
+    mock_load_dotenv, monkeypatch
+):
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
 
     with pytest.raises(ValueError, match="GROQ_API_KEY"):

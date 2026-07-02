@@ -76,6 +76,9 @@ class _WaveformView(NSView):
             self._label = "🎙️ Ouvindo..."
             self._color_hex = "#4A90E2"
 
+    def triggerRedraw(self):
+        self.setNeedsDisplay_(True)
+
     def _draw_content(self, rect):
         NSColor.clearColor().set()
         NSBezierPath.fillRect_(rect)
@@ -152,18 +155,27 @@ class WaveformOverlay:
         self._window.orderFront_(None)
 
     def hide(self):
+        def animate(ctx):
+            ctx.setDuration_(0.3)
+            self._window.animator().setAlphaValue_(0.0)
+
+        def complete():
+            self._window.orderOut_(None)
+            self._window.setAlphaValue_(1.0)
+
         NSAnimationContext.runAnimationGroup_completionHandler_(
-            lambda ctx: (ctx.setDuration_(0.3), self._window.animator().setAlphaValue_(0.0)),
-            lambda: self._window.orderOut_(None) or self._window.setAlphaValue_(1.0),
+            animate,
+            complete,
         )
 
     def set_transcribing(self):
         self._view.freeze()
 
     def update_bars(self, rms: float):
-        # Armazena rms sob lock e dispara redraw no main thread sem passar float como NSObject
+        # Armazena rms sob lock e dispara redraw no main thread sem passar
+        # float como NSObject
         with self._view._lock:
             self._view._pending_rms = rms
         self._view.performSelectorOnMainThread_withObject_waitUntilDone_(
-            "setNeedsDisplay:", True, False
+            "triggerRedraw", None, False
         )

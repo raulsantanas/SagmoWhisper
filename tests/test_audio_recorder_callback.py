@@ -22,9 +22,13 @@ def test_sample_callback_called_with_float_rms():
     assert rms_value > 0.0
 
     # DESIGN-001: Math correctness assertion
-    # For input [[0.3], [0.4], [0.5]], RMS = sqrt(mean([0.09, 0.16, 0.25])) = sqrt(0.1667) ≈ 0.4082
-    expected_rms = float(np.sqrt(np.mean(np.array([[0.3], [0.4], [0.5]], dtype=np.float32) ** 2)))
-    assert abs(rms_value - expected_rms) < 0.001, f"RMS mismatch: got {rms_value}, expected ≈ {expected_rms}"
+    # For input [[0.3], [0.4], [0.5]], RMS =
+    # sqrt(mean([0.09, 0.16, 0.25])) = sqrt(0.1667) ≈ 0.4082
+    audio_data = np.array([[0.3], [0.4], [0.5]], dtype=np.float32)
+    expected_rms = float(np.sqrt(np.mean(audio_data ** 2)))
+    assert (
+        abs(rms_value - expected_rms) < 0.001
+    ), f"RMS mismatch: got {rms_value}, expected ≈ {expected_rms}"
 
 
 def test_no_callback_does_not_raise():
