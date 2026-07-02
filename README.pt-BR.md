@@ -63,9 +63,9 @@ cp .env.example .env
 # edite .env e cole sua GROQ_API_KEY
 ```
 
-### Configuração
+## Configuração
 
-A partir do Milestone 2, a configuração oficial é feita pelo menu **🎙️ > Configurações…** (escolha de provider Groq/OpenAI/Local, modelo, tecla de atalho), com as API keys guardadas com segurança no **Keychain do macOS**. O arquivo `.env` agora é apenas um override de desenvolvimento.
+A configuração é feita pelo menu **🎙️ > Configurações…** (escolha de provider Groq/OpenAI/Local, modelo, tecla de atalho), com as API keys guardadas com segurança no **Keychain do macOS**. O arquivo `.env` agora é apenas um override de desenvolvimento.
 
 **Janela de Configurações** (preferências nativas do macOS):
 - Seleção de provider: Groq, OpenAI ou Local (faster-whisper)
@@ -103,27 +103,26 @@ após conceder.
 
 ## Uso
 
+1. Abra o **SagmoWhisper** em /Applications (ele também abre no login, quando
+   ativado) — o ícone 🎙️ aparece na barra de menu, sem ícone no Dock.
+2. Configure sua API key em **🎙️ > Configurações…** (guardada no Keychain
+   do macOS).
+3. Segure **F8**, fale, solte. O texto aparece no cursor.
+
+Se algo falhar, o ícone da barra vira ⚠️ — clique nele para ver a mensagem e o
+log (`~/Library/Logs/SagmoWhisper.log`). Para iniciar no login, use o checkbox
+**Abrir no login** em **🎙️ > Configurações…** (exige o app instalado).
+
+### Rodar do código (modo dev)
+
 ```bash
 source .venv/bin/activate
 python -m src.app
-```
 
-Segure F8, fale, solte. O texto aparece no cursor. Se algo falhar, o ícone da
-barra vira ⚠️ — clique nele para ver a mensagem e o log
-(`~/Library/Logs/SagmoWhisper.log`).
-
-### Rodar em background
-
-```bash
-source .venv/bin/activate
+# ou em background
 nohup python -m src.app > /tmp/sagmowhisper.log 2>&1 &
-
-# parar
-pkill -f "src.app"
+pkill -f "src.app"   # parar
 ```
-
-Para iniciar no login, use o checkbox **Abrir no login** em
-**🎙️ > Configurações…** (exige o app instalado).
 
 ## Desenvolvimento
 
@@ -141,7 +140,7 @@ design, para permitir um port Windows futuro.
 
 ## Roadmap
 
-- **Novo visual + empacotamento** — `pipx install sagmowhisper`, CI
+- **Port para Windows** — o core (`src/core/`) é agnóstico de plataforma por design
 
 ## Licença
 

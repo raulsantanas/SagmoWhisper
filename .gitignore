@@ -1,5 +1,9 @@
 .env
 .venv/
+
+# artefatos internos do processo de desenvolvimento (SDD) — não publicar
+.superpowers/
+docs/superpowers/
 __pycache__/
 *.wav
 *.pyc

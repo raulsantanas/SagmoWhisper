@@ -61,9 +61,9 @@ cp .env.example .env
 # edit .env and paste your GROQ_API_KEY
 ```
 
-### Configuration
+## Configuration
 
-Starting from Milestone 2, configuration is official via the menu **🎙️ > Configurações…** (provider Groq/OpenAI/Local, model, hotkey), with API keys securely stored in the **macOS Keychain**. The `.env` file is now a development override only.
+Configuration is done via the menu **🎙️ > Configurações…** (provider Groq/OpenAI/Local, model, hotkey), with API keys securely stored in the **macOS Keychain**. The `.env` file is now a development override only.
 
 **Settings window** (native macOS preferences):
 - Provider selection: Groq, OpenAI, or Local (faster-whisper)
@@ -101,27 +101,26 @@ app after granting them.
 
 ## Usage
 
+1. Open **SagmoWhisper** from /Applications (it also starts at login when
+   enabled) — a 🎙️ icon appears in the menu bar, with no Dock icon.
+2. Set your API key in **🎙️ > Configurações…** (stored in the macOS Keychain).
+3. Hold **F8**, speak, release. The text appears at your cursor.
+
+If anything fails, the menu-bar icon turns ⚠️ — click it for the error message
+and the log (`~/Library/Logs/SagmoWhisper.log`). To start at login, use the
+**Abrir no login** checkbox in **🎙️ > Configurações…** (requires the
+installed app).
+
+### Run from source (dev mode)
+
 ```bash
 source .venv/bin/activate
 python -m src.app
-```
 
-Hold F8, speak, release. The text appears at your cursor. If anything fails,
-the menu-bar icon turns ⚠️ — click it for the error message and the log
-(`~/Library/Logs/SagmoWhisper.log`).
-
-### Run in the background
-
-```bash
-source .venv/bin/activate
+# or in the background
 nohup python -m src.app > /tmp/sagmowhisper.log 2>&1 &
-
-# stop
-pkill -f "src.app"
+pkill -f "src.app"   # stop
 ```
-
-To start at login, use the **Abrir no login** checkbox in
-**🎙️ > Configurações…** (requires the installed app).
 
 ## Development
 
@@ -139,7 +138,7 @@ design to allow a future Windows port.
 
 ## Roadmap
 
-- **New visual + packaging** — `pipx install sagmowhisper`, CI
+- **Windows port** — the core (`src/core/`) is platform-agnostic by design
 
 ## License
 
