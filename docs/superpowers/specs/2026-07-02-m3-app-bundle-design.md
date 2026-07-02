@@ -36,9 +36,11 @@ e mesmo Info.plist). `install.sh`, LaunchAgent, Configurações e CI não mudam.
 
 ## Componentes
 
-### 1. `launcher.py` (raiz do repo)
+### 1. `SagmoWhisper.py` (raiz do repo)
 
-Ponto de entrada exigido pelo py2app:
+Ponto de entrada exigido pelo py2app. O nome do arquivo importa: o py2app nomeia
+o bundle pelo nome do script de entrada (`SagmoWhisper.py` → `SagmoWhisper.app`
+com binário `Contents/MacOS/SagmoWhisper`):
 
 ```python
 from src.app import main
@@ -50,10 +52,12 @@ main()
 
 Configuração py2app:
 
-- `app=["launcher.py"]`
+- `app=["SagmoWhisper.py"]`
 - `packages`: libs compiladas que o py2app não resolve sozinho (mínimo: `numpy`,
   `sounddevice`, `soundfile`, `_soundfile_data` se aplicável; ajustar
   empiricamente no primeiro build)
+- `excludes`: `faster_whisper` (decisão de escopo nº 3 — o provider Local não
+  embarca no bundle mesmo que esteja instalado no venv de quem builda)
 - Versão lida do `pyproject.toml` (fonte única — sem duplicar número)
 - `plist` inline:
   - `CFBundleIdentifier = "com.raulsantana.sagmowhisper"`
@@ -81,7 +85,8 @@ O comando único. Três modos:
 - **`./install.sh --build-only`** (CI): passos 1–4 e para; não toca em
   /Applications, login nem app rodando.
 - **`./install.sh --uninstall`**: remove `/Applications/SagmoWhisper.app`, desliga
-  o login (`python -m src.core.login_item disable`), remove o lock. **Preserva**
+  o login removendo o LaunchAgent (`rm -f` do plist — equivalente a
+  `login_item.disable`, sem depender de venv), remove o lock. **Preserva**
   `config.json` e chaves no Keychain; imprime instruções de como removê-los
   manualmente se a pessoa quiser (comando `security delete-generic-password` e
   `rm` do config).
