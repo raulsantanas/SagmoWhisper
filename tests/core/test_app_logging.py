@@ -1,4 +1,5 @@
 import logging
+import logging.handlers
 
 from src.core.app_logging import setup_logging
 
@@ -14,7 +15,10 @@ def test_setup_cria_arquivo_de_log(tmp_path):
     log_path = tmp_path / "logs" / "app.log"
     logger = setup_logging(log_path)
     logger.error("falha de teste")
-    logging.shutdown()
+    for handler in logger.handlers:
+        if isinstance(handler, logging.handlers.RotatingFileHandler):
+            handler.flush()
+            handler.close()
     assert log_path.exists()
     assert "falha de teste" in log_path.read_text()
 
