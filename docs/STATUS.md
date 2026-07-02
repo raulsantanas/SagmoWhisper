@@ -2,7 +2,7 @@
 
 > Última atualização: 2026-07-02
 
-## Estado atual: Overlay Orbe + Barras entregue — branch `feature/orb-overlay`
+## Estado atual: Milestone 2 (Providers + Settings + Keyring) — entregue — branch `feature/m2-providers-settings`
 
 Ditado por voz global no Mac. Segura F8 -> grava -> Groq Whisper transcreve ->
 (opcional) Groq Llama limpa -> cola no cursor de qualquer app via clipboard + Cmd+V.

@@ -13,8 +13,8 @@ dB scale and warnings when your mic signal is genuinely too weak or too loud.
 ## Features
 
 - **Push-to-talk dictation anywhere** — one hotkey (F8 by default), works in every app
-- **Fast, free transcription** — Groq Whisper (`whisper-large-v3-turbo`), free tier friendly
-- **Optional cleanup** — hesitations and punctuation fixed by `llama-3.1-8b-instant`
+- **Pluggable providers** — Groq, OpenAI or local faster-whisper, switchable in the native Settings window (API keys in the macOS Keychain)
+- **Optional cleanup** — hesitations and punctuation fixed by the provider's model
 - **Live orb overlay** — a pulsing AI-assistant-style orb with dB-scaled bars and weak/loud signal warnings
 - **Visible errors** — failures show a ⚠️ in the menu bar with a "Last error" entry and a one-click log
 - **Single instance** — a PID lock prevents duplicate menu-bar icons
@@ -44,13 +44,25 @@ cp .env.example .env
 # edit .env and paste your GROQ_API_KEY
 ```
 
-### Configuration (.env)
+### Configuration
+
+Starting from Milestone 2, configuration is official via the menu **🎙️ > Configurações…** (provider Groq/OpenAI/Local, model, hotkey), with API keys securely stored in the **macOS Keychain**. The `.env` file is now a development override only.
+
+**Settings window** (native macOS preferences):
+- Provider selection: Groq, OpenAI, or Local (faster-whisper)
+- API key (stored securely in Keychain, not in files)
+- Transcription and cleanup models (per provider)
+- Hotkey assignment
+- Cleanup enable/disable
+
+**Development overrides** (`.env` only):
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `GROQ_API_KEY` | — | **required** — your Groq API key |
-| `TRANSCRIPTION_MODEL` | `whisper-large-v3-turbo` | transcription model |
-| `CLEANUP_MODEL` | `llama-3.1-8b-instant` | cleanup model |
+| `PROVIDER` | `groq` | override provider (`groq`, `openai`, `local`) |
+| `OPENAI_API_KEY` | — | OpenAI dev override (dev only; production uses Keychain) |
+| `TRANSCRIPTION_MODEL` | per provider | override transcription model |
+| `CLEANUP_MODEL` | per provider | override cleanup model |
 | `LANGUAGE` | `pt` | transcription language (`en`, `pt`, …) |
 | `ENABLE_CLEANUP` | `true` | fix hesitations/punctuation |
 | `HOTKEY` | `f8` | push-to-talk key (`pynput.keyboard.Key`) |
@@ -107,8 +119,6 @@ design to allow a future Windows port.
 
 ## Roadmap
 
-- **Providers + Settings** — native preferences window, pluggable providers
-  (Groq / OpenAI / local faster-whisper), API keys stored in the macOS Keychain
 - **New visual + packaging** — `pipx install sagmowhisper`, CI
 
 ## License
