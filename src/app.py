@@ -1,3 +1,4 @@
+import atexit
 import signal
 import subprocess
 import sys
@@ -21,6 +22,11 @@ from src.audio_recorder import AudioRecorder
 from src.cleaner import Cleaner
 from src.config import Config
 from src.core.app_logging import setup_logging
+from src.core.single_instance import (
+    AlreadyRunningError,
+    acquire_lock,
+    release_lock,
+)
 from src.pipeline import DictationPipeline
 from src.text_injector import TextInjector
 from src.transcriber import Transcriber
@@ -33,6 +39,10 @@ ICON_ERROR = "⚠️"
 
 LOG_PATH = Path.home() / "Library" / "Logs" / "SagmoWhisper.log"
 logger = setup_logging(LOG_PATH)
+
+LOCK_PATH = (
+    Path.home() / "Library" / "Application Support" / "SagmoWhisper" / "app.lock"
+)
 
 
 class MainThreadDispatcher(NSObject):
@@ -199,6 +209,12 @@ class VozMenuBar:
 
 
 def main():
+    try:
+        acquire_lock(LOCK_PATH)
+    except AlreadyRunningError as e:
+        logger.error(str(e))
+        sys.exit(1)
+    atexit.register(release_lock, LOCK_PATH)
     NSApplication.sharedApplication().setActivationPolicy_(
         NSApplicationActivationPolicyAccessory
     )
