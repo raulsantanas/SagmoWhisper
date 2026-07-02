@@ -15,22 +15,22 @@ from AppKit import (
     NSVariableStatusItemLength,
 )
 from Foundation import NSObject, NSTimer
-from groq import Groq
 from pynput import keyboard
 
 from src.audio_recorder import AudioRecorder
-from src.cleaner import Cleaner
-from src.config import Config
 from src.core.app_logging import setup_logging
+from src.core.config import Config, migrate_env_key_if_needed
+from src.core.providers import factory
+from src.core.providers.base import TranscriptionError
 from src.core.single_instance import (
     AlreadyRunningError,
     acquire_lock,
     release_lock,
 )
 from src.macos.orb_overlay import OrbOverlay
+from src.macos.settings_window import SettingsWindowController
 from src.pipeline import DictationPipeline
 from src.text_injector import TextInjector
-from src.transcriber import Transcriber
 
 ICON_IDLE = "🎙️"
 ICON_RECORDING = "🔴"
@@ -77,6 +77,9 @@ class MainThreadDispatcher(NSObject):
     def openLog_(self, sender):
         subprocess.run(["open", str(LOG_PATH)])
 
+    def openSettings_(self, sender):
+        self._app._settings.show()
+
 
 class VozMenuBar:
     def __init__(self, config: Config):
@@ -84,26 +87,17 @@ class VozMenuBar:
         self._recording = False
         self._had_error = False
         self._overlay = OrbOverlay()
-        client = Groq(api_key=config.groq_api_key)
         self._recorder = AudioRecorder(
             config.sample_rate,
             sample_callback=self._overlay.update_bars,
         )
-        self._pipeline = DictationPipeline(
-            Transcriber(
-                client, config.transcription_model, config.language
-            ),
-            Cleaner(client, config.cleanup_model),
-            TextInjector(),
-            config.enable_cleanup,
-        )
-        hotkey_str = config.hotkey.lower()
-        try:
-            self._hotkey = getattr(keyboard.Key, hotkey_str)
-        except AttributeError:
-            self._hotkey = keyboard.KeyCode.from_char(
-                config.hotkey
+        self._pipeline = None
+        self._settings = (
+            SettingsWindowController.alloc().initWithConfig_onSave_(
+                config, self._apply_config
             )
+        )
+        self._hotkey = self._resolve_hotkey(config.hotkey)
 
         self._dispatcher = (
             MainThreadDispatcher.alloc().initWithApp_(self)
@@ -111,6 +105,7 @@ class VozMenuBar:
         self._status_item = self._create_status_item()
         self._set_title(ICON_IDLE)
         self._setup_menu()
+        self._rebuild_pipeline()
         threading.Thread(
             target=self._start_listener, daemon=True
         ).start()
@@ -131,6 +126,12 @@ class VozMenuBar:
         )
         self._error_item.setHidden_(True)
         menu.addItem_(self._error_item)
+
+        settings_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Configurações…", "openSettings:", ","
+        )
+        settings_item.setTarget_(self._dispatcher)
+        menu.addItem_(settings_item)
 
         open_log_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
             "Abrir log", "openLog:", ""
@@ -195,6 +196,11 @@ class VozMenuBar:
         try:
             audio_path = self._recorder.stop()
             self._had_error = False
+            if self._pipeline is None:
+                raise TranscriptionError(
+                    self._config.provider,
+                    "API key ausente. Configure em Configurações…",
+                )
             self._pipeline.run(audio_path)
         except Exception as e:
             logger.exception("Falha no ditado")
@@ -215,6 +221,36 @@ class VozMenuBar:
             "showErrorOnMainThread:", message, False
         )
 
+    def _resolve_hotkey(self, name: str):
+        try:
+            return getattr(keyboard.Key, name.lower())
+        except AttributeError:
+            return keyboard.KeyCode.from_char(name)
+
+    def _rebuild_pipeline(self):
+        try:
+            transcriber, cleaner = factory.build_components(self._config)
+        except TranscriptionError as e:
+            self._pipeline = None
+            logger.error("Pipeline indisponível: %s", e)
+            self._show_error(str(e))
+            return
+        self._pipeline = DictationPipeline(
+            transcriber,
+            cleaner,
+            TextInjector(),
+            enable_cleanup=cleaner is not None,
+        )
+
+    def _apply_config(self, new_config):
+        # chamado pela janela de Configurações (main thread) — aplica na hora
+        self._config = new_config
+        self._hotkey = self._resolve_hotkey(new_config.hotkey)
+        self._had_error = False
+        self._set_title(ICON_IDLE)
+        self._error_item.setHidden_(True)
+        self._rebuild_pipeline()
+
 
 def main():
     try:
@@ -227,7 +263,8 @@ def main():
         NSApplicationActivationPolicyAccessory
     )
     signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
-    VozMenuBar(Config.from_env()).run()
+    migrate_env_key_if_needed()
+    VozMenuBar(Config.load()).run()
 
 
 if __name__ == "__main__":

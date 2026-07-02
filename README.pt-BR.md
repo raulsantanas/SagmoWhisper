@@ -14,8 +14,8 @@ demais.
 ## Funcionalidades
 
 - **Ditado push-to-talk em qualquer lugar** — uma tecla (F8 por padrão), funciona em todo app
-- **Transcrição rápida e gratuita** — Groq Whisper (`whisper-large-v3-turbo`), roda no tier grátis
-- **Limpeza opcional** — hesitações e pontuação corrigidas pelo `llama-3.1-8b-instant`
+- **Providers plugáveis** — Groq, OpenAI ou faster-whisper local, trocáveis na janela nativa de Configurações (API keys no Keychain do macOS)
+- **Limpeza opcional** — hesitações e pontuação corrigidas pelo modelo do provider
 - **Orbe ao vivo** — orbe pulsante estilo assistente de IA com barras em escala dB e avisos de sinal fraco/alto
 - **Erros visíveis** — falhas viram ⚠️ na barra de menu, com "Último erro" e log em um clique
 - **Instância única** — lock por PID impede ícones duplicados na barra
@@ -45,13 +45,25 @@ cp .env.example .env
 # edite .env e cole sua GROQ_API_KEY
 ```
 
-### Configuração (.env)
+### Configuração
+
+A partir do Milestone 2, a configuração oficial é feita pelo menu **🎙️ > Configurações…** (escolha de provider Groq/OpenAI/Local, modelo, tecla de atalho), com as API keys guardadas com segurança no **Keychain do macOS**. O arquivo `.env` agora é apenas um override de desenvolvimento.
+
+**Janela de Configurações** (preferências nativas do macOS):
+- Seleção de provider: Groq, OpenAI ou Local (faster-whisper)
+- API key (guardada com segurança no Keychain, não em arquivos)
+- Modelos de transcrição e limpeza (por provider)
+- Atribuição de tecla de atalho
+- Ativar/desativar limpeza
+
+**Overrides de desenvolvimento** (`.env` apenas):
 
 | Variável | Default | Descrição |
 |----------|---------|-----------|
-| `GROQ_API_KEY` | — | **obrigatória** — sua chave Groq |
-| `TRANSCRIPTION_MODEL` | `whisper-large-v3-turbo` | modelo de transcrição |
-| `CLEANUP_MODEL` | `llama-3.1-8b-instant` | modelo de limpeza |
+| `PROVIDER` | `groq` | override de provider (`groq`, `openai`, `local`) |
+| `OPENAI_API_KEY` | — | override OpenAI dev (apenas dev; produção usa Keychain) |
+| `TRANSCRIPTION_MODEL` | por provider | override de modelo de transcrição |
+| `CLEANUP_MODEL` | por provider | override de modelo de limpeza |
 | `LANGUAGE` | `pt` | idioma da transcrição (`en`, `pt`, …) |
 | `ENABLE_CLEANUP` | `true` | limpar hesitações/pontuação |
 | `HOTKEY` | `f8` | tecla de gravação (`pynput.keyboard.Key`) |
@@ -108,8 +120,6 @@ design, para permitir um port Windows futuro.
 
 ## Roadmap
 
-- **Providers + Configurações** — janela nativa de preferências, providers
-  plugáveis (Groq / OpenAI / faster-whisper local), API keys no Keychain do macOS
 - **Novo visual + empacotamento** — `pipx install sagmowhisper`, CI
 
 ## Licença

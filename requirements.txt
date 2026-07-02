@@ -1,10 +1,12 @@
 groq
+openai
 sounddevice
 soundfile
 numpy
 pynput
 pyperclip
 python-dotenv
+keyring
 pytest
 pytest-cov
 ruff

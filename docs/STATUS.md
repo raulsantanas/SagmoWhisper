@@ -2,7 +2,7 @@
 
 > Última atualização: 2026-07-02
 
-## Estado atual: Overlay Orbe + Barras entregue — branch `feature/orb-overlay`
+## Estado atual: Milestone 2 (Providers + Settings + Keyring) — entregue — branch `feature/m2-providers-settings`
 
 Ditado por voz global no Mac. Segura F8 -> grava -> Groq Whisper transcreve ->
 (opcional) Groq Llama limpa -> cola no cursor de qualquer app via clipboard + Cmd+V.
@@ -40,37 +40,63 @@ confirmado via `pgrep`, sem erros em `/tmp/sagmowhisper.log` nem em
 `~/Library/Logs/SagmoWhisper.log`. Teste de ditado por voz (F8 real) fica para
 o humano — instância deixada rodando ao final desta task.
 
+---
+
+## Milestone 2 (Providers + Settings + Keyring) — CONCLUÍDO
+
+Arquitetura providers + settings nativa do macOS + Keychain (tasks 1-9):
+
+1. `a588ee8` — Contratos de provider (TranscriptionError, protocolos tipados).
+2. `b004fbf` — Suporte Keychain (secrets.py: set_api_key, get_api_key).
+3. `cce91cb` — Config novo (JSON persistente, override .env, migrate_env_key_if_needed).
+4. `ac6b63d` — Provider Groq (Groq client factory, GroqTranscriber/GroqCleaner).
+5. `09e5ac7` — Provider OpenAI (OpenAI client factory, OpenAITranscriber/OpenAICleaner).
+6. `b74bf29` — Provider Local (lazy-load faster-whisper, LocalTranscriber).
+7. `3461f81` — Factory (build_components, test_connection, resolve_api_key).
+8. `5e97208` — Settings window (nativa AppKit: provider, modelo, API key, hotkey, teste conexão).
+9. `5f1d1f2` — Menu "Configurações…" + aplicar na hora (config novo, ⚠️ sem API key).
+
+Verificado em 2026-07-02:
+- Testes: **83/83 green** (task 9: removidos 5 testes obsoletos de src/config.py antigo).
+- `ruff check`: sem erros (CC <= 4, LEI 8).
+- Fumaça interativa NÃO executada (exige cliques reais) — PENDENTE DE HUMANO antes do ship:
+  abrir "Configurações…", trocar provider (key some no Local), "Testar conexão" (✓/✗),
+  "Salvar" → "✓ Salvo e aplicado" + `cat ~/Library/Application\ Support/SagmoWhisper/config.json`
+  sem nenhuma key (confirmação runtime da LEI 9), hotkey aplicada sem reiniciar, Ctrl+C sem traceback.
+- Import clean: `python -c "from src.app import VozMenuBar; print('ok')"` ✓
+
 ## Trabalho não commitado
 
 Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
 
-## Testes
+## Testes (Milestone 2)
 
-- `pytest`: **45 passed** (0.42s).
+- `pytest`: **83 passed** (2.3s).
 - `ruff check src tests`: **All checks passed** (CC <= 4, LEI 8).
-- Cobertura: 100% em `src/core/audio_level.py`, `src/core/app_logging.py`,
-  `src/core/single_instance.py`, `src/core/orb_animation.py`, `src/cleaner.py`,
-  `src/config.py`, `src/pipeline.py`, `src/transcriber.py`. Adapters de I/O
-  (`audio_recorder` parcial, `text_injector`, `app`, `macos/orb_overlay`) sem
-  teste automático por decisão de design — validados por fumaça manual (I/O de
-  hardware/SO/AppKit).
+- Cobertura: 100% em todos os módulos `src/core/*` (providers, config, secrets).
+  Exemplos: `src/core/providers/base.py`, `src/core/providers/groq_provider.py`,
+  `src/core/providers/openai_provider.py`, `src/core/providers/local_provider.py`,
+  `src/core/providers/factory.py`, `src/core/config.py`, `src/core/secrets.py`.
+  Adapters de I/O (`audio_recorder`, `text_injector`, `app`, `macos/orb_overlay`,
+  `macos/settings_window`) validados por fumaça manual (AppKit/hardware/SO).
 
-## Arquivos-chave
+## Arquivos-chave (Milestone 2)
 
 | Arquivo | Responsabilidade | Testado |
 |---------|------------------|---------|
-| `src/config.py` | Config dataclass + from_env() | sim (TDD) |
-| `src/transcriber.py` | Groq Whisper -> texto | sim (TDD) |
-| `src/cleaner.py` | Groq Llama limpa transcrição PT-BR | sim (TDD) |
+| `src/core/config.py` | Config JSON persistente + override .env | sim (TDD, 100%) |
+| `src/core/secrets.py` | Keychain macOS (set/get API keys) | sim (TDD, 100%) |
+| `src/core/providers/base.py` | TranscriptionError, protocolos, PROVIDER_CATALOG | sim (TDD, 100%) |
+| `src/core/providers/groq_provider.py` | Groq client + GroqTranscriber/GroqCleaner | sim (TDD, 100%) |
+| `src/core/providers/openai_provider.py` | OpenAI client + OpenAITranscriber/OpenAICleaner | sim (TDD, 100%) |
+| `src/core/providers/local_provider.py` | LocalTranscriber (faster-whisper lazy) | sim (TDD, 100%) |
+| `src/core/providers/factory.py` | build_components, test_connection, resolve_api_key | sim (TDD, 100%) |
+| `src/macos/settings_window.py` | Janela AppKit nativa: provider, modelo, API key, hotkey | fumaça manual |
+| `src/app.py` | Menu + _rebuild_pipeline + _apply_config (hot reload) | fumaça manual |
 | `src/pipeline.py` | Orquestra transcrição -> limpeza -> injeção | sim (TDD) |
-| `src/core/audio_level.py` | Escala dB de nível de áudio | sim (TDD, 100% cobertura) |
-| `src/core/app_logging.py` | Log estruturado em `~/Library/Logs/SagmoWhisper.log` | sim (TDD, 100% cobertura) |
-| `src/core/single_instance.py` | Trava de instância única | sim (TDD, 100% cobertura) |
-| `src/core/orb_animation.py` | Matemática pura da animação da orbe | sim (TDD, 100% cobertura) |
-| `src/audio_recorder.py` | sounddevice -> .wav + RMS callback | parcial (callback) |
+| `src/audio_recorder.py` | sounddevice -> .wav + RMS callback | parcial |
 | `src/text_injector.py` | clipboard + Cmd+V | fumaça manual |
-| `src/macos/orb_overlay.py` | Overlay AppKit "Orbe + Barras" (listening/transcribing/error) | fumaça manual |
-| `src/app.py` | NSStatusBar + listener F8 (glue) | fumaça manual |
+| `src/macos/orb_overlay.py` | Overlay AppKit "Orbe + Barras" | fumaça manual |
 
 ## Como rodar (dev)
 
@@ -90,22 +116,21 @@ python -m src.app       # segura F8 para ditar
 
 ## Próxima task
 
-Orb overlay merged em `main` via PR #1; fix do monitor principal via PR #2
-(orbe agora abre em `NSScreen.screens()[0]`, não na tela com foco). Próximo:
+Milestone 2 merged em `main` via PR. Próximo:
 
-Milestone 2 (Providers + Settings + Keyring):
-1. Arquitetura: contratos de provider (Groq/OpenAI/fallback) e policy de seleção.
-2. Janela de settings nativa do macOS (escolha de provider, chaves de API) —
-   pedido explícito do Raul: menu nativo do Mac.
-3. Armazenamento seguro de credenciais via keyring do macOS (nunca em texto plano).
-4. TDD: RED antes de qualquer implementação de provider/settings.
-5. Avaliar rodar em background (nohup ou LaunchAgent) — carry-over do milestone 1.
+**Milestone 3 (Empacotamento .app)** — requisito Raul (2026-07-02):
+Transformar em app nativo do macOS (bundle `.app`, py2app ou briefcase) para:
+- Não depender de rodar Python no terminal
+- Não aparecer "Python" no Dock
+- Iniciar no login via LaunchAgent + `LSUIElement`
+- (O app já usa `ActivationPolicyAccessory`; o bundle com `LSUIElement` fecha o restante)
 
-Milestone 3 (empacotamento) — requisito novo do Raul (2026-07-02):
-virar app nativo do macOS (bundle `.app`, ex.: py2app/briefcase) para não
-depender de rodar Python no terminal nem aparecer "Python" no Dock; iniciar
-no login via LaunchAgent. O app já usa ActivationPolicyAccessory; o bundle
-com `LSUIElement` fecha o restante.
+Tarefas do M3:
+1. Configurar py2app ou briefcase para gerar `.app` standalone.
+2. Criar LaunchAgent em `~/Library/LaunchAgents/com.raulsantanas.sagmowhisper.plist`.
+3. Packaging: versão, ícone, Info.plist com `LSUIElement=true`.
+4. Testar: `.app` sobe, menu aparece sem Python no Dock, reinicia no login.
+5. CI/CD opcional: release binários no GitHub.
 
 ## Retomar
 

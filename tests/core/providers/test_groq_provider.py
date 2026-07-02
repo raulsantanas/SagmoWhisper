@@ -1,0 +1,110 @@
+from types import SimpleNamespace
+
+import pytest
+from groq import Groq
+
+from src.core.providers.base import CLEANUP_SYSTEM_PROMPT, TranscriptionError
+from src.core.providers.groq_provider import (
+    GroqCleaner,
+    GroqTranscriber,
+    make_client,
+)
+
+
+class _FakeClient:
+    def __init__(self, text="  olá mundo  ", fail=False):
+        self.calls = []
+        fake = self
+
+        def create(**kwargs):
+            fake.calls.append(kwargs)
+            if fail:
+                raise RuntimeError("401 invalid api key")
+            return SimpleNamespace(
+                text=text,
+                choices=[
+                    SimpleNamespace(message=SimpleNamespace(content=text))
+                ],
+            )
+
+        self.audio = SimpleNamespace(
+            transcriptions=SimpleNamespace(create=create)
+        )
+        self.chat = SimpleNamespace(
+            completions=SimpleNamespace(create=create)
+        )
+
+
+def test_transcribe_retorna_texto_limpo(tmp_path):
+    audio = tmp_path / "fala.wav"
+    audio.write_bytes(b"RIFFfake")
+    t = GroqTranscriber(_FakeClient(), "whisper-large-v3-turbo", "pt")
+
+    assert t.transcribe(audio) == "olá mundo"
+
+
+def test_transcribe_passa_modelo_lingua_e_nome_do_arquivo(tmp_path):
+    audio = tmp_path / "fala.wav"
+    audio.write_bytes(b"RIFFfake")
+    client = _FakeClient()
+    GroqTranscriber(client, "whisper-large-v3", "pt").transcribe(audio)
+
+    call = client.calls[0]
+    assert call["model"] == "whisper-large-v3"
+    assert call["language"] == "pt"
+    assert call["file"][0] == "fala.wav"
+
+
+def test_transcribe_embrulha_falha_em_transcription_error(tmp_path):
+    audio = tmp_path / "fala.wav"
+    audio.write_bytes(b"RIFFfake")
+    t = GroqTranscriber(_FakeClient(fail=True), "m", "pt")
+
+    with pytest.raises(TranscriptionError) as exc:
+        t.transcribe(audio)
+    assert exc.value.provider == "groq"
+    assert "401" in exc.value.detail
+
+
+def test_clean_usa_prompt_e_temperatura_baixa():
+    client = _FakeClient(text="texto corrigido")
+    result = GroqCleaner(client, "llama-3.1-8b-instant").clean("texto bruto")
+
+    assert result == "texto corrigido"
+    call = client.calls[0]
+    assert call["temperature"] == 0.2
+    assert call["messages"][0] == {
+        "role": "system",
+        "content": CLEANUP_SYSTEM_PROMPT,
+    }
+    assert call["messages"][1] == {"role": "user", "content": "texto bruto"}
+
+
+def test_clean_embrulha_falha_em_transcription_error():
+    c = GroqCleaner(_FakeClient(fail=True), "m")
+    with pytest.raises(TranscriptionError) as exc:
+        c.clean("x")
+    assert exc.value.provider == "groq"
+
+
+def test_test_connection_ok_nao_levanta():
+    from src.core.providers.groq_provider import test_connection
+
+    fake = SimpleNamespace(models=SimpleNamespace(list=lambda: []))
+    test_connection("gsk_x", client_factory=lambda key: fake)
+
+
+def test_test_connection_falha_vira_transcription_error():
+    from src.core.providers.groq_provider import test_connection
+
+    def boom(key):
+        raise RuntimeError("rede fora")
+
+    with pytest.raises(TranscriptionError) as exc:
+        test_connection("gsk_x", client_factory=boom)
+    assert exc.value.provider == "groq"
+
+
+def test_make_client_retorna_cliente_groq():
+    client = make_client("gsk_x")
+    assert isinstance(client, Groq)
