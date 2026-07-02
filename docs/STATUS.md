@@ -90,15 +90,22 @@ python -m src.app       # segura F8 para ditar
 
 ## Próxima task
 
-`feature/orb-overlay` está pronta para merge em `main` (3 tasks concluídas,
-suíte verde, fumaça real validada). Depois do merge, próximo milestone:
+Orb overlay merged em `main` via PR #1; fix do monitor principal via PR #2
+(orbe agora abre em `NSScreen.screens()[0]`, não na tela com foco). Próximo:
 
 Milestone 2 (Providers + Settings + Keyring):
 1. Arquitetura: contratos de provider (Groq/OpenAI/fallback) e policy de seleção.
-2. Janela de settings (escolha de provider, chaves de API).
+2. Janela de settings nativa do macOS (escolha de provider, chaves de API) —
+   pedido explícito do Raul: menu nativo do Mac.
 3. Armazenamento seguro de credenciais via keyring do macOS (nunca em texto plano).
 4. TDD: RED antes de qualquer implementação de provider/settings.
 5. Avaliar rodar em background (nohup ou LaunchAgent) — carry-over do milestone 1.
+
+Milestone 3 (empacotamento) — requisito novo do Raul (2026-07-02):
+virar app nativo do macOS (bundle `.app`, ex.: py2app/briefcase) para não
+depender de rodar Python no terminal nem aparecer "Python" no Dock; iniciar
+no login via LaunchAgent. O app já usa ActivationPolicyAccessory; o bundle
+com `LSUIElement` fecha o restante.
 
 ## Retomar
 
