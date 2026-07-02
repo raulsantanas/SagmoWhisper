@@ -215,8 +215,20 @@ o app (ou `tccutil reset <serviço> com.raulsantana.sagmowhisper`). Feito isso
 e reaberto o app, **ditado F8 voltou a funcionar** (confirmado pelo Raul).
 Gotcha documentado nos READMEs e no output final do install.sh.
 
+## Bugfix (2026-07-02, ~20h): limpeza respondia perguntas ditadas
+
+Uso real revelou: ditar uma pergunta fazia o app colar uma RESPOSTA, não a
+transcrição — o modelo de limpeza (llama-3.1-8b-instant) tratava o texto como
+pergunta dirigida a ele, apesar da proibição no system prompt. Fix (TDD, RED
+primeiro): regra explícita nova no prompt + few-shot em `CLEANUP_EXAMPLES`
+(pergunta ditada → pergunta transcrita) via `cleanup_messages()` compartilhada
+em `base.py`, usada pelos cleaners Groq e OpenAI (DRY). Suíte: 94 passed.
+⚠️ O fix só chega ao app instalado após reinstalar (`./install.sh`) — e
+reinstalar exige remover/readicionar as permissões TCC (ver READMEs).
+
 ## Próxima task
 
+- [ ] Reinstalar o app com o fix da limpeza (`./install.sh` + dança das permissões TCC) e re-testar ditando uma pergunta (HUMANO)
 - [ ] Reiniciar o Mac → app abre sozinho (RunAtLoad) — último item da fumaça (HUMANO)
 - [ ] Exercitar o toggle do checkbox "Abrir no login" (desmarcar/remarcar cria/remove o plist)
 

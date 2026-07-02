@@ -2,7 +2,7 @@ from pathlib import Path
 
 from groq import Groq
 
-from src.core.providers.base import CLEANUP_SYSTEM_PROMPT, TranscriptionError
+from src.core.providers.base import TranscriptionError, cleanup_messages
 
 
 class GroqTranscriber:
@@ -34,10 +34,7 @@ class GroqCleaner:
             completion = self._client.chat.completions.create(
                 model=self._model,
                 temperature=0.2,
-                messages=[
-                    {"role": "system", "content": CLEANUP_SYSTEM_PROMPT},
-                    {"role": "user", "content": text},
-                ],
+                messages=cleanup_messages(text),
             )
         except Exception as e:
             raise TranscriptionError("groq", str(e)) from e
