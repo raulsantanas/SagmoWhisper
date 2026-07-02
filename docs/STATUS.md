@@ -136,15 +136,29 @@ Verificado em 2026-07-02:
 - `install.sh --uninstall`: ✓ (remove app + plist, preserva settings/Keychain).
 - CI workflow criado (`.github/workflows/ci.yml`) mas **NÃO YET EXECUTED** — primeira
   execução será no PR desta milestone.
-- Full `./install.sh` (build + kill dev + instala + abre): PENDENTE, gate humano abaixo.
 
-Fumaça manual PENDENTE DE HUMANO antes do ship:
-- [ ] `.app` sobe, ícone 🎙️ na barra (sem Dock, sem "Python" visível)
-- [ ] Conceder Acessibilidade + Monitoramento de Entrada ao bundle
-- [ ] Prompt de Microfone na 1ª gravação
-- [ ] Checkbox "Abrir no login" habilitado + marcado; desmarcar/remarcar cria/remove plist
-- [ ] Ditado F8 real pelo bundle
-- [ ] Reiniciar Mac → app abre sozinho (RunAtLoad)
+### Pós-merge (2026-07-02): bug de launch encontrado e corrigido
+
+O gate humano pegou um bug real: o primeiro `./install.sh` completo instalou e
+abriu o app, mas o launch quebrava com o diálogo "Launch error" do py2app —
+`ImportError: No module named 'pynput.keyboard._darwin'`. Causa: pynput (e
+keyring) escolhem backend por import dinâmico em runtime, invisível ao
+modulegraph do py2app; o build passava, só o launch real falhava.
+
+Fix em `fix/py2app-pynput-backend` (PR #7): adiciona `pynput` e `keyring` à
+lista `packages` do py2app. Verificado com rebuild + reinstalação real:
+binário roda sem traceback e o app permanece vivo.
+
+Fumaça — estado real:
+- [x] `./install.sh` completo (matou instância dev PID 81214, instalou, abriu)
+- [x] `.app` sobe e permanece rodando sem erro (pós-fix; processo confirmado via pgrep)
+- [x] LaunchAgent criado em ~/Library/LaunchAgents/ com "Abrir no login" ligado
+- [ ] Confirmar visual: ícone 🎙️ na barra, sem Dock, sem "Python" (HUMANO)
+- [ ] Conceder Acessibilidade + Monitoramento de Entrada ao SagmoWhisper (HUMANO)
+- [ ] Prompt de Microfone na 1ª gravação (HUMANO)
+- [ ] Checkbox "Abrir no login" habilitado + marcado; desmarcar/remarcar cria/remove plist (HUMANO)
+- [ ] Ditado F8 real pelo bundle (HUMANO)
+- [ ] Reiniciar Mac → app abre sozinho (RunAtLoad) (HUMANO)
 
 Novo arquivo-chave: `src/core/login_item.py` (LaunchAgent, TDD 100%).
 
