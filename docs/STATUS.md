@@ -2,34 +2,41 @@
 
 > Última atualização: 2026-07-02
 
-## Estado atual: MVP funcional, verificado rodando — trabalho não commitado pendente
+## Estado atual: Milestone 1 (Fundação) entregue — branch `main` criado
 
 Ditado por voz global no Mac. Segura F8 -> grava -> Groq Whisper transcreve ->
 (opcional) Groq Llama limpa -> cola no cursor de qualquer app via clipboard + Cmd+V.
+
+Milestone 1 (Fundação) concluído em `feature/voz-mvp-ditado`, branch `main` criado
+apontando para o mesmo HEAD (`1e5ff11`):
+
+1. `bbf9875` — `audio_level` com escala dB (corrige sensibilidade do waveform).
+2. `307c2ba` — overlay usa escala dB, amplitude de voz normal visível.
+3. `b3bddb1` — erros de ditado vão para `~/Library/Logs/SagmoWhisper.log`.
+4. `72906f6` — fecha só o handler do logger em vez de `logging.shutdown()` global.
+5. `d07a5fc` — erro de ditado vira ⚠️ na barra com "Último erro" e "Abrir log".
+6. `1e5ff11` — trava de instância única, impede ícones duplicados na barra.
+7. `docs: checkpoint do milestone 1 (fundação) em main` — este commit.
 
 Verificado em 2026-07-02:
 - `python -m src.app` sobe sem erro e permanece rodando.
 - Permissões macOS concedidas ao host do terminal: Accessibility ✓, Input Monitoring ✓, Microfone ✓ (device: C270 HD WEBCAM).
 - `.env` com GROQ_API_KEY válida; `VOZ_ENABLE_CLEANUP` desligado.
+- `rumps` removido (migração para AppKit puro concluída e commitada).
 
-## Trabalho não commitado (6 arquivos, +157/-27)
+## Trabalho não commitado
 
-Migração de `rumps` para AppKit puro (NSStatusBar + MainThreadDispatcher),
-notificação de erro via NSUserNotification, tratamento de SIGINT, fade-out do
-overlay refeito sem lambdas com efeito colateral.
-
-Pendências antes do commit:
-1. `requirements.txt` ainda lista `rumps`, mas `src/app.py` não usa mais — remover a linha.
-2. Fumaça manual do fluxo completo (F8 -> falar -> soltar -> texto colado).
-3. Commit no branch `feature/voz-mvp-ditado` (único branch — não existe `main` nem remote).
+Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
 
 ## Testes
 
-- `pytest`: **22 passed** (0.38s).
-- `ruff check src tests`: **All checks passed** (CC <= 4, LEI 8).
-- Cobertura: 100% nas unidades puras (config, transcriber, cleaner, pipeline, bar_color).
-  Adapters de I/O (audio_recorder parcial, text_injector, app, waveform_overlay) sem teste
-  automático por decisão de design — validados por fumaça manual (I/O de hardware/SO).
+- `pytest`: **32 passed** (0.41s).
+- `ruff check .`: **All checks passed** (CC <= 4, LEI 8).
+- Cobertura: 100% em `src/core/audio_level.py`, `src/core/app_logging.py`,
+  `src/core/single_instance.py`, `src/cleaner.py`, `src/config.py`, `src/pipeline.py`,
+  `src/transcriber.py`. Adapters de I/O (`audio_recorder` parcial, `text_injector`,
+  `app`, `waveform_overlay`) sem teste automático por decisão de design — validados
+  por fumaça manual (I/O de hardware/SO).
 
 ## Arquivos-chave
 
@@ -63,10 +70,12 @@ python -m src.app       # segura F8 para ditar
 
 ## Próxima task
 
-1. Fumaça manual do fluxo F8 de ponta a ponta.
-2. Remover `rumps` de `requirements.txt` e commitar a migração AppKit.
-3. Criar branch `main` e fazer merge do feature branch.
-4. Avaliar rodar em background (nohup ou LaunchAgent).
+Milestone 2 (Providers + Settings + Keyring):
+1. Arquitetura: contratos de provider (Groq/OpenAI/fallback) e policy de seleção.
+2. Janela de settings (escolha de provider, chaves de API).
+3. Armazenamento seguro de credenciais via keyring do macOS (nunca em texto plano).
+4. TDD: RED antes de qualquer implementação de provider/settings.
+5. Avaliar rodar em background (nohup ou LaunchAgent) — carry-over do milestone 1.
 
 ## Retomar
 
