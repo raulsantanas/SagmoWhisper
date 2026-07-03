@@ -66,6 +66,15 @@ def test_soltar_f8_para_transcreve_e_anuncia():
     assert any("olá mundo" in m for m in echoed)
 
 
+def test_soltar_tecla_diferente_durante_gravacao_nao_interrompe():
+    pipeline = _SpyPipeline()
+    app, recorder, _ = _app(pipeline)
+    app.on_press(HOTKEY)
+    app.on_release(OUTRA_TECLA)
+    assert recorder.calls == ["start"]
+    assert pipeline.calls == []
+
+
 def test_soltar_sem_ter_gravado_nao_faz_nada():
     pipeline = _SpyPipeline()
     app, recorder, _ = _app(pipeline)

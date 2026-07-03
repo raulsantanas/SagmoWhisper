@@ -3,6 +3,7 @@
 No Mac estes testes são pulados: o alvo é exatamente o backend X11.
 """
 import sys
+import time
 
 import pytest
 
@@ -16,6 +17,7 @@ def test_clipboard_real_faz_roundtrip_com_acentos():
     import pyperclip
 
     pyperclip.copy("olá, transcrição com acentuação çãé")
+    time.sleep(0.05)
     assert pyperclip.paste() == "olá, transcrição com acentuação çãé"
 
 

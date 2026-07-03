@@ -257,6 +257,14 @@ Verificado em 2026-07-02:
 - CI ainda NÃO rodou nesta branch (workflow dispara em push para main ou em pull_request) — pendente: abrir o PR e confirmar os 4 jobs verdes: test (macOS), build (.app py2app), test-linux (Ubuntu + Xvfb), install-linux (fumaça do install-linux.sh).
 - Pendente: fumaça humana do Raul num Ubuntu real (F8 → grava → transcreve → cola) para remover o selo Beta dos READMEs.
 
+Débitos aceitos na revisão final (não bloqueantes):
+- Type hint de retorno ausente em `resolve_hotkey`.
+- `UNIT_PATH` do `login_service` (Linux) resolvido em import-time, não lazy.
+- Teste de Ctrl+V (`test_emitir_ctrl_v_no_display_virtual_nao_falha`) só verifica ausência de exceção — limitação do Xvfb, não valida o conteúdo colado.
+- Echos do `install-linux.sh` usam unicode (emojis/acentos) sem normalização para terminais que não suportam.
+- Assimetria de nome: `login_item.py` (macOS) vs `login_service.py` (Linux) — mesmo papel, nomes diferentes.
+- `src/macos` é empacotado mesmo quando o instalador Linux não o utiliza.
+
 ## Trabalho não commitado
 
 Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
