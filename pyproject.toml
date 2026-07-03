@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sagmowhisper"
 version = "0.1.0"
-description = "Ditado por voz global no Mac: F8 -> Groq Whisper -> cola no cursor"
+description = "Ditado por voz global: F8 -> Whisper -> cola no cursor (macOS e Ubuntu)"
 requires-python = ">=3.11"
 dependencies = [
     "groq",
