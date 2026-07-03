@@ -1,4 +1,4 @@
-# SagmoWhisper — global voice dictation for macOS
+# SagmoWhisper — global voice dictation for macOS (native app) and Ubuntu Linux (CLI, beta)
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
@@ -60,6 +60,39 @@ pip install -r requirements.txt
 cp .env.example .env
 # edit .env and paste your GROQ_API_KEY
 ```
+
+## Linux (Ubuntu) — Beta
+
+SagmoWhisper also works on Ubuntu as a command-line app: hold F8, speak,
+release — the text is pasted at your cursor (Ctrl+V), in any window.
+
+> **Beta:** the full test suite and a real X11 clipboard/paste integration
+> test run on Ubuntu in CI, but end-to-end dictation with a microphone has
+> not yet been smoke-tested on physical hardware.
+
+**Requirements:** Ubuntu 22.04+ with an **"Ubuntu on Xorg"** session.
+Default Ubuntu uses Wayland, which blocks global hotkeys — at the login
+screen, click the gear icon (bottom-right) and pick "Ubuntu on Xorg".
+The app detects Wayland and tells you exactly this if you forget.
+
+**Install:**
+
+```bash
+./install-linux.sh     # installs system deps (asks for sudo) + the app
+sagmowhisper setup     # interactive wizard: provider, API key, options
+sagmowhisper run       # hold F8 to dictate; Ctrl+C to quit
+```
+
+Your API key is stored in the system keyring (SecretService), never in a
+file. Config lives in `~/.config/sagmowhisper/config.json`.
+
+**Start on login:** the setup wizard offers it, or run
+`sagmowhisper login on` / `off` / `status` (systemd user service).
+
+**Uninstall:** `./install-linux.sh --uninstall` (keeps your config and key).
+
+**Limitations (for now):** no menu-bar icon or settings window on Linux
+(feedback is printed in the terminal); native Wayland is not supported.
 
 ## Configuration
 

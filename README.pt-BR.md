@@ -1,4 +1,4 @@
-# SagmoWhisper — ditado por voz global no macOS
+# SagmoWhisper — ditado por voz global para macOS (app nativo) e Linux Ubuntu (linha de comando, beta)
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -62,6 +62,41 @@ pip install -r requirements.txt
 cp .env.example .env
 # edite .env e cole sua GROQ_API_KEY
 ```
+
+## Linux (Ubuntu) — Beta
+
+O SagmoWhisper também funciona no Ubuntu como app de linha de comando:
+segure F8, fale, solte — o texto é colado no cursor (Ctrl+V), em
+qualquer janela.
+
+> **Beta:** a suíte completa de testes e um teste real de integração
+> X11 (clipboard/colar) rodam em Ubuntu no CI, mas o ditado de ponta a
+> ponta com microfone ainda não passou por teste humano em máquina real.
+
+**Requisitos:** Ubuntu 22.04+ com sessão **"Ubuntu on Xorg"**. O Ubuntu
+padrão usa Wayland, que bloqueia teclas de atalho globais — na tela de
+login, clique na engrenagem (canto inferior direito) e escolha
+"Ubuntu on Xorg". Se esquecer, o app detecta o Wayland e te avisa com
+essas mesmas instruções.
+
+**Instalação:**
+
+```bash
+./install-linux.sh     # instala dependências do sistema (pede sudo) + o app
+sagmowhisper setup     # assistente: provider, chave de API, opções
+sagmowhisper run       # segure F8 para ditar; Ctrl+C para sair
+```
+
+Sua chave de API fica no cofre de senhas do sistema (SecretService),
+nunca em arquivo. A config fica em `~/.config/sagmowhisper/config.json`.
+
+**Abrir no login:** o assistente oferece, ou use
+`sagmowhisper login on` / `off` / `status` (serviço systemd de usuário).
+
+**Desinstalar:** `./install-linux.sh --uninstall` (preserva config e chave).
+
+**Limitações (por ora):** sem ícone de barra nem janela de ajustes no
+Linux (o feedback aparece no terminal); Wayland nativo não suportado.
 
 ## Configuração
 

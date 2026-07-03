@@ -4,6 +4,7 @@ API keys NUNCA entram neste JSON — vivem no Keychain (src/core/secrets.py).
 """
 import json
 import os
+import sys
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -12,10 +13,20 @@ from dotenv import load_dotenv
 
 from src.core import secrets
 
-DEFAULT_CONFIG_PATH = (
-    Path.home() / "Library" / "Application Support" / "SagmoWhisper"
-    / "config.json"
-)
+def default_config_path(
+    platform: str = sys.platform, env: Mapping | None = None
+) -> Path:
+    if platform == "darwin":
+        return (
+            Path.home() / "Library" / "Application Support"
+            / "SagmoWhisper" / "config.json"
+        )
+    env = os.environ if env is None else env
+    base = Path(env.get("XDG_CONFIG_HOME") or Path.home() / ".config")
+    return base / "sagmowhisper" / "config.json"
+
+
+DEFAULT_CONFIG_PATH = default_config_path()
 
 DEFAULTS = {
     "provider": "groq",

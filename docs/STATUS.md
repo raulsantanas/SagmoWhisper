@@ -2,7 +2,7 @@
 
 > Última atualização: 2026-07-02
 
-## Estado atual: Milestone 3 (App Bundle) — entregue — branch `feature/m3-app-bundle`
+## Estado atual: Milestone 4 (CLI Linux) — implementado, beta — branch `feature/m4-linux-cli`
 
 Ditado por voz global no Mac. Segura F8 -> grava -> Groq Whisper transcreve ->
 (opcional) Groq Llama limpa -> cola no cursor de qualquer app via clipboard + Cmd+V.
@@ -230,14 +230,71 @@ resposta vazada (2 caíram no fallback). Suíte: 97 passed.
 ⚠️ O fix só chega ao app instalado após reinstalar (`./install.sh`) — e
 reinstalar exige remover/readicionar as permissões TCC (ver READMEs).
 
+---
+
+## Milestone 4 (CLI Linux) — CONCLUÍDO (beta)
+
+Port do core para Ubuntu como app de linha de comando, mantendo o macOS
+nativo intacto (tasks 1-13):
+
+1. `6ec78c8` — refactor: extrai `resolve_hotkey` para módulo compartilhado Mac/Linux.
+2. `bbf9547` — feat: `TextInjector` escolhe Cmd+V (macOS) / Ctrl+V (Linux) pela plataforma.
+3. `3906325` — feat: config segue XDG no Linux (`~/.config/sagmowhisper/config.json`); docstring do cofre multiplataforma.
+4. `0cf2fb6` — build: pacote pip instalável com script `sagmowhisper` e marker `pyobjc` (só instala no macOS).
+5. `a22d205` — feat: checagem de sessão Linux (Wayland, `DISPLAY`, `xclip`) com mensagens claras de erro.
+6. `a4fee64` — feat: "abrir no login" via unit systemd de usuário no Linux (`sagmowhisper login on/off/status`).
+7. `74194cb` — feat: assistente `sagmowhisper setup` no terminal (provider, API key, opções).
+8. `9665738` — feat: loop push-to-talk F8 do Linux com feedback impresso no terminal.
+9. `eda3662` — feat: comando `sagmowhisper` (subcomandos `setup`, `run`, `login`) para Linux.
+10. `03918d1` — test: integração X11 real (clipboard + Ctrl+V) para o CI Linux.
+11. `1162e49` — feat: `install-linux.sh` (instala deps do sistema + o app) para Ubuntu.
+12. `323a6ea` — ci: suíte completa em Ubuntu sob Xvfb + fumaça do instalador Linux.
+13. Este commit — READMEs (EN/pt-BR) anunciam o Linux (Ubuntu) beta + checkpoint.
+
+Verificado em 2026-07-02:
+- `pytest`: **133 passed, 3 skipped** (skips = testes que exigem hardware/DISPLAY real, ausentes no CI headless).
+- `ruff check src tests`: sem erros (CC <= 4, LEI 8).
+- CI ainda NÃO rodou nesta branch (workflow dispara em push para main ou em pull_request) — pendente: abrir o PR e confirmar os 4 jobs verdes: test (macOS), build (.app py2app), test-linux (Ubuntu + Xvfb), install-linux (fumaça do install-linux.sh).
+- Pendente: fumaça humana do Raul num Ubuntu real (F8 → grava → transcreve → cola) para remover o selo Beta dos READMEs.
+
+Débitos aceitos na revisão final (não bloqueantes):
+- Type hint de retorno ausente em `resolve_hotkey`.
+- `UNIT_PATH` do `login_service` (Linux) resolvido em import-time, não lazy.
+- Teste de Ctrl+V (`test_emitir_ctrl_v_no_display_virtual_nao_falha`) só verifica ausência de exceção — limitação do Xvfb, não valida o conteúdo colado.
+- Echos do `install-linux.sh` usam unicode (emojis/acentos) sem normalização para terminais que não suportam.
+- Assimetria de nome: `login_item.py` (macOS) vs `login_service.py` (Linux) — mesmo papel, nomes diferentes.
+- `src/macos` é empacotado mesmo quando o instalador Linux não o utiliza.
+
+## Trabalho não commitado
+
+Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
+
+## Testes (Milestone 4)
+
+- `pytest`: **133 passed, 3 skipped**.
+- `ruff check src tests`: **All checks passed** (CC <= 4, LEI 8).
+- Cobertura: core Linux (`src/linux/*`) coberto por TDD; integração X11 real (clipboard/Ctrl+V)
+  está escrita e com skip fora de Linux — será exercitada pela primeira vez no job `test-linux`
+  quando o PR abrir; ditado F8 fim a fim com microfone real ainda não passou por fumaça humana
+  em hardware físico.
+
+## Arquivos-chave (Milestone 4)
+
+| Arquivo | Responsabilidade | Testado |
+|---------|------------------|---------|
+| `src/linux/cli.py` | Entry point `sagmowhisper` (setup/run/login) | sim (TDD) |
+| `src/linux/session_check.py` | Detecta Wayland/DISPLAY/xclip ausente | sim (TDD) |
+| `src/linux/login_service.py` | Unit systemd de usuário ("abrir no login") | sim (TDD) |
+| `src/linux/setup_wizard.py` | Assistente interativo de configuração | sim (TDD) |
+| `src/text_injector.py` | Cmd+V (macOS) / Ctrl+V (Linux) por plataforma | sim (TDD) + integração X11 real |
+| `install-linux.sh` | Instala deps do sistema + o app no Ubuntu | fumaça CI (`install-linux` job) |
+| `.github/workflows/ci.yml` | Jobs `test-linux` (Xvfb) e `install-linux` | pendente (roda no PR) |
+
 ## Próxima task
 
-- [ ] Reinstalar o app com o fix da limpeza (`./install.sh` + dança das permissões TCC) e re-testar ditando uma pergunta (HUMANO)
-- [ ] Reiniciar o Mac → app abre sozinho (RunAtLoad) — último item da fumaça (HUMANO)
-- [ ] Exercitar o toggle do checkbox "Abrir no login" (desmarcar/remarcar cria/remove o plist)
-
-Depois: considerar tag de release e itens do backlog (hardening do install.sh,
-ícone custom, notarização se houver demanda).
+- [ ] Merge do PR do M4 (`feature/m4-linux-cli` -> `main`), CI verde nos 4 jobs (test, build, test-linux, install-linux)
+- [ ] Fumaça humana do Raul num Ubuntu real: `./install-linux.sh` -> `sagmowhisper setup` -> `sagmowhisper run` -> F8 com microfone real -> remover selo Beta dos READMEs (HUMANO)
+- [ ] Itens pendentes do M3 (baixa prioridade): reiniciar o Mac para confirmar RunAtLoad; exercitar toggle "Abrir no login"
 
 ## Retomar
 

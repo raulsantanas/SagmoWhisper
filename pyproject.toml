@@ -1,11 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "sagmowhisper"
 version = "0.1.0"
-description = "Ditado por voz global no Mac: F8 -> Groq Whisper -> cola no cursor"
+description = "Ditado por voz global: F8 -> Whisper -> cola no cursor (macOS e Ubuntu)"
 requires-python = ">=3.11"
+# Sem "dependencies" aqui de propósito: o build do .app do Mac (setup.py py2app)
+# quebra com setuptools >= 82 ("install_requires is no longer supported") quando
+# esta tabela declara dependências. Runtime deps vivem em requirements.txt;
+# o install-linux.sh instala de lá antes do "pip install .".
 
 [project.optional-dependencies]
 local = ["faster-whisper"]
+
+[project.scripts]
+sagmowhisper = "src.linux.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["src", "src.*"]
 
 [tool.ruff]
 target-version = "py311"

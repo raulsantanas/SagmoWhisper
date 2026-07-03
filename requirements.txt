@@ -10,4 +10,4 @@ keyring
 pytest
 pytest-cov
 ruff
-pyobjc-framework-Cocoa
+pyobjc-framework-Cocoa; sys_platform == "darwin"
