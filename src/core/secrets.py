@@ -1,4 +1,5 @@
-"""API keys ficam SÓ no Keychain do macOS (LEI 9) — nunca em JSON ou log."""
+"""API keys SÓ no cofre do sistema (Keychain no macOS, SecretService no
+Linux) via keyring (LEI 9) — nunca em JSON ou log."""
 import keyring
 
 SERVICE = "SagmoWhisper"

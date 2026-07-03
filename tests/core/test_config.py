@@ -105,3 +105,27 @@ def test_migracao_sem_env_explicito_le_o_ambiente_real(monkeypatch, tmp_path):
     )
     assert ok is True
     assert chamadas == [("groq", "gsk_ambiente")]
+
+
+def test_caminho_padrao_no_mac_fica_em_application_support():
+    from src.core.config import default_config_path
+
+    path = default_config_path(platform="darwin")
+    assert "Library/Application Support/SagmoWhisper" in str(path)
+    assert path.name == "config.json"
+
+
+def test_caminho_padrao_no_linux_segue_xdg_default():
+    from src.core.config import default_config_path
+
+    path = default_config_path(platform="linux", env={})
+    assert str(path).endswith(".config/sagmowhisper/config.json")
+
+
+def test_caminho_no_linux_respeita_xdg_config_home():
+    from src.core.config import default_config_path
+
+    path = default_config_path(
+        platform="linux", env={"XDG_CONFIG_HOME": "/tmp/xdg"}
+    )
+    assert str(path) == "/tmp/xdg/sagmowhisper/config.json"
