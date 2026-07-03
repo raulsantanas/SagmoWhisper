@@ -251,10 +251,11 @@ nativo intacto (tasks 1-13):
 12. `323a6ea` — ci: suíte completa em Ubuntu sob Xvfb + fumaça do instalador Linux.
 13. Este commit — READMEs (EN/pt-BR) anunciam o Linux (Ubuntu) beta + checkpoint.
 
-Verificado em 2026-07-02:
-- `pytest`: **133 passed, 3 skipped** (skips = testes que exigem hardware/DISPLAY real, ausentes no CI headless).
+Verificado em 2026-07-02 (pós-merge do PR #13):
+- **PR #13 mergeado na main** (`8f116cb..6013959`), branch deletado, revisão final registrada como comentário no PR.
+- `pytest`: **134 passed, 3 skipped** (skips = integração X11, exercitados no job `test-linux`; +1 teste de branch em `on_release` adicionado nos fixes pré-merge).
 - `ruff check src tests`: sem erros (CC <= 4, LEI 8).
-- CI ainda NÃO rodou nesta branch (workflow dispara em push para main ou em pull_request) — pendente: abrir o PR e confirmar os 4 jobs verdes: test (macOS), build (.app py2app), test-linux (Ubuntu + Xvfb), install-linux (fumaça do install-linux.sh).
+- CI verde nos 4 jobs do PR #13: test (macOS), build (.app py2app), test-linux (Ubuntu + Xvfb), install-linux (fumaça do install-linux.sh). O job build falhou na 1ª rodada — setuptools >= 82 removeu `install_requires` e o `[project].dependencies` quebrava o py2app; causa raiz confirmada por reprodução local, fix em `f03e483` (deps de runtime só no requirements.txt), re-rodada 4/4 verde.
 - Pendente: fumaça humana do Raul num Ubuntu real (F8 → grava → transcreve → cola) para remover o selo Beta dos READMEs.
 
 Débitos aceitos na revisão final (não bloqueantes):
@@ -271,12 +272,11 @@ Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
 
 ## Testes (Milestone 4)
 
-- `pytest`: **133 passed, 3 skipped**.
+- `pytest`: **134 passed, 3 skipped**.
 - `ruff check src tests`: **All checks passed** (CC <= 4, LEI 8).
 - Cobertura: core Linux (`src/linux/*`) coberto por TDD; integração X11 real (clipboard/Ctrl+V)
-  está escrita e com skip fora de Linux — será exercitada pela primeira vez no job `test-linux`
-  quando o PR abrir; ditado F8 fim a fim com microfone real ainda não passou por fumaça humana
-  em hardware físico.
+  passou no job `test-linux` do PR #13 (Ubuntu + Xvfb); ditado F8 fim a fim com microfone real
+  ainda não passou por fumaça humana em hardware físico.
 
 ## Arquivos-chave (Milestone 4)
 
@@ -288,11 +288,11 @@ Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
 | `src/linux/setup_wizard.py` | Assistente interativo de configuração | sim (TDD) |
 | `src/text_injector.py` | Cmd+V (macOS) / Ctrl+V (Linux) por plataforma | sim (TDD) + integração X11 real |
 | `install-linux.sh` | Instala deps do sistema + o app no Ubuntu | fumaça CI (`install-linux` job) |
-| `.github/workflows/ci.yml` | Jobs `test-linux` (Xvfb) e `install-linux` | pendente (roda no PR) |
+| `.github/workflows/ci.yml` | Jobs `test-linux` (Xvfb) e `install-linux` | CI verde (PR #13) |
 
 ## Próxima task
 
-- [ ] Merge do PR do M4 (`feature/m4-linux-cli` -> `main`), CI verde nos 4 jobs (test, build, test-linux, install-linux)
+- [x] Merge do PR do M4 (`feature/m4-linux-cli` -> `main`), CI verde nos 4 jobs (test, build, test-linux, install-linux) — feito em 2026-07-02
 - [ ] Fumaça humana do Raul num Ubuntu real: `./install-linux.sh` -> `sagmowhisper setup` -> `sagmowhisper run` -> F8 com microfone real -> remover selo Beta dos READMEs (HUMANO)
 - [ ] Itens pendentes do M3 (baixa prioridade): reiniciar o Mac para confirmar RunAtLoad; exercitar toggle "Abrir no login"
 
