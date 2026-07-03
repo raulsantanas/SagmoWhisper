@@ -29,6 +29,9 @@ echo "Instalando o SagmoWhisper…"
 mkdir -p "$APP_DIR" "$HOME/.local/bin"
 python3 -m venv "$VENV"
 "$VENV/bin/pip" install --quiet --upgrade pip
+# Deps de runtime vêm do requirements.txt: o pyproject não declara
+# [project].dependencies (quebraria o build py2app do Mac com setuptools >= 82).
+"$VENV/bin/pip" install --quiet -r requirements.txt
 "$VENV/bin/pip" install --quiet .
 ln -sf "$VENV/bin/sagmowhisper" "$BIN_LINK"
 
