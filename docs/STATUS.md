@@ -254,7 +254,7 @@ nativo intacto (tasks 1-13):
 Verificado em 2026-07-02:
 - `pytest`: **133 passed, 3 skipped** (skips = testes que exigem hardware/DISPLAY real, ausentes no CI headless).
 - `ruff check src tests`: sem erros (CC <= 4, LEI 8).
-- CI verde nos 4 jobs do PR: `test` (macOS), `build` (.app py2app), `test-linux` (Ubuntu + Xvfb), `install-linux` (fumaça do `install-linux.sh`).
+- CI ainda NÃO rodou nesta branch (workflow dispara em push para main ou em pull_request) — pendente: abrir o PR e confirmar os 4 jobs verdes: test (macOS), build (.app py2app), test-linux (Ubuntu + Xvfb), install-linux (fumaça do install-linux.sh).
 - Pendente: fumaça humana do Raul num Ubuntu real (F8 → grava → transcreve → cola) para remover o selo Beta dos READMEs.
 
 ## Trabalho não commitado
@@ -266,8 +266,9 @@ Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
 - `pytest`: **133 passed, 3 skipped**.
 - `ruff check src tests`: **All checks passed** (CC <= 4, LEI 8).
 - Cobertura: core Linux (`src/linux/*`) coberto por TDD; integração X11 real (clipboard/Ctrl+V)
-  validada em CI Ubuntu sob Xvfb; ditado F8 fim a fim com microfone real ainda não passou
-  por fumaça humana em hardware físico.
+  está escrita e com skip fora de Linux — será exercitada pela primeira vez no job `test-linux`
+  quando o PR abrir; ditado F8 fim a fim com microfone real ainda não passou por fumaça humana
+  em hardware físico.
 
 ## Arquivos-chave (Milestone 4)
 
@@ -275,11 +276,11 @@ Nenhum. Working tree limpo (fora de `.superpowers/`, artefato do processo SDD).
 |---------|------------------|---------|
 | `src/linux/cli.py` | Entry point `sagmowhisper` (setup/run/login) | sim (TDD) |
 | `src/linux/session_check.py` | Detecta Wayland/DISPLAY/xclip ausente | sim (TDD) |
-| `src/linux/login_item.py` | Unit systemd de usuário ("abrir no login") | sim (TDD) |
+| `src/linux/login_service.py` | Unit systemd de usuário ("abrir no login") | sim (TDD) |
 | `src/linux/setup_wizard.py` | Assistente interativo de configuração | sim (TDD) |
 | `src/text_injector.py` | Cmd+V (macOS) / Ctrl+V (Linux) por plataforma | sim (TDD) + integração X11 real |
 | `install-linux.sh` | Instala deps do sistema + o app no Ubuntu | fumaça CI (`install-linux` job) |
-| `.github/workflows/ci.yml` | Jobs `test-linux` (Xvfb) e `install-linux` | CI verde |
+| `.github/workflows/ci.yml` | Jobs `test-linux` (Xvfb) e `install-linux` | pendente (roda no PR) |
 
 ## Próxima task
 
