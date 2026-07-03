@@ -34,3 +34,35 @@ jobs:
           test -x "dist/SagmoWhisper.app/Contents/MacOS/SagmoWhisper"
           [ "$(plutil -extract LSUIElement raw dist/SagmoWhisper.app/Contents/Info.plist)" = "true" ]
           [ "$(plutil -extract CFBundleIdentifier raw dist/SagmoWhisper.app/Contents/Info.plist)" = "com.raulsantana.sagmowhisper" ]
+
+  test-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Dependências do sistema (display virtual, clipboard, áudio)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb xclip libportaudio2 libsndfile1
+      - name: Instala dependências Python
+        run: pip install -r requirements.txt
+      - name: Testes sob display virtual (Xvfb)
+        run: xvfb-run -a pytest
+      - name: Lint (ruff, CC <= 4)
+        run: ruff check src tests
+
+  install-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Instala via script oficial
+        run: ./install-linux.sh
+      - name: Smoke do comando instalado (sem display)
+        run: |
+          test -x "$HOME/.local/bin/sagmowhisper"
+          "$HOME/.local/bin/sagmowhisper" --help
