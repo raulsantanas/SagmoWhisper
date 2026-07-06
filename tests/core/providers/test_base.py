@@ -64,31 +64,6 @@ def test_cleanup_messages_tem_exemplo_de_pergunta_nao_respondida():
     assert "capital" in u["content"] and "capital" in a["content"]
 
 
-def test_limpeza_que_reusa_palavras_ditadas_e_aceita():
-    from src.core.providers.base import cleanup_reuses_dictated_words
-
-    assert cleanup_reuses_dictated_words(
-        "é qual é a capital da frança né", "Qual é a capital da França?"
-    )
-    assert cleanup_reuses_dictated_words(
-        "hm me manda o relatório até amanhã por favor tipo sem falta",
-        "Me manda o relatório até amanhã, por favor, sem falta.",
-    )
-    assert cleanup_reuses_dictated_words("e ai tudo bem", "E aí, tudo bem?")
-
-
-def test_resposta_gerada_introduz_palavra_nova_e_e_rejeitada():
-    from src.core.providers.base import cleanup_reuses_dictated_words
-
-    assert not cleanup_reuses_dictated_words("quanto é dois mais dois", "Quatro.")
-    assert not cleanup_reuses_dictated_words(
-        "quanto é dois mais dois", "Quanto é dois mais dois? Quatro."
-    )
-    assert not cleanup_reuses_dictated_words(
-        "qual é a capital da frança", "A capital da França é Paris."
-    )
-
-
 def test_system_prompt_define_dois_registros_e_proibe_responder():
     from src.core.providers.base import CLEANUP_SYSTEM_PROMPT
 

@@ -1,5 +1,3 @@
-import re
-import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
@@ -116,22 +114,6 @@ CLEANUP_EXAMPLES: tuple[tuple[str, str], ...] = (
     ),
     ("boa", "boa"),
 )
-
-
-def _content_words(text: str) -> list[str]:
-    ascii_text = (
-        unicodedata.normalize("NFKD", text.lower())
-        .encode("ascii", "ignore")
-        .decode("ascii")
-    )
-    return re.findall(r"[a-z0-9]+", ascii_text)
-
-
-def cleanup_reuses_dictated_words(original: str, cleaned: str) -> bool:
-    """Guard anti-resposta: limpeza legítima só remove/pontua — qualquer
-    palavra nova (ignorando acentos) denuncia que o modelo respondeu."""
-    dictated = set(_content_words(original))
-    return all(word in dictated for word in _content_words(cleaned))
 
 
 def cleanup_messages(text: str) -> list[dict]:
