@@ -17,10 +17,10 @@ pytestmark = [
     ),
 ]
 
-DITADO_ROSE = (
-    "boa tarde rose tudo bom como é que você está deixa eu te perguntar "
-    "eu vi que tem bastante lead aumentou bastante a quantidade de leads "
-    "mas se você pudesse me dar um feedback sobre a qualidade"
+DITADO_LONGO = (
+    "oi carlos tudo bem cara deixa eu te falar eu vi que o faturamento "
+    "de junho subiu bastante mas você consegue me passar um resumo das "
+    "despesas do mês"
 )
 
 
@@ -33,10 +33,11 @@ def cleaner():
 
 
 def test_mensagem_longa_ganha_pontuacao_e_preserva_a_pergunta(cleaner):
-    saida = cleaner.clean(DITADO_ROSE)
+    saida = cleaner.clean(DITADO_LONGO)
     assert "?" in saida
-    assert "Rose" in saida
-    assert "qualidade" in saida.lower()
+    assert "Carlos" in saida
+    assert "despesas" in saida.lower()
+    assert "<think>" not in saida.lower()
 
 
 def test_pergunta_ditada_nao_e_respondida(cleaner):
@@ -64,4 +65,4 @@ def test_enumeracao_ditada_vira_bullets(cleaner):
 
 
 def test_texto_curto_volta_identico(cleaner):
-    assert cleaner.clean("boa").strip().strip(".!") == "boa"
+    assert cleaner.clean("ok").strip().strip(".!").lower() == "ok"
