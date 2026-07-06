@@ -7,7 +7,7 @@ def test_load_sem_json_e_sem_env_usa_defaults(tmp_path):
     cfg = Config.load(path=tmp_path / "config.json", env={})
     assert cfg.provider == "groq"
     assert cfg.transcription_model == "whisper-large-v3-turbo"
-    assert cfg.cleanup_model == "llama-3.1-8b-instant"
+    assert cfg.cleanup_model == "openai/gpt-oss-120b"
     assert cfg.language == "pt"
     assert cfg.enable_cleanup is True
     assert cfg.hotkey == "f8"
@@ -129,3 +129,25 @@ def test_caminho_no_linux_respeita_xdg_config_home():
         platform="linux", env={"XDG_CONFIG_HOME": "/tmp/xdg"}
     )
     assert str(path) == "/tmp/xdg/sagmowhisper/config.json"
+
+
+def test_modelo_de_limpeza_descontinuado_no_json_migra_para_o_default(tmp_path):
+    p = tmp_path / "config.json"
+    p.write_text(json.dumps({"cleanup_model": "llama-3.1-8b-instant"}))
+    cfg = Config.load(path=p, env={})
+    assert cfg.cleanup_model == "openai/gpt-oss-120b"
+
+
+def test_modelo_de_limpeza_descontinuado_no_env_tambem_migra(tmp_path):
+    cfg = Config.load(
+        path=tmp_path / "c.json",
+        env={"CLEANUP_MODEL": "llama-3.3-70b-versatile"},
+    )
+    assert cfg.cleanup_model == "openai/gpt-oss-120b"
+
+
+def test_modelo_de_limpeza_customizado_e_preservado(tmp_path):
+    p = tmp_path / "config.json"
+    p.write_text(json.dumps({"cleanup_model": "openai/gpt-oss-20b"}))
+    cfg = Config.load(path=p, env={})
+    assert cfg.cleanup_model == "openai/gpt-oss-20b"

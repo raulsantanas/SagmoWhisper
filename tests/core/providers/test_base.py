@@ -20,7 +20,7 @@ def test_modelos_groq_verbatim_do_spec():
     assert info.transcription_models == (
         "whisper-large-v3-turbo", "whisper-large-v3"
     )
-    assert info.cleanup_models == ("llama-3.1-8b-instant",)
+    assert info.cleanup_models == ("openai/gpt-oss-120b", "openai/gpt-oss-20b")
     assert info.needs_api_key is True
 
 

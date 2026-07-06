@@ -37,7 +37,7 @@ PROVIDER_CATALOG: dict[str, ProviderInfo] = {
         label="Groq",
         needs_api_key=True,
         transcription_models=("whisper-large-v3-turbo", "whisper-large-v3"),
-        cleanup_models=("llama-3.1-8b-instant",),
+        cleanup_models=("openai/gpt-oss-120b", "openai/gpt-oss-20b"),
     ),
     "openai": ProviderInfo(
         key="openai",
