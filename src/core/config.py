@@ -31,12 +31,17 @@ DEFAULT_CONFIG_PATH = default_config_path()
 DEFAULTS = {
     "provider": "groq",
     "transcription_model": "whisper-large-v3-turbo",
-    "cleanup_model": "llama-3.1-8b-instant",
+    "cleanup_model": "openai/gpt-oss-120b",
     "language": "pt",
     "enable_cleanup": True,
     "hotkey": "f8",
     "sample_rate": 16000,
 }
+
+# Groq descontinuou os Llamas no free tier em 17/06/2026.
+_DEPRECATED_CLEANUP_MODELS = frozenset(
+    {"llama-3.1-8b-instant", "llama-3.3-70b-versatile"}
+)
 
 _ENV_PARSERS = {
     "PROVIDER": ("provider", str.lower),
@@ -80,6 +85,8 @@ class Config:
         if path.exists():
             data.update(json.loads(path.read_text()))
         _apply_env(data, env)
+        if data["cleanup_model"] in _DEPRECATED_CLEANUP_MODELS:
+            data["cleanup_model"] = DEFAULTS["cleanup_model"]
         return cls(**data)
 
     def save(self, path: Path = DEFAULT_CONFIG_PATH) -> None:
