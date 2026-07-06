@@ -2,7 +2,7 @@
 
 > Última atualização: 2026-07-06
 
-## Estado atual: PR #15 mergeado (`80a31f7`) — falta reinstalar o .app
+## Estado atual: app reinstalado e validado E2E; fix do log UTF-8 em PR
 
 **Task concluída (2026-07-06):** app instalado não abria ao clicar. Causa raiz:
 `app.lock` órfão em `~/Library/Application Support/SagmoWhisper/` com PID 623
@@ -14,11 +14,16 @@ processo SagmoWhisper (`ps -p <pid> -o command=`).
 - Arquivos: `src/core/single_instance.py`, `tests/core/test_single_instance.py`
 - Testes: 135 passed, 3 skipped (suíte completa) · ruff limpo
 - PR #15 mergeado em 2026-07-06 (CI 4/4 verde, merge `80a31f7`).
-- Próxima task (HUMANO): reinstalar o .app para o fix valer no app instalado —
-  `! ./install.sh` + dança TCC (`tccutil reset` + readicionar permissões).
-- Próxima task (código): corrigir `UnicodeEncodeError` no handler de log do
-  bundle py2app (mensagens com acento quebram o logging — visto ao logar
-  "já está rodando" com encoding ascii)
+- .app reinstalado em 2026-07-06 com os fixes #12 e #15; TCC refeito pelo Raul
+  e ditado validado E2E (F8 sintético via Quartz + `say` → "Teste, teste."
+  colado no TextEdit; as 3 permissões exercitadas, log sem erros novos).
+- `UnicodeEncodeError` do log corrigido: `RotatingFileHandler` agora com
+  `encoding="utf-8"` (teste reproduz o bundle com `LC_ALL=C` + `-X utf8=0`,
+  pois o Python de dev liga UTF-8 mode sozinho em locale C — PEP 540).
+  O .app instalado só recebe este fix na PRÓXIMA reinstalação (não urgente:
+  o bug apenas mutila linhas de log acentuadas).
+- Próxima task (HUMANO): reiniciar o Mac → app deve abrir sozinho (RunAtLoad),
+  último item da fumaça M3.
 - Retomar: `cd ~/Documents/dev/SagmoWhisper/voz && claude`
 
 ## Estado anterior: Milestone 4 (CLI Linux) — implementado, beta — branch `feature/m4-linux-cli`
