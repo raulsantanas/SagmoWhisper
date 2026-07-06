@@ -1,8 +1,24 @@
 # STATUS — Voz
 
-> Última atualização: 2026-07-02
+> Última atualização: 2026-07-06
 
-## Estado atual: Milestone 4 (CLI Linux) — implementado, beta — branch `feature/m4-linux-cli`
+## Estado atual: bugfix em review — PR #15 (`fix/stale-lock-pid-reuse`)
+
+**Task concluída (2026-07-06):** app instalado não abria ao clicar. Causa raiz:
+`app.lock` órfão em `~/Library/Application Support/SagmoWhisper/` com PID 623
+reciclado pelo macOS para `diagnosticspushd`; `acquire_lock` só checava PID vivo
+e levantava `AlreadyRunningError` para sempre. Mitigação imediata: lock removido
+manualmente, app voltou a abrir. Fix definitivo: lock só vale se o PID vivo for
+processo SagmoWhisper (`ps -p <pid> -o command=`).
+
+- Arquivos: `src/core/single_instance.py`, `tests/core/test_single_instance.py`
+- Testes: 135 passed, 3 skipped (suíte completa) · ruff limpo
+- Próxima task: review + merge do PR #15; depois, corrigir `UnicodeEncodeError`
+  no handler de log do bundle py2app (mensagens com acento quebram o logging —
+  visto ao logar "já está rodando" com encoding ascii)
+- Retomar: `cd ~/Documents/dev/SagmoWhisper/voz && claude`
+
+## Estado anterior: Milestone 4 (CLI Linux) — implementado, beta — branch `feature/m4-linux-cli`
 
 Ditado por voz global no Mac. Segura F8 -> grava -> Groq Whisper transcreve ->
 (opcional) Groq Llama limpa -> cola no cursor de qualquer app via clipboard + Cmd+V.
