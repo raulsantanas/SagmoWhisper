@@ -16,9 +16,9 @@ em 3 PRs empilhados (tasks 1-5):
   de config (Llamas descontinuados → `openai/gpt-oss-120b` default).
 - **PR #19** `feat/editor-de-ditado` ← `feat/modelo-gpt-oss` — prompt de dois
   registros, pipeline sem guard (log + fallback), remoção do guard antigo.
-- **PR (este)** `feat/fumaca-live-editor` ← `feat/editor-de-ditado` — fumaça
+- **PR #20** `feat/fumaca-live-editor` ← `feat/editor-de-ditado` — fumaça
   live opt-in contra a API real da Groq + este checkpoint.
-- Ordem de merge obrigatória: **modelo → editor → fumaça** (#18 → #19 → este).
+- Ordem de merge obrigatória: **modelo → editor → fumaça** (#18 → #19 → #20).
   Quem mergeia é o Raul — nenhum agente faz merge.
 
 **Fumaça live (opt-in, `pytest -m groq_live --no-cov`):** passou **5/5 duas
@@ -47,7 +47,7 @@ projeto: `llama-3.1-8b-instant`, `llama-3.3-70b-versatile`,
   (modelo → editor → fumaça); depois reinstalar o `.app` (`! ./install.sh`,
   só o Raul roda) + dança TCC (`tccutil reset Accessibility|ListenEvent
   com.raulsantana.sagmowhisper` + readicionar permissões) para os fixes
-  chegarem ao app instalado — acumula os fixes dos PRs #12, #15, #17 e este.
+  chegarem ao app instalado — acumula os fixes dos PRs #12, #15, #17 e #20.
 - Retomar: `cd /Users/raul/Documents/dev/SagmoWhisper/voz && claude`
 
 ## Estado anterior: PR #15 mergeado (`80a31f7`) — falta reinstalar o .app
