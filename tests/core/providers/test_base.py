@@ -64,26 +64,41 @@ def test_cleanup_messages_tem_exemplo_de_pergunta_nao_respondida():
     assert "capital" in u["content"] and "capital" in a["content"]
 
 
-def test_limpeza_que_reusa_palavras_ditadas_e_aceita():
-    from src.core.providers.base import cleanup_reuses_dictated_words
+def test_system_prompt_define_dois_registros_e_proibe_responder():
+    from src.core.providers.base import CLEANUP_SYSTEM_PROMPT
 
-    assert cleanup_reuses_dictated_words(
-        "é qual é a capital da frança né", "Qual é a capital da França?"
-    )
-    assert cleanup_reuses_dictated_words(
-        "hm me manda o relatório até amanhã por favor tipo sem falta",
-        "Me manda o relatório até amanhã, por favor, sem falta.",
-    )
-    assert cleanup_reuses_dictated_words("e ai tudo bem", "E aí, tudo bem?")
+    prompt = CLEANUP_SYSTEM_PROMPT
+    assert "escreva o " in prompt.lower()  # gatilho do registro PROMPT
+    assert "whatsapp" in prompt.lower()  # registro MENSAGEM
+    assert "NUNCA RESPONDER" in prompt
+    assert "bullets" in prompt.lower()
 
 
-def test_resposta_gerada_introduz_palavra_nova_e_e_rejeitada():
-    from src.core.providers.base import cleanup_reuses_dictated_words
+def test_exemplo_com_gatilho_remove_o_comando_da_saida():
+    from src.core.providers.base import CLEANUP_EXAMPLES
 
-    assert not cleanup_reuses_dictated_words("quanto é dois mais dois", "Quatro.")
-    assert not cleanup_reuses_dictated_words(
-        "quanto é dois mais dois", "Quanto é dois mais dois? Quatro."
-    )
-    assert not cleanup_reuses_dictated_words(
-        "qual é a capital da frança", "A capital da França é Paris."
-    )
+    com_gatilho = [
+        (u, a) for u, a in CLEANUP_EXAMPLES
+        if u.startswith("escreva o prompt")
+    ]
+    assert com_gatilho, "precisa de exemplo few-shot do registro PROMPT"
+    _, saida = com_gatilho[0]
+    assert "escreva o prompt" not in saida.lower()
+    assert "\n- " in saida  # saída estruturada em bullets
+
+
+def test_exemplo_de_enumeracao_vira_bullets():
+    from src.core.providers.base import CLEANUP_EXAMPLES
+
+    bullets = [a for _, a in CLEANUP_EXAMPLES if a.count("\n- ") >= 2]
+    assert bullets, "precisa de exemplo de enumeração ditada virando bullets"
+
+
+def test_exemplo_real_de_mensagem_longa_preserva_a_pergunta():
+    from src.core.providers.base import CLEANUP_EXAMPLES
+
+    rose = [(u, a) for u, a in CLEANUP_EXAMPLES if "rose" in u]
+    assert rose, "precisa do caso real da mensagem da Rose como âncora"
+    ditado, saida = rose[0]
+    assert "?" not in ditado and "?" in saida
+    assert "leads" in saida and "qualidade" in saida

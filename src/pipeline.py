@@ -1,6 +1,7 @@
+import logging
 from pathlib import Path
 
-from src.core.providers.base import cleanup_reuses_dictated_words
+logger = logging.getLogger("sagmowhisper")
 
 
 class DictationPipeline:
@@ -26,7 +27,11 @@ class DictationPipeline:
     def _maybe_clean(self, text: str) -> str:
         if not self._enable_cleanup:
             return text
-        cleaned = self._cleaner.clean(text).strip()
-        if cleaned and not cleanup_reuses_dictated_words(text, cleaned):
+        try:
+            cleaned = self._cleaner.clean(text).strip()
+        except Exception:
+            # ditado não pode se perder: sem limpeza é melhor que sem nada
+            logger.exception("Limpeza falhou; colando a transcrição crua")
             return text
+        logger.info("Limpeza: %r -> %r", text, cleaned)
         return cleaned
