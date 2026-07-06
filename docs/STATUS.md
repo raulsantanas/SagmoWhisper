@@ -2,7 +2,36 @@
 
 > Última atualização: 2026-07-06
 
-## Estado atual: Editor de Ditado concluído — 3 PRs empilhados aguardando revisão do Raul
+## Estado atual: Editor de Ditado MERGEADO na main — falta reinstalar o .app
+
+**Task concluída (2026-07-06):** os 4 PRs do Editor de Ditado foram mergeados
+na main (autorizado pelo Raul), em ordem: **#17** (log utf-8 +
+`errors="backslashreplace"`) → **#18** (modelo `openai/gpt-oss-120b` +
+migração de config) → **#21** (prompt de dois registros + pipeline sem guard;
+substituiu o #19) → **#20** (fumaça live opt-in + checkpoints). CI da main
+**verde** após o último merge; suíte na main: **143 passed, 3 skipped,
+5 deselected**, ruff limpo.
+
+- Nota de processo: o **PR #19 foi fechado automaticamente pelo GitHub**
+  quando a branch base dele (`feat/modelo-gpt-oss`) foi deletada no merge do
+  #18 — PR fechado com base deletada não reabre; o **#21** o substituiu com o
+  mesmo conteúdo. Gotcha para próximas pilhas: **retargetear o PR de cima
+  para `main` ANTES de deletar a branch base** (foi o que salvou o #20).
+- Conflito único no caminho: `docs/STATUS.md` entre o checkpoint do #17 e o
+  do editor — resolvido mantendo o do editor como atual (merge `6287ca5`).
+- Próxima task (HUMANO — Raul): **reinstalar o `.app`** (`! ./install.sh`,
+  só o Raul roda) + dança TCC (`tccutil reset Accessibility|ListenEvent
+  com.raulsantana.sagmowhisper` + readicionar permissões) — traz o editor de
+  ditado + o log utf-8 para o app instalado. Depois, testar ditando uma
+  mensagem longa no WhatsApp (deve sair pontuada) e um "escreva o prompt...".
+- Débito vivo: `openai/gpt-oss-20b` consta no catálogo do app mas segue
+  bloqueado no projeto Groq (403) — habilitar em
+  console.groq.com/settings/project/limits antes de selecioná-lo.
+- Pendências humanas herdadas: fumaça em Ubuntu real (tirar selo Beta);
+  reboot do Mac para validar RunAtLoad; toggle "Abrir no login".
+- Retomar: `cd /Users/raul/Documents/dev/SagmoWhisper/voz && claude`
+
+## Estado anterior: Editor de Ditado concluído — 3 PRs empilhados aguardando revisão do Raul
 
 **Task concluída (2026-07-06):** feature "Editor de Ditado" substitui a etapa
 de limpeza da transcrição por um prompt de reescrita em dois registros
