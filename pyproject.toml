@@ -31,5 +31,8 @@ select = ["E", "F", "C90"]
 max-complexity = 4
 
 [tool.pytest.ini_options]
-addopts = "--cov=src --cov-report=term-missing"
+addopts = '--cov=src --cov-report=term-missing -m "not groq_live"'
 testpaths = ["tests"]
+markers = [
+    "groq_live: chama a API real da Groq (opt-in: pytest -m groq_live --no-cov)",
+]
