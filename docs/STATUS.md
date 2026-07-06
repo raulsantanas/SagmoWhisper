@@ -2,7 +2,7 @@
 
 > Última atualização: 2026-07-06
 
-## Estado atual: bugfix em review — PR #15 (`fix/stale-lock-pid-reuse`)
+## Estado atual: PR #15 mergeado (`80a31f7`) — falta reinstalar o .app
 
 **Task concluída (2026-07-06):** app instalado não abria ao clicar. Causa raiz:
 `app.lock` órfão em `~/Library/Application Support/SagmoWhisper/` com PID 623
@@ -13,9 +13,12 @@ processo SagmoWhisper (`ps -p <pid> -o command=`).
 
 - Arquivos: `src/core/single_instance.py`, `tests/core/test_single_instance.py`
 - Testes: 135 passed, 3 skipped (suíte completa) · ruff limpo
-- Próxima task: review + merge do PR #15; depois, corrigir `UnicodeEncodeError`
-  no handler de log do bundle py2app (mensagens com acento quebram o logging —
-  visto ao logar "já está rodando" com encoding ascii)
+- PR #15 mergeado em 2026-07-06 (CI 4/4 verde, merge `80a31f7`).
+- Próxima task (HUMANO): reinstalar o .app para o fix valer no app instalado —
+  `! ./install.sh` + dança TCC (`tccutil reset` + readicionar permissões).
+- Próxima task (código): corrigir `UnicodeEncodeError` no handler de log do
+  bundle py2app (mensagens com acento quebram o logging — visto ao logar
+  "já está rodando" com encoding ascii)
 - Retomar: `cd ~/Documents/dev/SagmoWhisper/voz && claude`
 
 ## Estado anterior: Milestone 4 (CLI Linux) — implementado, beta — branch `feature/m4-linux-cli`
