@@ -20,6 +20,12 @@ em 3 PRs empilhados (tasks 1-5):
   live opt-in contra a API real da Groq + este checkpoint.
 - Ordem de merge obrigatória: **modelo → editor → fumaça** (#18 → #19 → #20).
   Quem mergeia é o Raul — nenhum agente faz merge.
+- **Dependência com PR #17** (`fix/log-utf8-encoding`, aberto, base `main`): o
+  log de auditoria com acentos (`Limpeza: original -> final`) só funciona no
+  bundle py2app depois que o #17 mergear — o `RotatingFileHandler` destas
+  branches não tem `encoding="utf-8"`; sem o #17, o bundle descarta em
+  silêncio os registros de log acentuados. Recomendado mergear o #17 antes ou
+  junto do #19.
 
 **Fumaça live (opt-in, `pytest -m groq_live --no-cov`):** passou **5/5 duas
 vezes** contra `openai/gpt-oss-120b` real, 0 calibrações de prompt necessárias.
@@ -36,10 +42,17 @@ console.groq.com/settings/project/limits. Modelos habilitados hoje no
 projeto: `llama-3.1-8b-instant`, `llama-3.3-70b-versatile`,
 `openai/gpt-oss-120b`, `whisper-large-v3`, `whisper-large-v3-turbo`.
 
+⚠️ **Débitos da revisão final (triados, documentados e não corrigidos):**
+- `tests/test_pipeline.py::test_resposta_do_editor_e_aceita_sem_guard` não foi
+  RED verdadeiro (a fixture reusa palavras ditadas); mantido como teste de
+  regressão.
+- A guarda contra vazamento de reasoning (`<think>`) existe em só 1 dos 5
+  testes live — suficiente para vazamento sistêmico, ampliar se flakear.
+
 - Arquivos-chave: `src/core/providers/base.py` (dois registros do prompt,
   `cleanup_messages`), `src/pipeline.py` (log antes/depois + fallback sem
   guard), `src/core/config.py` (migração automática de modelo),
-  `tests/core/providers/test_cleanup_live.py` (fumaça live opt-in).
+  `tests/test_cleanup_live.py` (fumaça live opt-in).
 - Testes: **142 passed, 3 skipped, 5 deselected** (live é opt-in, marker
   `groq_live`, requer `GROQ_API_KEY` do Keychain) · `ruff check .` limpo
   (CC ≤ 4, LEI 8).
