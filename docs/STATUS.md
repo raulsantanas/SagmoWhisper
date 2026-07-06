@@ -2,7 +2,68 @@
 
 > Última atualização: 2026-07-06
 
-## Estado atual: app reinstalado e validado E2E; fix do log UTF-8 em PR
+## Estado atual: Editor de Ditado concluído — 3 PRs empilhados aguardando revisão do Raul
+
+**Task concluída (2026-07-06):** feature "Editor de Ditado" substitui a etapa
+de limpeza da transcrição por um prompt de reescrita em dois registros
+(mensagem transcrita literal vs. texto reescrito para o LLM), rodando no
+modelo Groq `openai/gpt-oss-120b`, sem o guard determinístico anterior
+(`cleanup_reuses_dictated_words` removido — decisão da spec), com log
+antes/depois do pipeline e fallback para o texto cru em caso de erro. Entregue
+em 3 PRs empilhados (tasks 1-5):
+
+- **PR #18** `feat/modelo-gpt-oss` ← `main` — catálogo/modelo/migração automática
+  de config (Llamas descontinuados → `openai/gpt-oss-120b` default).
+- **PR #19** `feat/editor-de-ditado` ← `feat/modelo-gpt-oss` — prompt de dois
+  registros, pipeline sem guard (log + fallback), remoção do guard antigo.
+- **PR #20** `feat/fumaca-live-editor` ← `feat/editor-de-ditado` — fumaça
+  live opt-in contra a API real da Groq + este checkpoint.
+- Ordem de merge obrigatória: **modelo → editor → fumaça** (#18 → #19 → #20).
+  Quem mergeia é o Raul — nenhum agente faz merge.
+- **Dependência com PR #17** (`fix/log-utf8-encoding`, aberto, base `main`): o
+  log de auditoria com acentos (`Limpeza: original -> final`) só funciona no
+  bundle py2app depois que o #17 mergear — o `RotatingFileHandler` destas
+  branches não tem `encoding="utf-8"`; sem o #17, o bundle descarta em
+  silêncio os registros de log acentuados. Recomendado mergear o #17 antes ou
+  junto do #19.
+
+**Fumaça live (opt-in, `pytest -m groq_live --no-cov`):** passou **5/5 duas
+vezes** contra `openai/gpt-oss-120b` real, 0 calibrações de prompt necessárias.
+1 fix pós-review (commit `e3f1642`): os ditados usados nos testes live foram
+trocados por entradas inéditas (para não duplicarem os few-shots já presentes
+no prompt) + guarda contra vazamento de `<think>` (reasoning do modelo) na
+saída.
+
+⚠️ **Débito conhecido (catálogo):** `PROVIDER_CATALOG["groq"].cleanup_models`
+lista `openai/gpt-oss-20b` como opção secundária, mas esse modelo segue
+**BLOQUEADO no projeto Groq** (`403 model_permission_blocked_project`) —
+selecioná-lo nas Configurações quebraria a limpeza até ser habilitado em
+console.groq.com/settings/project/limits. Modelos habilitados hoje no
+projeto: `llama-3.1-8b-instant`, `llama-3.3-70b-versatile`,
+`openai/gpt-oss-120b`, `whisper-large-v3`, `whisper-large-v3-turbo`.
+
+⚠️ **Débitos da revisão final (triados, documentados e não corrigidos):**
+- `tests/test_pipeline.py::test_resposta_do_editor_e_aceita_sem_guard` não foi
+  RED verdadeiro (a fixture reusa palavras ditadas); mantido como teste de
+  regressão.
+- A guarda contra vazamento de reasoning (`<think>`) existe em só 1 dos 5
+  testes live — suficiente para vazamento sistêmico, ampliar se flakear.
+
+- Arquivos-chave: `src/core/providers/base.py` (dois registros do prompt,
+  `cleanup_messages`), `src/pipeline.py` (log antes/depois + fallback sem
+  guard), `src/core/config.py` (migração automática de modelo),
+  `tests/test_cleanup_live.py` (fumaça live opt-in).
+- Testes: **142 passed, 3 skipped, 5 deselected** (live é opt-in, marker
+  `groq_live`, requer `GROQ_API_KEY` do Keychain) · `ruff check .` limpo
+  (CC ≤ 4, LEI 8).
+- Próxima task (HUMANO — Raul): revisar e mergear os 3 PRs **em ordem**
+  (modelo → editor → fumaça); depois reinstalar o `.app` (`! ./install.sh`,
+  só o Raul roda) + dança TCC (`tccutil reset Accessibility|ListenEvent
+  com.raulsantana.sagmowhisper` + readicionar permissões) para os fixes
+  chegarem ao app instalado — acumula os fixes dos PRs #12, #15, #17 e #20.
+- Retomar: `cd /Users/raul/Documents/dev/SagmoWhisper/voz && claude`
+
+## Estado anterior: app reinstalado e validado E2E; fix do log UTF-8 em PR
 
 **Task concluída (2026-07-06):** app instalado não abria ao clicar. Causa raiz:
 `app.lock` órfão em `~/Library/Application Support/SagmoWhisper/` com PID 623
