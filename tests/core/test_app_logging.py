@@ -36,6 +36,13 @@ def test_log_com_acento_sobrevive_a_locale_ascii(tmp_path):
         "from src.core.app_logging import setup_logging\n"
         f"logger = setup_logging(Path({str(log_path)!r}))\n"
         "logger.error('SagmoWhisper já está rodando.')\n"
+        # \udce1 é um lone surrogate literal: é exatamente o que o CPython
+        # produz ao decodificar argv/filesystem com surrogateescape no
+        # Linux sob LC_ALL=C (ex.: "já" -> "j\udce1"). Escrever o escape
+        # \uXXXX aqui reproduz o caractere em qualquer plataforma, sem
+        # depender da decodificação de argv do SO (que no macOS é sempre
+        # UTF-8 e nunca gera surrogates).
+        "logger.error('processo j\\udce1 finalizado (surrogate solto)')\n"
     )
     # -X utf8=0: o Python de dev liga UTF-8 mode sozinho em locale C
     # (PEP 540); o Python do bundle não — sem o flag o teste não reproduz.
@@ -48,7 +55,9 @@ def test_log_com_acento_sobrevive_a_locale_ascii(tmp_path):
         cwd=Path(__file__).parents[2],
     )
     assert "UnicodeEncodeError" not in result.stderr
-    assert "já está rodando" in log_path.read_text(encoding="utf-8")
+    log_text = log_path.read_text(encoding="utf-8")
+    assert "já está rodando" in log_text
+    assert "j\\udce1 finalizado" in log_text
 
 
 def test_setup_e_idempotente_nao_duplica_handlers(tmp_path):
