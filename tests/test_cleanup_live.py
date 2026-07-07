@@ -66,3 +66,25 @@ def test_enumeracao_ditada_vira_bullets(cleaner):
 
 def test_texto_curto_volta_identico(cleaner):
     assert cleaner.clean("ok").strip().strip(".!").lower() == "ok"
+
+
+def test_mencao_casual_a_prompt_vira_prompt_e_nao_conversa(cleaner):
+    saida = cleaner.clean(
+        "quero um prompt pra resumir atas de reuniao destacando "
+        "decisoes e pendencias"
+    )
+    assert "quero um prompt" not in saida.lower()  # moldura removida
+    assert "atas" in saida.lower() or "ata" in saida.lower()
+    assert "<think>" not in saida.lower()
+
+
+def test_prompt_composto_ganha_tags_xml(cleaner):
+    saida = cleaner.clean(
+        "escreva o prompt a gente tem uma api em rails e o endpoint de "
+        "relatorios ta lento primeiro mede o tempo atual depois adiciona "
+        "cache e por ultimo escreve um teste de performance ah e nao "
+        "pode mudar o contrato da api"
+    )
+    assert "<tarefas>" in saida and "</tarefas>" in saida
+    assert "<restricoes>" in saida
+    assert "escreva o prompt" not in saida.lower()

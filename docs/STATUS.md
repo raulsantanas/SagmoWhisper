@@ -1,8 +1,39 @@
 # STATUS — Voz
 
-> Última atualização: 2026-07-06
+> Última atualização: 2026-07-07
 
-## Estado atual: Editor de Ditado MERGEADO na main — falta reinstalar o .app
+## Estado atual: Editor v2 — menção a "prompt" dispara + saída em práticas Anthropic (em PR)
+
+**Task concluída (2026-07-07):** o registro PROMPT agora dispara com
+**QUALQUER menção à palavra "prompt"** no ditado (comando, meta-declaração ou
+menção casual — decisão do Raul), e o prompt gerado segue as **boas práticas
+de prompt da Anthropic** (docs oficiais consultadas): objetivo imperativo na
+primeira linha, contexto preservado, prompts compostos estruturados com tags
+XML `<contexto>/<tarefas>/<restricoes>`, restrições/critérios só se ditados.
+O caso negativo antigo (menção casual NÃO disparava) foi removido por decisão
+de produto; o few-shot do Bruno deu lugar a um exemplo de menção casual.
+
+- Arquivos: `src/core/providers/base.py` (system prompt + few-shots),
+  `tests/core/providers/test_base.py` (5 testes novos, 1 atualizado),
+  `tests/test_cleanup_live.py` (2 casos live novos).
+- Testes: **153 passed, 3 skipped, 5 deselected** · ruff limpo (CC ≤ 4).
+- Fumaça live (`pytest -m groq_live --no-cov`): **7/7 duas vezes** contra
+  `openai/gpt-oss-120b` real, 0 calibrações de prompt.
+- Branch `feat/editor-v2-gatilho-anywhere` (inclui o commit anterior
+  `9e7fc6c`, do gatilho por meta-declaração) — PR aberto para revisão do
+  Raul; quem mergeia é o Raul.
+- Pós-merge (HUMANO): reinstalar o `.app` (`./install.sh` com
+  `PATH="/usr/local/opt/python@3.11/libexec/bin:$PATH"`) + dança TCC
+  (`tccutil reset Accessibility|ListenEvent com.raulsantana.sagmowhisper` +
+  readicionar permissões) e testar: mensagem longa (pontuada), "escreva o
+  prompt..." e uma menção casual a "prompt".
+- Contexto de portfólio: **Sagmo Voice é OUTRO projeto** (privado, para
+  venda, em `/dev/Sagmo-Voice`, só PRD) — nunca misturar com este repo.
+- Pendências humanas herdadas: fumaça em Ubuntu real (tirar selo Beta);
+  reboot do Mac para validar RunAtLoad; toggle "Abrir no login".
+- Retomar: `cd /Users/raul/Documents/dev/SagmoWhisper/voz && claude`
+
+## Estado anterior: Editor de Ditado MERGEADO na main — falta reinstalar o .app
 
 **Task concluída (2026-07-06):** os 4 PRs do Editor de Ditado foram mergeados
 na main (autorizado pelo Raul), em ordem: **#17** (log utf-8 +
