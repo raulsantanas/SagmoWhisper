@@ -1,8 +1,35 @@
 # STATUS — Voz
 
-> Última atualização: 2026-07-06
+> Última atualização: 2026-07-07
 
-## Estado atual: Editor de Ditado MERGEADO na main — falta reinstalar o .app
+## Estado atual: workspace migrado para Sagmo-Voice; editor v2 em branch local verde, sem PR
+
+**Task concluída (2026-07-07):** o workspace de desenvolvimento foi replicado
+para `/Users/raul/Documents/dev/Sagmo-Voice/voz` (clone completo do repo com
+`origin` apontando para o GitHub, `main` = `ec0b0a0` sincronizada, `.venv`
+Python 3.11.15 recriado de `requirements.txt`, e os artefatos locais
+gitignorados copiados: `docs/superpowers/` (specs/planos), `.superpowers/`
+(ledger SDD) e `.env`). Suíte verificada no workspace novo: **149 passed,
+3 skipped, 5 deselected**, ruff limpo. O diretório antigo
+(`/Users/raul/Documents/dev/SagmoWhisper/voz`) permanece intacto — deletar só
+depois de validar o novo.
+
+- **Trabalho em andamento restaurado:** branch local
+  `feat/editor-v2-gatilho-anywhere` (commit `9e7fc6c` — gatilho de prompt em
+  qualquer posição + saída estruturada + gating de few-shots; toca só
+  `src/core/providers/base.py` + `tests/core/providers/test_base.py`).
+  Verde e com ruff limpo, mas **sem PR aberto e sem revisão** — presente nos
+  dois workspaces. Próximo passo dela: revisão + fumaça live
+  (`pytest -m groq_live --no-cov`) + PR.
+- Todas as branches remotas do GitHub estão contidas na main (nenhum trabalho
+  pendente de merge); zero PRs abertos.
+- Pendências humanas mantidas do checkpoint anterior: dança TCC pós-reinstalação
+  (readicionar Acessibilidade + Monitoramento de Entrada) e teste de ditado
+  real; fumaça em Ubuntu real (tirar selo Beta); reboot para validar RunAtLoad;
+  toggle "Abrir no login".
+- Retomar: `cd /Users/raul/Documents/dev/Sagmo-Voice/voz && claude`
+
+## Estado anterior: Editor de Ditado MERGEADO na main — falta reinstalar o .app
 
 **Task concluída (2026-07-06):** os 4 PRs do Editor de Ditado foram mergeados
 na main (autorizado pelo Raul), em ordem: **#17** (log utf-8 +
