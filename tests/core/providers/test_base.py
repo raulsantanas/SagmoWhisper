@@ -69,7 +69,7 @@ def test_cleanup_messages_tem_exemplo_de_pergunta_nao_respondida():
 
 def test_system_prompt_define_dois_registros_e_proibe_responder():
     prompt = CLEANUP_SYSTEM_PROMPT
-    assert "escreva o " in prompt.lower()  # gatilho do registro PROMPT
+    assert "escreva/atualize o prompt" in prompt.lower()  # gatilho comando
     assert "whatsapp" in prompt.lower()  # registro MENSAGEM
     assert "NUNCA RESPONDER" in prompt
     assert "bullets" in prompt.lower()
@@ -120,8 +120,45 @@ def test_gate_ignora_caixa():
     assert len(msgs_maiusculo) == len(msgs_minusculo)
 
 
-def test_exemplo_negativo_e_o_ultimo_do_grupo_gateado():
-    assert "bruno" in CLEANUP_EXAMPLES_PROMPT[-1][0]
+def test_system_prompt_dispara_com_qualquer_mencao_a_palavra_prompt():
+    prompt = CLEANUP_SYSTEM_PROMPT
+    assert "QUALQUER menção" in prompt
+    # regra antiga ("'prompt' como assunto não dispara") não pode sobreviver
+    assert "apenas assunto" not in prompt
+
+
+def test_system_prompt_estrutura_prompts_compostos_com_tags_xml():
+    prompt = CLEANUP_SYSTEM_PROMPT
+    assert "<contexto>" in prompt
+    assert "<tarefas>" in prompt
+    assert "<restricoes>" in prompt
+
+
+def test_exemplo_composto_usa_tags_xml_no_prompt_gerado():
+    flask = [(u, a) for u, a in CLEANUP_EXAMPLES_PROMPT if "flask" in u]
+    assert flask, "precisa do exemplo composto (Flask) como âncora"
+    _, saida = flask[0]
+    assert "<contexto>" in saida and "</contexto>" in saida
+    assert "<tarefas>" in saida and "</tarefas>" in saida
+    assert "<restricoes>" in saida and "</restricoes>" in saida
+
+
+def test_mencao_casual_a_prompt_vira_prompt_e_nao_conversa():
+    mencao = [
+        (u, a) for u, a in CLEANUP_EXAMPLES_PROMPT
+        if not u.startswith("escreva o prompt") and "esqueci" not in u
+    ]
+    assert mencao, "precisa de exemplo de menção casual à palavra prompt"
+    ditado, saida = mencao[0]
+    assert "prompt" in ditado
+    assert not saida.lower().startswith("ei")
+    # a moldura ("preciso de um prompt...") sai; fica só o prompt em si
+    assert "preciso" not in saida.lower()
+
+
+def test_nenhum_exemplo_gateado_sai_como_mensagem_de_conversa():
+    for _, saida in CLEANUP_EXAMPLES_PROMPT:
+        assert not saida.startswith("Ei, Bruno")
 
 
 def test_system_prompt_sempre_completo_e_primeiro():
