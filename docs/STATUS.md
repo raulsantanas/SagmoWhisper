@@ -2,7 +2,7 @@
 
 > Última atualização: 2026-07-07
 
-## Estado atual: Editor v2 — menção a "prompt" dispara + saída em práticas Anthropic (em PR)
+## Estado atual: Editor v2 MERGEADO (#24) + app reinstalado — faltam só os cliques TCC
 
 **Task concluída (2026-07-07):** o registro PROMPT agora dispara com
 **QUALQUER menção à palavra "prompt"** no ditado (comando, meta-declaração ou
@@ -19,14 +19,18 @@ de produto; o few-shot do Bruno deu lugar a um exemplo de menção casual.
 - Testes: **153 passed, 3 skipped, 5 deselected** · ruff limpo (CC ≤ 4).
 - Fumaça live (`pytest -m groq_live --no-cov`): **7/7 duas vezes** contra
   `openai/gpt-oss-120b` real, 0 calibrações de prompt.
-- Branch `feat/editor-v2-gatilho-anywhere` (inclui o commit anterior
-  `9e7fc6c`, do gatilho por meta-declaração) — PR aberto para revisão do
-  Raul; quem mergeia é o Raul.
-- Pós-merge (HUMANO): reinstalar o `.app` (`./install.sh` com
-  `PATH="/usr/local/opt/python@3.11/libexec/bin:$PATH"`) + dança TCC
-  (`tccutil reset Accessibility|ListenEvent com.raulsantana.sagmowhisper` +
-  readicionar permissões) e testar: mensagem longa (pontuada), "escreva o
-  prompt..." e uma menção casual a "prompt".
+- **PR #24 MERGEADO** em 2026-07-07 com autorização do Raul ("faça toda
+  instalação para mim"); CI verde antes do merge; main = `c7f9846`.
+- **Instalação executada pelo agente (2026-07-07):** `./install.sh` a partir
+  da main (instância antiga encerrada, "Abrir no login" ligado, app aberto —
+  rodando de `/Applications`) + `tccutil reset Accessibility|ListenEvent
+  com.raulsantana.sagmowhisper` (ambos "Successfully reset").
+- **Falta só GUI (HUMANO):** Ajustes do Sistema → Privacidade e Segurança →
+  **Acessibilidade** e **Monitoramento de Entrada** → adicionar o
+  SagmoWhisper com "+" (as entradas foram resetadas, não precisa remover);
+  reabrir o app; microfone pede sozinho na 1ª gravação. Depois testar:
+  mensagem longa (pontuada), "escreva o prompt..." e uma menção casual a
+  "prompt" (deve virar prompt formatado).
 - Contexto de portfólio: **Sagmo Voice é OUTRO projeto** (privado, para
   venda, em `/dev/Sagmo-Voice`, só PRD) — nunca misturar com este repo.
 - Pendências humanas herdadas: fumaça em Ubuntu real (tirar selo Beta);
