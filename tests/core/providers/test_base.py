@@ -69,7 +69,7 @@ def test_cleanup_messages_tem_exemplo_de_pergunta_nao_respondida():
 
 def test_system_prompt_define_dois_registros_e_proibe_responder():
     prompt = CLEANUP_SYSTEM_PROMPT
-    assert "escreva/atualize o prompt" in prompt.lower()  # gatilho comando
+    assert "escreva/atualize/melhore o prompt" in prompt.lower()  # comando
     assert "whatsapp" in prompt.lower()  # registro MENSAGEM
     assert "NUNCA RESPONDER" in prompt
     assert "bullets" in prompt.lower()
@@ -159,6 +159,30 @@ def test_mencao_casual_a_prompt_vira_prompt_e_nao_conversa():
 def test_nenhum_exemplo_gateado_sai_como_mensagem_de_conversa():
     for _, saida in CLEANUP_EXAMPLES_PROMPT:
         assert not saida.startswith("Ei, Bruno")
+
+
+def test_system_prompt_lista_melhore_como_comando_de_moldura():
+    # Bug real (2026-07-07): "melhora esse prompt e analisa..." virou
+    # meta-prompt ("Melhore o prompt fornecido" como objetivo e tarefa 1).
+    assert "escreva/atualize/melhore" in CLEANUP_SYSTEM_PROMPT.lower()
+
+
+def test_system_prompt_proibe_prompt_sobre_outro_prompt():
+    assert "NUNCA um prompt para criar ou melhorar outro prompt" in (
+        CLEANUP_SYSTEM_PROMPT
+    )
+
+
+def test_exemplo_melhore_remove_moldura_e_nao_vira_meta_prompt():
+    melhore = [
+        (u, a) for u, a in CLEANUP_EXAMPLES_PROMPT if u.startswith("melhora")
+    ]
+    assert melhore, "precisa de exemplo few-shot com o comando 'melhora'"
+    _, saida = melhore[0]
+    # a saída é o prompt final sobre o conteúdo — a palavra "prompt" e o
+    # verbo da moldura não podem sobrar nela
+    assert "prompt" not in saida.lower()
+    assert "melhor" not in saida.lower().split("\n")[0]
 
 
 def test_system_prompt_sempre_completo_e_primeiro():

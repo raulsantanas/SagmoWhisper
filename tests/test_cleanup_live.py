@@ -78,6 +78,18 @@ def test_mencao_casual_a_prompt_vira_prompt_e_nao_conversa(cleaner):
     assert "<think>" not in saida.lower()
 
 
+def test_melhore_o_prompt_nao_vira_meta_prompt(cleaner):
+    # Bug real (2026-07-07): a saida virou "Melhore o prompt fornecido..."
+    saida = cleaner.clean(
+        "melhora esse prompt e analisa o codigo final se existe alguma "
+        "falha de seguranca e chama os agentes de seguranca se nao tiver "
+        "falha crie a solucao seguindo as melhores praticas do mercado"
+    )
+    assert "prompt" not in saida.lower()  # moldura fora, sem meta-prompt
+    assert "seguran" in saida.lower()
+    assert "<think>" not in saida.lower()
+
+
 def test_prompt_composto_ganha_tags_xml(cleaner):
     saida = cleaner.clean(
         "escreva o prompt a gente tem uma api em rails e o endpoint de "
