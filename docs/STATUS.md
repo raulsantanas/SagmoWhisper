@@ -2,7 +2,35 @@
 
 > Última atualização: 2026-07-10
 
-## Estado atual: Meta-Declaração com Estrutura — Few-Shot Corrigido — RED→GREEN testado
+## Estado atual: Few-Shots Corrigidos (4 itens da PR #30) — Fidelidade Literal + Info Única — RED→GREEN testado
+
+**Task concluída (2026-07-10):** análise da PR #30 identificou riscos inversos ao bug anterior (few-shots contradiziam regra do gate). **4 melhorias entregues** em `src/core/providers/base.py` + testes:
+
+### 1. Risco inverso: novo few-shot de "informação única"
+**Causa:** todos os 5 few-shots PROMPT mostravam tags XML — nenhum demonstrava o lado "informação única → linha direta" da regra (comando simples sai sem tags).
+**Fix:** novo few-shot ("escreva o prompt e traduza este texto para o inglês" → "Traduza este texto para o inglês.", sem `<*>` tags).
+
+### 2. Fidelidade literal: paráfrase não-literal do motivo ditado
+**Causa real (2026-07-10):** o porquê ditado "para subir a última pr" virava "considere as últimas alterações" — paráfrase do modelo, não fidelidade às palavras ditadas.
+**Fix:** regra nova no system prompt PROMPT ("preserve as palavras ditadas exatamente... não parafraseie nem troque termos por sinônimos") + novo few-shot com porquê (ditado "quero um prompt refatora o módulo de pagamentos porque o time reclamou que tá difícil de manter" → saída com `<contexto>` preservando "porque o time reclamou que tá difícil de manter"). Validado com a API real: o ditado agora sai "Faça o rebuild completo dos ajustes de privacidade.\n\n<contexto>\nJá foram feitos ajustes aqui para subir a última PR.\n</contexto>".
+
+### 3. Guarda dos testes alinhada ao gate real
+**Causa:** o teste de meta-declaração identificava exemplos por substring "é um prompt" — desde a #29, deve usar o regex real (`_PATTERN_META_DECLARACAO`).
+**Fix:** regex extraído como constante e reutilizado nos testes. Decisão documentada: few-shot de meta-declaração sempre demonstra estrutura; caso de info única entra como comando (sem tags).
+
+### 4. Comentário estale corrigido
+Acima de `CLEANUP_EXAMPLES_PROMPT` dizia "menção casual" — desde a #29, menção casual não dispara o gate (apenas meta-declaração e comando dirigido disparam).
+
+- Arquivo: `src/core/providers/base.py` (4 melhorias, nenhuma mudança de lógica, só few-shots + system prompt + regex constante)
+- Testes: **237 passed, 3 skipped** (3 novos unit: `test_exemplo_de_informacao_unica_sai_sem_tags`, `test_exemplo_com_porque_preserva_o_motivo_literal`, `test_system_prompt_proibe_parafrase`; 2 novos live: `test_prompt_de_informacao_unica_sai_sem_tags`, `test_porque_ditado_sobrevive_sem_parafrase`; live Groq **13/13**)
+- Ruff: limpo (CC ≤ 4)
+- **Investigação lateral encerrada:** duplicação "E aíE aí" no log do Raul = DOIS ditados separados (03:51:53.058 e 03:51:53.951, ambos limpos corretamente) — dois toques de F8, não é bug do cleanup
+- **PR desta branch** (número ainda não definido): será aberta a partir de `fix/few-shots-info-unica-e-fidelidade` (rebased na main `3d73c18`)
+- ⚠️ **O .app instalado hoje (2026-07-10) NÃO tem estes fixes** — rebuild obrigatório via `./install.sh` após merge (será preciso re-conceder TCC Acessibilidade + Monitoramento de Entrada novamente)
+- **Próximo passo (coordenador):** PR → CI → merge → `./install.sh` + TCC re-concedido
+- Retomar: `cd /Users/raul/Documents/dev/SagmoWhisper/voz && claude`
+
+## Estado anterior: Meta-Declaração com Estrutura — Few-Shot Corrigido — RED→GREEN testado
 
 **Task concluída (2026-07-10):** ditados com meta-declaração ("esse é um prompt então faça o rebuild completo dos ajustes de privacidade porque já fiz aqui para subir a última pr", log 03:35:18) saíam em linha corrida, sem estrutura de prompt (sem tags XML). O gate `prompt_register_triggered()` FUNCIONA (verificado: True para os casos reais) — o problema era o modelo seguindo o exemplo do few-shot em vez da instrução.
 

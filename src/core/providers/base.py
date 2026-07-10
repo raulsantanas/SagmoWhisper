@@ -95,6 +95,8 @@ CLEANUP_SYSTEM_PROMPT_PROMPT = (
     "prompt da Anthropic — sempre SÓ com o que foi ditado:\n"
     "- objetivo claro e imperativo na primeira linha;\n"
     "- contexto ditado preservado (inclua o porquê, se foi ditado);\n"
+    "- preserve as palavras ditadas: reorganize e pontue, mas não "
+    "parafraseie nem troque termos do usuário por sinônimos;\n"
     "- havendo 2+ informações ditadas (contexto, múltiplas tarefas, "
     "restrições): estruture SEMPRE com as tags XML <contexto>, "
     "<tarefas> e <restricoes>, nunca em parágrafo corrido;\n"
@@ -141,10 +143,12 @@ CLEANUP_EXAMPLES: tuple[tuple[str, str], ...] = (
     ("boa", "boa"),
 )
 
-# Few-shots do registro PROMPT: só entram quando o ditado contém "prompt"
-# (gate em cleanup_messages). Cobrem as três formas de gatilho — comando,
-# meta-declaração e menção casual — e o caso composto (Flask) ancora a
-# estrutura com tags XML das boas práticas Anthropic.
+# Few-shots do registro PROMPT: só entram quando o gate dispara (regex em
+# prompt_register_triggered). Cobrem as formas de gatilho (comando,
+# meta-declaração, moldura "melhora esse prompt") e os DOIS lados da regra de
+# estrutura: o caso composto (Flask) ancora as tags XML; o caso de informação
+# única (traduza) ancora a linha direta sem tags; o caso com porquê (refatora)
+# ancora a fidelidade literal ao motivo ditado.
 CLEANUP_EXAMPLES_PROMPT: tuple[tuple[str, str], ...] = (
     (
         "escreva o prompt é crie uma landing page em astro com três "
@@ -213,12 +217,32 @@ CLEANUP_EXAMPLES_PROMPT: tuple[tuple[str, str], ...] = (
         "- Um para nível avançado.\n"
         "</tarefas>",
     ),
+    (
+        "escreva o prompt é traduza este texto para o inglês",
+        "Traduza este texto para o inglês.",
+    ),
+    (
+        "quero um prompt refatora o módulo de pagamentos porque o time "
+        "reclamou que tá difícil de manter",
+        "Refatore o módulo de pagamentos.\n"
+        "\n"
+        "<contexto>\n"
+        "O time reclamou que está difícil de manter.\n"
+        "</contexto>",
+    ),
 )
 
 _VERBO_GATILHO = r"(?:escrev|atualiz|melhor|aprimor|cri|ger)\w*|quero|preciso"
 _JANELA_ORACAO = r"[^.!?]{0,60}"
 _SEM_SUJEITO_3A_PESSOA_OU_NEGACAO = (
     r"(?<!\bele )(?<!\bela )(?<!\beles )(?<!\belas )(?<!\bnão )(?<!\bnao )"
+)
+
+# meta-declaração: demonstrativo adjacente + "é um prompt(s)" no presente.
+# Nomeado à parte porque os testes o usam para identificar os few-shots de
+# meta-declaração (mesma definição do gate, sem substring duplicada).
+_PATTERN_META_DECLARACAO = re.compile(
+    r"\b(?:isso|isto|esse|essa)\b(?:\s+\w+)?\s+é\s+um\s+prompts?\b"
 )
 
 _PATTERNS = (
@@ -232,8 +256,7 @@ _PATTERNS = (
         rf"\bprompts?\b{_JANELA_ORACAO}"
         rf"{_SEM_SUJEITO_3A_PESSOA_OU_NEGACAO}\b(?:{_VERBO_GATILHO})\b"
     ),
-    # meta-declaração: demonstrativo adjacente + "é um prompt(s)" no presente
-    re.compile(r"\b(?:isso|isto|esse|essa)\b(?:\s+\w+)?\s+é\s+um\s+prompts?\b"),
+    _PATTERN_META_DECLARACAO,
 )
 
 
