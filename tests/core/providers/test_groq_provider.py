@@ -66,13 +66,13 @@ def test_transcribe_embrulha_falha_em_transcription_error(tmp_path):
     assert "401" in exc.value.detail
 
 
-def test_clean_usa_prompt_e_temperatura_baixa():
+def test_clean_usa_prompt_e_temperatura_zero():
     client = _FakeClient(text="texto corrigido")
     result = GroqCleaner(client, "llama-3.1-8b-instant").clean("texto bruto")
 
     assert result == "texto corrigido"
     call = client.calls[0]
-    assert call["temperature"] == 0.2
+    assert call["temperature"] == 0
     from src.core.providers.base import cleanup_messages
 
     assert call["messages"] == cleanup_messages("texto bruto")
