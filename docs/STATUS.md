@@ -1,8 +1,65 @@
 # STATUS — Voz
 
-> Última atualização: 2026-07-07
+> Última atualização: 2026-07-09
 
-## Estado atual: Editor v2 MERGEADO (#24) + app reinstalado — faltam só os cliques TCC
+## Estado atual: Registro Determinístico MERGEADO (#26) + modelo Groq bloqueado em nível de organização
+
+**Task concluída (2026-07-09):** interpretação do ditado como PROMPT ou MENSAGEM
+tornou-se **determinística** — a decisão de registro é feita em código (`"prompt"
+in text.casefold()`) e sistema prompts específicos foram separados por tipo de
+registro. Três correções empilhadas no PR #26:
+
+1. **Correção anti-meta-prompt** (2026-07-07, órfã): o prompt gerador de prompts
+   tinha fixação no padrão "{prompt}. Estruture assim:…" — ditados como "peça
+   ao Claude estruturar" acionavam geração autorreferencial quebrada.
+   Removido o padrão e reescrito como "Você é um assistente que ajuda a
+   estruturar prompts" (imperativo, sem exemplo de saída literal).
+
+2. **Separação de system prompts** (novo): `cleanup_messages()` em
+   `src/core/providers/base.py` agora recebe o registro como parâmetro e
+   escolhe o system prompt e few-shots específicos (constantes novas:
+   `CLEANUP_SYSTEM_PROMPT_PROMPT` / `CLEANUP_SYSTEM_PROMPT_MENSAGEM`). A
+   constante original `CLEANUP_SYSTEM_PROMPT` foi removida. Gatilho de registro
+   em código é o único responsável pela categorização (SRP).
+
+3. **Bloqueio Groq no nível da organização**: Groq retorna `403
+   model_permission_blocked_org` para todos os chat models exceto
+   `llama-3.3-70b-versatile` (até `openai/gpt-oss-120b`, `llama-3.1-8b-instant`
+   e todos os gpt-oss alternativos bloqueados). Default + allowlist de
+   cleanup + fallback foram atualizados em `src/core/config.py` para usar
+   APENAS o modelo que funciona na org. Se o Raul habilitar mais modelos em
+   https://console.groq.com/settings/limits, a config faz override automático.
+
+- Arquivos: `src/core/providers/base.py` (system prompts + few-shots por
+  registro), `src/core/config.py` (default + allowlist migrations), testes
+  (160 linhas novas em `tests/core/providers/test_base.py` +
+  `tests/test_cleanup_live.py`).
+- Testes: **167 passed, 3 skipped** · ruff limpo (CC ≤ 4).
+- Fumaça live (`pytest -m groq_live --no-cov`): **8/8** (composto com tags
+  XML, composto sem tags, comando "escreva o prompt…", menção casual
+  "melhora esse prompt", transcrição crua com erro de limpeza + fallback,
+  2 reps cada).
+- **PR #26 MERGEADO** em 2026-07-09; CI verde antes do merge; main = `9448b78`.
+- **Instalação em execução pelo maestro** (2026-07-09): `./install.sh` rodando
+  em paralelo; rebuild + reinstalação do .app, segue TCC reset.
+- **Próxima task (HUMANO — Raul):** re-conceder permissões macOS (Ajustes do
+  Sistema → Privacidade e Segurança → **Acessibilidade** e **Monitoramento de
+  Entrada** → adicionar SagmoWhisper com "+"), reabrir o app, e testar 3
+  cenários de ditado: (1) "escreva o prompt para…", (2) menção casual "o
+  prompt deveria ser…", (3) "melhora esse prompt…" (todos devem resultar em
+  prompt formatado com tags XML ou estrutura imperativa), + 1 mensagem normal
+  (sem tags, sem formatação).
+- Pendências técnicas conhecidas: fumaça em Ubuntu real (tirar selo Beta);
+  temperatura 0 no cleaner (1 variância residual rara em ~12 runs com XML
+  tags); fallback silencioso do pipeline para crua quando API falha (sem
+  aviso de UI).
+- Débito vivo: Groq org bloqueou `openai/gpt-oss-20b` e `llama-3.1-8b-instant`
+  — cat do projeto agora reflete só `llama-3.3-70b-versatile` como opção de
+  limpeza. Re-habilitar modelos em console.groq.com/settings/limits + rodar
+  config update automático no próximo login.
+- Retomar: `cd /Users/raul/Documents/dev/SagmoWhisper/voz && claude`
+
+## Estado anterior: Editor v2 MERGEADO (#24) + app reinstalado — faltam só os cliques TCC
 
 **Task concluída (2026-07-07):** o registro PROMPT agora dispara com
 **QUALQUER menção à palavra "prompt"** no ditado (comando, meta-declaração ou
