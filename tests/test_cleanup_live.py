@@ -61,7 +61,8 @@ def test_enumeracao_ditada_vira_bullets(cleaner):
         "preciso de três coisas primeiro o relatório de vendas depois "
         "a lista de leads e por último o acesso ao dashboard"
     )
-    assert saida.count("- ") >= 2 or saida.count("• ") >= 2
+    # marcador de bullet varia por modelo (-, • ou *); o que importa é a lista
+    assert any(saida.count(m) >= 2 for m in ("- ", "• ", "* "))
 
 
 def test_texto_curto_volta_identico(cleaner):
@@ -75,6 +76,18 @@ def test_mencao_casual_a_prompt_vira_prompt_e_nao_conversa(cleaner):
     )
     assert "quero um prompt" not in saida.lower()  # moldura removida
     assert "atas" in saida.lower() or "ata" in saida.lower()
+    assert "<think>" not in saida.lower()
+
+
+def test_melhore_o_prompt_nao_vira_meta_prompt(cleaner):
+    # Bug real (2026-07-07): a saida virou "Melhore o prompt fornecido..."
+    saida = cleaner.clean(
+        "melhora esse prompt e analisa o codigo final se existe alguma "
+        "falha de seguranca e chama os agentes de seguranca se nao tiver "
+        "falha crie a solucao seguindo as melhores praticas do mercado"
+    )
+    assert "prompt" not in saida.lower()  # moldura fora, sem meta-prompt
+    assert "seguran" in saida.lower()
     assert "<think>" not in saida.lower()
 
 

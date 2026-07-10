@@ -1,11 +1,21 @@
+from src.core.providers import base
 from src.core.providers.base import (
     CLEANUP_EXAMPLES,
     CLEANUP_EXAMPLES_PROMPT,
-    CLEANUP_SYSTEM_PROMPT,
     PROVIDER_CATALOG,
     TranscriptionError,
     cleanup_messages,
 )
+
+
+def _pares(msgs):
+    """Extrai os pares (user, assistant) few-shot do miolo das mensagens."""
+    return [(msgs[i], msgs[i + 1]) for i in range(1, len(msgs) - 1, 2)]
+
+
+# --------------------------------------------------------------------------
+# Catálogo e erro tipado — inalterados pelo novo contrato
+# --------------------------------------------------------------------------
 
 
 def test_error_expoe_provider_e_detail():
@@ -27,7 +37,7 @@ def test_modelos_groq_verbatim_do_spec():
     assert info.transcription_models == (
         "whisper-large-v3-turbo", "whisper-large-v3"
     )
-    assert info.cleanup_models == ("openai/gpt-oss-120b", "openai/gpt-oss-20b")
+    assert info.cleanup_models == ("llama-3.3-70b-versatile",)
     assert info.needs_api_key is True
 
 
@@ -45,34 +55,172 @@ def test_local_sem_key_e_sem_limpeza():
     assert info.needs_api_key is False
 
 
-def test_cleanup_messages_comeca_no_system_e_termina_no_texto_bruto():
-    messages = cleanup_messages("texto bruto")
-    assert messages[0] == {"role": "system", "content": CLEANUP_SYSTEM_PROMPT}
-    assert messages[-1] == {"role": "user", "content": "texto bruto"}
+# --------------------------------------------------------------------------
+# Gate em código seleciona o SYSTEM PROMPT do registro (decisão 100% em código)
+# --------------------------------------------------------------------------
 
 
-def test_cleanup_messages_tem_exemplo_de_pergunta_nao_respondida():
-    messages = cleanup_messages("qualquer coisa")
-    exemplos = [
-        (messages[i], messages[i + 1])
-        for i in range(1, len(messages) - 1, 2)
-    ]
-    assert len(exemplos) >= 2
-    perguntas = [
-        (u, a) for u, a in exemplos if a["content"].strip().endswith("?")
-    ]
-    assert perguntas, "precisa de exemplo em que a pergunta continua pergunta"
-    u, a = perguntas[0]
-    assert u["role"] == "user" and a["role"] == "assistant"
-    assert "capital" in u["content"] and "capital" in a["content"]
+def test_gate_sem_prompt_seleciona_system_mensagem():
+    msgs = cleanup_messages("oi tudo bem me liga depois")
+    assert msgs[0] == {
+        "role": "system", "content": base.CLEANUP_SYSTEM_PROMPT_MENSAGEM
+    }
 
 
-def test_system_prompt_define_dois_registros_e_proibe_responder():
-    prompt = CLEANUP_SYSTEM_PROMPT
-    assert "escreva/atualize o prompt" in prompt.lower()  # gatilho comando
-    assert "whatsapp" in prompt.lower()  # registro MENSAGEM
-    assert "NUNCA RESPONDER" in prompt
-    assert "bullets" in prompt.lower()
+def test_gate_com_prompt_seleciona_system_prompt():
+    msgs = cleanup_messages("isso aqui é um prompt de teste qualquer")
+    assert msgs[0] == {
+        "role": "system", "content": base.CLEANUP_SYSTEM_PROMPT_PROMPT
+    }
+
+
+def test_gate_ignora_caixa_ao_selecionar_system():
+    alto = cleanup_messages("escreva o PROMPT de teste")
+    misto = cleanup_messages("escreva o Prompt de teste")
+    baixo = cleanup_messages("escreva o prompt de teste")
+    esperado = {"role": "system", "content": base.CLEANUP_SYSTEM_PROMPT_PROMPT}
+    assert alto[0] == misto[0] == baixo[0] == esperado
+
+
+# --------------------------------------------------------------------------
+# Gate seleciona os EXEMPLOS de forma exclusiva por registro
+# (PROMPT → só CLEANUP_EXAMPLES_PROMPT; MENSAGEM → só CLEANUP_EXAMPLES)
+# --------------------------------------------------------------------------
+
+
+def test_registro_mensagem_usa_apenas_exemplos_de_mensagem():
+    msgs = cleanup_messages("bom dia preciso confirmar a reunião de amanhã")
+    assert msgs[0]["content"] == base.CLEANUP_SYSTEM_PROMPT_MENSAGEM
+    assert len(msgs) == 1 + 2 * len(CLEANUP_EXAMPLES) + 1
+    pares = [(u["content"], a["content"]) for u, a in _pares(msgs)]
+    assert pares == list(CLEANUP_EXAMPLES)
+    conteudos = [m["content"] for m in msgs]
+    for entrada, _ in CLEANUP_EXAMPLES_PROMPT:
+        assert entrada not in conteudos
+
+
+def test_registro_prompt_usa_apenas_exemplos_de_prompt():
+    msgs = cleanup_messages("quero um prompt pra gerar posts de instagram")
+    assert msgs[0]["content"] == base.CLEANUP_SYSTEM_PROMPT_PROMPT
+    assert len(msgs) == 1 + 2 * len(CLEANUP_EXAMPLES_PROMPT) + 1
+    pares = [(u["content"], a["content"]) for u, a in _pares(msgs)]
+    assert pares == list(CLEANUP_EXAMPLES_PROMPT)
+    conteudos = [m["content"] for m in msgs]
+    for entrada, _ in CLEANUP_EXAMPLES:
+        assert entrada not in conteudos
+
+
+# --------------------------------------------------------------------------
+# Estrutura das mensagens: system primeiro, ditado por último, pares no meio
+# --------------------------------------------------------------------------
+
+
+def test_cleanup_messages_system_primeiro_e_ditado_por_ultimo():
+    msgs = cleanup_messages("um ditado qualquer sem gatilho")
+    assert msgs[0]["role"] == "system"
+    assert msgs[-1] == {"role": "user", "content": "um ditado qualquer sem gatilho"}
+
+
+def test_cleanup_messages_miolo_alterna_user_assistant():
+    msgs = cleanup_messages("me manda o relatório por favor")
+    meio = msgs[1:-1]
+    assert meio and len(meio) % 2 == 0
+    for i in range(0, len(meio), 2):
+        assert meio[i]["role"] == "user"
+        assert meio[i + 1]["role"] == "assistant"
+
+
+# --------------------------------------------------------------------------
+# Conteúdo obrigatório de CADA system prompt
+# --------------------------------------------------------------------------
+
+
+def test_ambos_system_prompts_tem_regra_suprema():
+    for prompt in (
+        base.CLEANUP_SYSTEM_PROMPT_MENSAGEM,
+        base.CLEANUP_SYSTEM_PROMPT_PROMPT,
+    ):
+        assert "REGRA SUPREMA" in prompt
+        assert "NUNCA RESPONDER" in prompt
+
+
+def test_ambos_system_prompts_tem_formato_da_resposta():
+    for prompt in (
+        base.CLEANUP_SYSTEM_PROMPT_MENSAGEM,
+        base.CLEANUP_SYSTEM_PROMPT_PROMPT,
+    ):
+        assert "FORMATO DA RESPOSTA" in prompt
+
+
+def test_system_mensagem_descreve_registro_whatsapp():
+    prompt = base.CLEANUP_SYSTEM_PROMPT_MENSAGEM.lower()
+    assert "whatsapp" in prompt
+    assert "bullets" in prompt
+
+
+def test_system_mensagem_texto_curto_volta_identico():
+    assert "idêntico" in base.CLEANUP_SYSTEM_PROMPT_MENSAGEM.lower()
+
+
+def test_system_mensagem_nao_menciona_o_registro_prompt():
+    prompt = base.CLEANUP_SYSTEM_PROMPT_MENSAGEM.casefold()
+    assert "prompt" not in prompt
+    assert "<contexto>" not in prompt
+
+
+def test_system_prompt_estrutura_composto_com_tags_xml():
+    prompt = base.CLEANUP_SYSTEM_PROMPT_PROMPT
+    assert "<contexto>" in prompt
+    assert "<tarefas>" in prompt
+    assert "<restricoes>" in prompt
+
+
+def test_system_prompt_assume_o_registro_de_forma_imperativa():
+    prompt = base.CLEANUP_SYSTEM_PROMPT_PROMPT.casefold()
+    assert "é um prompt" in prompt
+    assert "imperativ" in prompt
+
+
+def test_system_prompt_proibe_meta_prompt():
+    prompt = base.CLEANUP_SYSTEM_PROMPT_PROMPT.casefold()
+    assert "criar ou melhorar outro prompt" in prompt
+    assert "melhore o prompt" in prompt
+
+
+def test_system_prompt_sem_linguagem_condicional_de_disparo():
+    # A decisão do registro já foi tomada em código; o system prompt do
+    # registro PROMPT não pode conter a lógica de gatilho condicional.
+    prompt = base.CLEANUP_SYSTEM_PROMPT_PROMPT.casefold()
+    assert "dispara" not in prompt
+    assert "qualquer menção" not in prompt
+
+
+def test_system_prompt_nao_descreve_o_registro_mensagem():
+    assert "whatsapp" not in base.CLEANUP_SYSTEM_PROMPT_PROMPT.casefold()
+
+
+def test_constante_antiga_de_prompt_unico_foi_removida():
+    # CLEANUP_SYSTEM_PROMPT (prompt único que delegava o registro ao LLM)
+    # deixa de existir no novo contrato.
+    assert not hasattr(base, "CLEANUP_SYSTEM_PROMPT")
+
+
+# --------------------------------------------------------------------------
+# Few-shots (constantes) — âncoras de comportamento de cada registro
+# --------------------------------------------------------------------------
+
+
+def test_exemplo_real_de_mensagem_longa_preserva_a_pergunta():
+    helena = [(u, a) for u, a in CLEANUP_EXAMPLES if "helena" in u]
+    assert helena, "precisa do caso real da mensagem da Helena como âncora"
+    ditado, saida = helena[0]
+    assert "?" not in ditado and "?" in saida
+    assert "matrículas" in saida and "evasão" in saida
+
+
+def test_exemplo_de_enumeracao_vira_bullets():
+    bullets = [a for _, a in CLEANUP_EXAMPLES if a.count("\n- ") >= 2]
+    assert bullets, "precisa de exemplo de enumeração ditada virando bullets"
 
 
 def test_exemplo_com_gatilho_remove_o_comando_da_saida():
@@ -86,54 +234,6 @@ def test_exemplo_com_gatilho_remove_o_comando_da_saida():
     assert "\n- " in saida  # saída estruturada em bullets
 
 
-def test_exemplo_de_enumeracao_vira_bullets():
-    bullets = [a for _, a in CLEANUP_EXAMPLES if a.count("\n- ") >= 2]
-    assert bullets, "precisa de exemplo de enumeração ditada virando bullets"
-
-
-def test_exemplo_real_de_mensagem_longa_preserva_a_pergunta():
-    helena = [(u, a) for u, a in CLEANUP_EXAMPLES if "helena" in u]
-    assert helena, "precisa do caso real da mensagem da Helena como âncora"
-    ditado, saida = helena[0]
-    assert "?" not in ditado and "?" in saida
-    assert "matrículas" in saida and "evasão" in saida
-
-
-def test_ditado_sem_prompt_nao_inclui_exemplos_gateados():
-    msgs = cleanup_messages("oi tudo bem me liga depois")
-    esperado = 1 + 2 * len(CLEANUP_EXAMPLES) + 1
-    assert len(msgs) == esperado
-    conteudos = [m["content"] for m in msgs]
-    for entrada, _ in CLEANUP_EXAMPLES_PROMPT:
-        assert entrada not in conteudos
-
-
-def test_ditado_com_prompt_inclui_exemplos_gateados():
-    msgs = cleanup_messages("isso seria um prompt teste qualquer")
-    esperado = 1 + 2 * (len(CLEANUP_EXAMPLES) + len(CLEANUP_EXAMPLES_PROMPT)) + 1
-    assert len(msgs) == esperado
-
-
-def test_gate_ignora_caixa():
-    msgs_maiusculo = cleanup_messages("escreva o Prompt de teste")
-    msgs_minusculo = cleanup_messages("escreva o prompt de teste")
-    assert len(msgs_maiusculo) == len(msgs_minusculo)
-
-
-def test_system_prompt_dispara_com_qualquer_mencao_a_palavra_prompt():
-    prompt = CLEANUP_SYSTEM_PROMPT
-    assert "QUALQUER menção" in prompt
-    # regra antiga ("'prompt' como assunto não dispara") não pode sobreviver
-    assert "apenas assunto" not in prompt
-
-
-def test_system_prompt_estrutura_prompts_compostos_com_tags_xml():
-    prompt = CLEANUP_SYSTEM_PROMPT
-    assert "<contexto>" in prompt
-    assert "<tarefas>" in prompt
-    assert "<restricoes>" in prompt
-
-
 def test_exemplo_composto_usa_tags_xml_no_prompt_gerado():
     flask = [(u, a) for u, a in CLEANUP_EXAMPLES_PROMPT if "flask" in u]
     assert flask, "precisa do exemplo composto (Flask) como âncora"
@@ -141,6 +241,16 @@ def test_exemplo_composto_usa_tags_xml_no_prompt_gerado():
     assert "<contexto>" in saida and "</contexto>" in saida
     assert "<tarefas>" in saida and "</tarefas>" in saida
     assert "<restricoes>" in saida and "</restricoes>" in saida
+
+
+def test_exemplo_melhore_remove_moldura_e_nao_vira_meta_prompt():
+    melhore = [
+        (u, a) for u, a in CLEANUP_EXAMPLES_PROMPT if u.startswith("melhora")
+    ]
+    assert melhore, "precisa de exemplo few-shot com o comando 'melhora'"
+    _, saida = melhore[0]
+    assert "prompt" not in saida.lower()
+    assert "melhor" not in saida.lower().split("\n")[0]
 
 
 def test_mencao_casual_a_prompt_vira_prompt_e_nao_conversa():
@@ -151,22 +261,9 @@ def test_mencao_casual_a_prompt_vira_prompt_e_nao_conversa():
     assert mencao, "precisa de exemplo de menção casual à palavra prompt"
     ditado, saida = mencao[0]
     assert "prompt" in ditado
-    assert not saida.lower().startswith("ei")
-    # a moldura ("preciso de um prompt...") sai; fica só o prompt em si
     assert "preciso" not in saida.lower()
 
 
 def test_nenhum_exemplo_gateado_sai_como_mensagem_de_conversa():
     for _, saida in CLEANUP_EXAMPLES_PROMPT:
         assert not saida.startswith("Ei, Bruno")
-
-
-def test_system_prompt_sempre_completo_e_primeiro():
-    msgs = cleanup_messages("qualquer coisa")
-    assert msgs[0] == {"role": "system", "content": CLEANUP_SYSTEM_PROMPT}
-    assert "1) PROMPT" in CLEANUP_SYSTEM_PROMPT
-
-
-def test_ultima_mensagem_e_o_ditado_do_usuario():
-    msgs = cleanup_messages("meu ditado")
-    assert msgs[-1] == {"role": "user", "content": "meu ditado"}
