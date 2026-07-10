@@ -33,7 +33,7 @@ class GroqCleaner:
         try:
             completion = self._client.chat.completions.create(
                 model=self._model,
-                temperature=0.2,
+                temperature=0,
                 messages=cleanup_messages(text),
             )
         except Exception as e:

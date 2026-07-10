@@ -1,3 +1,7 @@
+import re
+
+import pytest
+
 from src.core.providers import base
 from src.core.providers.base import (
     CLEANUP_EXAMPLES,
@@ -67,19 +71,95 @@ def test_gate_sem_prompt_seleciona_system_mensagem():
     }
 
 
-def test_gate_com_prompt_seleciona_system_prompt():
-    msgs = cleanup_messages("isso aqui é um prompt de teste qualquer")
+# --------------------------------------------------------------------------
+# Contrato novo do GATILHO: o registro PROMPT dispara APENAS com comando
+# explícito dirigido ao editor ou meta-declaração — nunca por qualquer menção
+# à palavra "prompt". Ditados reais do log do app são as âncoras.
+# --------------------------------------------------------------------------
+
+# Comando dirigido ao editor (verbo de criação/melhoria + "prompt") ou
+# meta-declaração (demonstrativo + "é um prompt" no presente).
+DITADOS_QUE_DISPARAM_PROMPT = [
+    # --- meta-declaração (demonstrativo + "é um prompt" no presente) ---
+    "Isso é um prompt. Será que você vai conseguir identificar? Eu quero "
+    "que você gere um relatório final e um PR final sobre tudo que foi feito.",
+    "isso aqui é um prompt: preciso que você organize os arquivos csv de "
+    "clientes",
+    "isto é um prompt para gerar um resumo do artigo",
+    "esse texto é um prompt de teste do editor",
+    # --- comando dirigido ao editor (verbo + "prompt" na mesma oração) ---
+    "escreva o prompt a gente tem uma api em rails e o endpoint de "
+    "relatórios está lento",
+    "melhora esse prompt e analisa o código final se existe alguma falha "
+    "de segurança",
+    "aprimora esse prompt. Eu não entendi absolutamente nada do que você fez",
+    "quero um prompt pra gerar três posts de instagram sobre café coado",
+    "A página não está abrindo, melhore o prompt para corrigir isso",
+    "crie um prompt pra organizar a agenda da semana",
+    "preciso de um prompt pra revisar o meu código",
+    "atualize esse prompt pra incluir o passo de deploy",
+    # verbo DEPOIS da palavra ("um prompt, melhore ele")
+    "um prompt, melhore ele pra ficar mais objetivo",
+    # substantivo no plural ("prompts") — mesmo padrão de comando
+    "crie dois prompts pra mim",
+    "quero três prompts sobre café",
+    "melhora esses prompts",
+]
+
+# Contêm "prompt" (ou não), mas NÃO são comando/meta-declaração no presente:
+# meta-fala sobre prompts, verbo em 3ª pessoa, reclamação, ou sem a palavra.
+DITADOS_QUE_NAO_DISPARAM_PROMPT = [
+    "Esse texto, entre chaves, era um prompt. Eu ainda avisei, é um prompt. "
+    "E ele não gerou bullet points, não gerou a estrutura que a Antropik "
+    "diz que tem que fazer, não fez nada disso.",
+    "se eu falar alguma palavra com prompt e ele gera um prompt aleatório "
+    "em vez de ser o ponto em cima do texto que eu estou falando",
+    "o prompt não funcionou nada do que eu pedi",
+    "Qual LLM estamos utilizando além da LLM de voz?",
+    "vou usar o login do google como login do admin",
+    # ditado real sem pontuação (Whisper nem sempre pontua): verbo de 3ª
+    # pessoa negado ("nao gerou") não pode ser lido como comando ao editor.
+    "esse texto entre chaves era um prompt eu ainda avisei e ele nao "
+    "gerou bullet points nao gerou a estrutura que a anthropic diz que "
+    "tem que fazer nao fez nada disso",
+    # sujeito de 3ª pessoa do PLURAL + verbo: mesma exclusão de "ele/ela",
+    # agora com "prompts" no plural.
+    "eles geram prompts aleatorios toda hora",
+    "elas criam prompts sozinhas",
+]
+
+
+@pytest.mark.parametrize("ditado", DITADOS_QUE_DISPARAM_PROMPT)
+def test_predicado_dispara_registro_prompt(ditado):
+    assert base.prompt_register_triggered(ditado) is True
+
+
+@pytest.mark.parametrize("ditado", DITADOS_QUE_NAO_DISPARAM_PROMPT)
+def test_predicado_nao_dispara_registro_prompt(ditado):
+    assert base.prompt_register_triggered(ditado) is False
+
+
+@pytest.mark.parametrize("ditado", DITADOS_QUE_DISPARAM_PROMPT)
+def test_cleanup_messages_seleciona_system_prompt_quando_dispara(ditado):
+    msgs = cleanup_messages(ditado)
     assert msgs[0] == {
         "role": "system", "content": base.CLEANUP_SYSTEM_PROMPT_PROMPT
     }
 
 
-def test_gate_ignora_caixa_ao_selecionar_system():
-    alto = cleanup_messages("escreva o PROMPT de teste")
-    misto = cleanup_messages("escreva o Prompt de teste")
-    baixo = cleanup_messages("escreva o prompt de teste")
-    esperado = {"role": "system", "content": base.CLEANUP_SYSTEM_PROMPT_PROMPT}
-    assert alto[0] == misto[0] == baixo[0] == esperado
+@pytest.mark.parametrize("ditado", DITADOS_QUE_NAO_DISPARAM_PROMPT)
+def test_cleanup_messages_seleciona_system_mensagem_quando_nao_dispara(ditado):
+    msgs = cleanup_messages(ditado)
+    assert msgs[0] == {
+        "role": "system", "content": base.CLEANUP_SYSTEM_PROMPT_MENSAGEM
+    }
+
+
+def test_predicado_dispara_ignora_caixa():
+    for variante in ("escreva o PROMPT de teste",
+                     "Escreva o Prompt de teste",
+                     "escreva o prompt de teste"):
+        assert base.prompt_register_triggered(variante) is True
 
 
 # --------------------------------------------------------------------------
@@ -267,3 +347,51 @@ def test_mencao_casual_a_prompt_vira_prompt_e_nao_conversa():
 def test_nenhum_exemplo_gateado_sai_como_mensagem_de_conversa():
     for _, saida in CLEANUP_EXAMPLES_PROMPT:
         assert not saida.startswith("Ei, Bruno")
+
+
+# --------------------------------------------------------------------------
+# Contrato novo: os DOIS conjuntos de few-shots respeitam o gate determinístico
+# (todo exemplo PROMPT dispara; nenhum exemplo MENSAGEM dispara).
+# --------------------------------------------------------------------------
+
+
+def test_todo_exemplo_do_registro_prompt_dispara_o_gate():
+    for entrada, _ in CLEANUP_EXAMPLES_PROMPT:
+        assert base.prompt_register_triggered(entrada) is True, entrada
+
+
+def test_nenhum_exemplo_do_registro_mensagem_dispara_o_gate():
+    for entrada, _ in CLEANUP_EXAMPLES:
+        assert base.prompt_register_triggered(entrada) is False, entrada
+
+
+# --------------------------------------------------------------------------
+# Contrato novo: ESTRUTURA SEMPRE. O system prompt do registro PROMPT perde a
+# saída "curto: texto direto, sem tags"; havendo 2+ informações a saída é
+# estruturada (objetivo imperativo + seções em tags XML), nunca parágrafo solto.
+# --------------------------------------------------------------------------
+
+
+def test_system_prompt_nao_oferece_saida_sem_estrutura():
+    prompt = base.CLEANUP_SYSTEM_PROMPT_PROMPT.casefold()
+    assert "texto direto" not in prompt
+    assert "sem tags" not in prompt
+
+
+def _tem_bullets(texto: str) -> bool:
+    return "\n- " in texto or re.search(r"\n\d+\.\s", texto) is not None
+
+
+@pytest.mark.parametrize("par", CLEANUP_EXAMPLES_PROMPT)
+def test_exemplo_prompt_com_bullets_fica_dentro_de_tarefas(par):
+    _, saida = par
+    if _tem_bullets(saida):
+        assert "<tarefas>" in saida and "</tarefas>" in saida
+
+
+@pytest.mark.parametrize("par", CLEANUP_EXAMPLES_PROMPT)
+def test_exemplo_prompt_primeira_linha_nao_dangla_dois_pontos(par):
+    _, saida = par
+    primeira_linha = saida.splitlines()[0].strip()
+    assert primeira_linha
+    assert not primeira_linha.endswith(":")
