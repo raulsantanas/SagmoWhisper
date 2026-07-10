@@ -1,8 +1,35 @@
 # STATUS — Voz
 
-> Última atualização: 2026-07-09
+> Última atualização: 2026-07-10
 
-## Estado atual: Registro Determinístico MERGEADO (#26) + modelo Groq bloqueado em nível de organização
+## Estado atual: Deadlock PortAudio×CoreAudio CORRIGIDO — RED→GREEN testado
+
+**Task concluída (2026-07-10):** app congelou por ~4h40 (0% CPU) por deadlock nativo
+PortAudio×CoreAudio ao parar gravação. **Causa raiz:** toque rápido de F8 → `stop()`
+rodando em thread worker (`_handle_recording`) corria em paralelo com start assíncrono
+do CoreAudio ainda em andamento, travando a thread Python em `FinishStoppingStream` →
+`AudioOutputUnitStop` esperando `HALB_Mutex` enquanto IOThread do CoreAudio esperava
+mutex do AudioUnit dentro de `startStopCallback`. Evidência preservada em
+`~/Library/Logs/SagmoWhisper-deadlock-sample-2026-07-10.txt`.
+
+**Fix (TDD, RED→GREEN):** `src/audio_recorder.py` — `stop()` agora espera o primeiro
+bloco de áudio (novo `threading.Event` `_first_block`, setado em `_on_audio`) antes de
+chamar `stream.stop()/close()`, provando que stream está ativo e fechando a janela da
+corrida. Novo parâmetro `start_grace_timeout` (default 1.0s) evita espera infinita com
+mic mudo ou sem TCC (falla com erro claro, não travada). **Efeito colateral positivo:**
+gravações de toque rápido agora contêm ≥1 bloco real (mitiga erro 400 do Groq "Audio
+file is too short").
+
+- Arquivos: `src/audio_recorder.py` (correção), `tests/test_audio_recorder_stop_race.py` (novo, 2 testes)
+- Testes: **169 passed, 3 skipped, 8 deselected** (antes: 167 passed) — RED verificado (testes falharam antes da correção)
+- Ruff: limpo (CC ≤ 4)
+- Fumaça live: 5 ciclos start/stop imediatos com PortAudio real, sem travar (~0,2s/ciclo)
+- **PR desta branch** (ainda sem número): será aberta a partir de `fix/audio-stop-deadlock` (baseada na main `5d5dbca`, pós-#27)
+- ⚠️ **O .app instalado hoje (2026-07-09) NÃO tem este fix** — rebuild obrigatório via `./install.sh` após merge (e será preciso re-conceder TCC novamente)
+- Pendências que continuam valendo: re-conceder TCC Acessibilidade + Monitoramento de Entrada (invalidado por reinstalação 09/07); fumaça Ubuntu real
+- Retomar: `cd /Users/raul/Documents/dev/SagmoWhisper/voz && claude`
+
+## Estado anterior: Registro Determinístico MERGEADO (#26) + modelo Groq bloqueado em nível de organização
 
 **Task concluída (2026-07-09):** interpretação do ditado como PROMPT ou MENSAGEM
 tornou-se **determinística** — a decisão de registro é feita em código (`"prompt"
