@@ -2,7 +2,53 @@
 
 > Última atualização: 2026-07-10
 
-## Estado atual: Gatilho de Registro PROMPT Explícito + Temperatura 0 — RED→GREEN testado
+## Estado atual: Meta-Declaração com Estrutura — Few-Shot Corrigido — RED→GREEN testado
+
+**Task concluída (2026-07-10):** ditados com meta-declaração ("esse é um prompt então faça o rebuild completo dos ajustes de privacidade porque já fiz aqui para subir a última pr", log 03:35:18) saíam em linha corrida, sem estrutura de prompt (sem tags XML). O gate `prompt_register_triggered()` FUNCIONA (verificado: True para os casos reais) — o problema era o modelo seguindo o exemplo do few-shot em vez da instrução.
+
+### Análise: Causa raiz do few-shot contradizia a regra
+
+O único few-shot de meta-declaração em `CLEANUP_EXAMPLES_PROMPT` (exemplo do CSV) tinha:
+- **Entrada:** 3 tarefas enumeradas (imperativo complexo)
+- **Saída:** linha corrida, sem tags XML
+
+Isso contradiz a regra "2+ informações → SEMPRE tags XML" explicitada na #29. O modelo (llama-3.3-70b, temp 0) segue o exemplo, não a instrução verbal.
+
+**Fix:** saída do exemplo do CSV reescrita em `src/core/providers/base.py` para demonstrar a regra:
+- Objetivo imperativo na 1ª linha
+- `<tarefas>` em bullets (não linha corrida)
+- Demonstração estruturada da paráfrase semântica (conteúdo levemente reformulado, mas intenção preservada)
+
+Nada mais mudou no código. Temperatura já estava 0 (PR #29); gate já estava robusto (PR #29); só faltava o exemplo contradizer menos a regra.
+
+### Testes (TDD, RED verificado)
+
+**Novo teste direto:**
+- `test_exemplo_de_meta_declaracao_demonstra_tags_xml` em `tests/core/providers/test_base.py` (falhou antes do fix com exemplo antigo, passou pós-correção)
+
+**Novo teste live contra Groq real:**
+- `test_meta_declaracao_com_tarefa_e_porque_ganha_estrutura` em `tests/test_cleanup_live.py` com o ditado real do log (falhou antes; passou depois)
+
+**Suíte completa:**
+- `pytest`: **230 passed, 3 skipped, 11 deselected**
+- `pytest -m groq_live --no-cov`: **11/11** na primeira tentativa
+- `ruff check src tests`: limpo (CC ≤ 4)
+
+**Reprodução manual:** o ditado real agora sai com `<contexto>` e `<tarefas>`, estruturado.
+
+### Ressalva honesta: paráfrase semântica não-literal
+
+A saída estruturada parafraseia levemente o porquê original ("para subir a última pr" → "Considere as últimas alterações") — fidelidade literal do conteúdo segue como observação de acompanhamento, não bloqueia nem invalida a correção (o imperativo e as tarefas saem claros).
+
+- Arquivo: `src/core/providers/base.py` (exemplo `CLEANUP_EXAMPLES_PROMPT` reescrito)
+- Testes: **230 passed, 3 skipped, 11 deselected** (RED verificado com 1 novo teste que falhava antes); live Groq **11/11**
+- Ruff: limpo (CC ≤ 4)
+- **PR desta branch** (número ainda não definido): será aberta a partir de `fix/few-shot-meta-declaracao-estrutura` (rebased na main `f265fe5`)
+- ⚠️ **O .app instalado hoje (2026-07-10) NÃO tem este fix** — rebuild obrigatório via `./install.sh` após merge (será preciso re-conceder TCC Acessibilidade + Monitoramento de Entrada novamente)
+- **Próximo passo (coordenador):** PR → CI → merge → `./install.sh` + TCC re-concedido
+- Retomar: `cd /Users/raul/Documents/dev/SagmoWhisper/voz && claude`
+
+## Estado anterior: Gatilho de Registro PROMPT Explícito + Temperatura 0 — RED→GREEN testado
 
 **Task concluída (2026-07-10):** dois bugs corrigidos em sessão de revisão/refinamento do fix anterior (branch `fix/gatilho-explicito-estrutura-sempre`, rebased na main `b73ef31`):
 

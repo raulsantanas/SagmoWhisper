@@ -182,8 +182,13 @@ CLEANUP_EXAMPLES_PROMPT: tuple[tuple[str, str], ...] = (
         "o agente deve ler o csv de clientes validar os emails ah "
         "esqueci de falar que isso aqui é um prompt e gerar uma lista "
         "dos inválidos",
-        "Leia o CSV de clientes, valide os e-mails e gere uma lista dos "
-        "inválidos.",
+        "Processe o CSV de clientes.\n"
+        "\n"
+        "<tarefas>\n"
+        "- Leia o CSV de clientes.\n"
+        "- Valide os e-mails.\n"
+        "- Gere uma lista dos inválidos.\n"
+        "</tarefas>",
     ),
     (
         "melhora esse prompt e analisa o código final se existe alguma "
