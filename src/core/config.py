@@ -31,16 +31,19 @@ DEFAULT_CONFIG_PATH = default_config_path()
 DEFAULTS = {
     "provider": "groq",
     "transcription_model": "whisper-large-v3-turbo",
-    "cleanup_model": "openai/gpt-oss-120b",
+    "cleanup_model": "llama-3.3-70b-versatile",
     "language": "pt",
     "enable_cleanup": True,
     "hotkey": "f8",
     "sample_rate": 16000,
 }
 
-# Groq descontinuou os Llamas no free tier em 17/06/2026.
+# 17/06/2026: Groq descontinuou os Llamas 3.1/3.3 no free tier (migrou para
+# gpt-oss). 09/07/2026: Groq bloqueou gpt-oss e os demais chat models no
+# nível da org (403 model_permission_blocked_org) — só llama-3.3-70b-versatile
+# segue disponível, voltando a ser o default.
 _DEPRECATED_CLEANUP_MODELS = frozenset(
-    {"llama-3.1-8b-instant", "llama-3.3-70b-versatile"}
+    {"openai/gpt-oss-120b", "openai/gpt-oss-20b", "llama-3.1-8b-instant"}
 )
 
 _ENV_PARSERS = {

@@ -61,7 +61,8 @@ def test_enumeracao_ditada_vira_bullets(cleaner):
         "preciso de três coisas primeiro o relatório de vendas depois "
         "a lista de leads e por último o acesso ao dashboard"
     )
-    assert saida.count("- ") >= 2 or saida.count("• ") >= 2
+    # marcador de bullet varia por modelo (-, • ou *); o que importa é a lista
+    assert any(saida.count(m) >= 2 for m in ("- ", "• ", "* "))
 
 
 def test_texto_curto_volta_identico(cleaner):
