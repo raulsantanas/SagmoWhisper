@@ -137,3 +137,20 @@ def test_meta_declaracao_com_tarefa_e_porque_ganha_estrutura(cleaner):
         "privacidade porque já fiz aqui para subir a última pr"
     )
     assert "<contexto>" in saida or "<tarefas>" in saida
+
+
+def test_prompt_de_informacao_unica_sai_sem_tags(cleaner):
+    # Lado inverso da regra: tarefa única não ganha estrutura desnecessária.
+    saida = cleaner.clean("escreva o prompt resuma esse documento")
+    assert "<" not in saida
+    assert "resum" in saida.lower()
+
+
+def test_porque_ditado_sobrevive_sem_parafrase(cleaner):
+    # Ditado real (2026-07-10): o porquê virou 'considere as últimas
+    # alterações' — parafraseado. As palavras ditadas devem sobreviver.
+    saida = cleaner.clean(
+        "esse é um prompt então faça o rebuild completo dos ajustes de "
+        "privacidade porque já fiz aqui para subir a última pr"
+    )
+    assert "subir" in saida.casefold() or "última pr" in saida.casefold()
