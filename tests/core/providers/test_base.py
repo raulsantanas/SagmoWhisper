@@ -318,9 +318,14 @@ def test_exemplo_de_meta_declaracao_demonstra_tags_xml():
     """Bug real (2026-07-10): 'esse é um prompt então faça...' saía em linha
     corrida. O único few-shot de meta-declaração enumerava 3 tarefas e mesmo
     assim mostrava saída sem tags — ensinava o modelo a ignorar a regra
-    '2+ informações → SEMPRE tags XML'. Exemplos devem demonstrar a regra."""
+    '2+ informações → SEMPRE tags XML'. Exemplos devem demonstrar a regra.
+
+    Decisão: few-shot de meta-declaração sempre demonstra estrutura; caso de
+    informação única entra na forma de comando (ver exemplo 'traduza')."""
     metas = [
-        (u, a) for u, a in CLEANUP_EXAMPLES_PROMPT if "é um prompt" in u
+        (u, a)
+        for u, a in CLEANUP_EXAMPLES_PROMPT
+        if base._PATTERN_META_DECLARACAO.search(u.casefold())
     ]
     assert metas, "precisa de few-shot de meta-declaração ('isso é um prompt')"
     for _, saida in metas:
@@ -408,3 +413,36 @@ def test_exemplo_prompt_primeira_linha_nao_dangla_dois_pontos(par):
     primeira_linha = saida.splitlines()[0].strip()
     assert primeira_linha
     assert not primeira_linha.endswith(":")
+
+
+# --------------------------------------------------------------------------
+# Contrato novo: os few-shots demonstram os DOIS lados da regra de estrutura
+# (2+ informações → tags XML; informação única → linha direta) e a fidelidade
+# literal ao que foi ditado.
+# --------------------------------------------------------------------------
+
+
+def test_exemplo_de_informacao_unica_sai_sem_tags():
+    """Risco inverso do bug do CSV: com todos os few-shots mostrando tags, o
+    modelo aprende a estruturar até prompt de tarefa única. Um exemplo deve
+    demonstrar o lado 'informação única → texto direto' da regra."""
+    sem_tags = [a for _, a in CLEANUP_EXAMPLES_PROMPT if "<" not in a]
+    assert sem_tags, "precisa de few-shot de informação única sem tags XML"
+    for saida in sem_tags:
+        assert "\n" not in saida  # informação única = uma linha imperativa
+
+
+def test_exemplo_com_porque_preserva_o_motivo_literal():
+    """Bug real (2026-07-10): o porquê ditado 'para subir a última pr' virou
+    'considere as últimas alterações' — parafraseado. O porquê entra em
+    <contexto> com as palavras do usuário."""
+    porques = [(u, a) for u, a in CLEANUP_EXAMPLES_PROMPT if "porque" in u]
+    assert porques, "precisa de few-shot com porquê ditado"
+    for _, saida in porques:
+        assert "<contexto>" in saida
+    _, saida = porques[0]
+    assert "difícil de manter" in saida  # palavras ditadas, não sinônimos
+
+
+def test_system_prompt_proibe_parafrase():
+    assert "parafrase" in base.CLEANUP_SYSTEM_PROMPT_PROMPT.casefold()
