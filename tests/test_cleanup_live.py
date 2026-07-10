@@ -127,3 +127,13 @@ def test_prompt_composto_ganha_tags_xml(cleaner):
     assert "<tarefas>" in saida and "</tarefas>" in saida
     assert "<restricoes>" in saida
     assert "escreva o prompt" not in saida.lower()
+
+
+def test_meta_declaracao_com_tarefa_e_porque_ganha_estrutura(cleaner):
+    # Ditado real (2026-07-10) que saiu em linha corrida: tarefa + porquê
+    # são 2+ informações — o registro PROMPT exige tags XML.
+    saida = cleaner.clean(
+        "esse é um prompt então faça o rebuild completo dos ajustes de "
+        "privacidade porque já fiz aqui para subir a última pr"
+    )
+    assert "<contexto>" in saida or "<tarefas>" in saida

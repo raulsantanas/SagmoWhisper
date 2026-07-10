@@ -314,6 +314,19 @@ def test_exemplo_com_gatilho_remove_o_comando_da_saida():
     assert "\n- " in saida  # saída estruturada em bullets
 
 
+def test_exemplo_de_meta_declaracao_demonstra_tags_xml():
+    """Bug real (2026-07-10): 'esse é um prompt então faça...' saía em linha
+    corrida. O único few-shot de meta-declaração enumerava 3 tarefas e mesmo
+    assim mostrava saída sem tags — ensinava o modelo a ignorar a regra
+    '2+ informações → SEMPRE tags XML'. Exemplos devem demonstrar a regra."""
+    metas = [
+        (u, a) for u, a in CLEANUP_EXAMPLES_PROMPT if "é um prompt" in u
+    ]
+    assert metas, "precisa de few-shot de meta-declaração ('isso é um prompt')"
+    for _, saida in metas:
+        assert "<tarefas>" in saida or "<contexto>" in saida
+
+
 def test_exemplo_composto_usa_tags_xml_no_prompt_gerado():
     flask = [(u, a) for u, a in CLEANUP_EXAMPLES_PROMPT if "flask" in u]
     assert flask, "precisa do exemplo composto (Flask) como âncora"
