@@ -113,6 +113,11 @@ DITADOS_QUE_NAO_DISPARAM_PROMPT = [
     "o prompt não funcionou nada do que eu pedi",
     "Qual LLM estamos utilizando além da LLM de voz?",
     "vou usar o login do google como login do admin",
+    # ditado real sem pontuação (Whisper nem sempre pontua): verbo de 3ª
+    # pessoa negado ("nao gerou") não pode ser lido como comando ao editor.
+    "esse texto entre chaves era um prompt eu ainda avisei e ele nao "
+    "gerou bullet points nao gerou a estrutura que a anthropic diz que "
+    "tem que fazer nao fez nada disso",
 ]
 
 

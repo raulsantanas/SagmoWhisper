@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
@@ -94,9 +95,9 @@ CLEANUP_SYSTEM_PROMPT_PROMPT = (
     "prompt da Anthropic — sempre SÓ com o que foi ditado:\n"
     "- objetivo claro e imperativo na primeira linha;\n"
     "- contexto ditado preservado (inclua o porquê, se foi ditado);\n"
-    "- composto (contexto + tarefas + restrições/critérios): estruture "
-    "com as tags XML <contexto>, <tarefas> e <restricoes>; curto: texto "
-    "direto, sem tags;\n"
+    "- havendo 2+ informações ditadas (contexto, múltiplas tarefas, "
+    "restrições): estruture SEMPRE com as tags XML <contexto>, "
+    "<tarefas> e <restricoes>, nunca em parágrafo corrido;\n"
     "- tarefas em bullets quando o ditado enumerar — numeradas se a "
     "ordem foi ditada;\n"
     "- restrições e critérios de sucesso APENAS se ditados;\n"
@@ -148,10 +149,13 @@ CLEANUP_EXAMPLES_PROMPT: tuple[tuple[str, str], ...] = (
     (
         "escreva o prompt é crie uma landing page em astro com três "
         "seções hero depoimentos e formulário de contato usando tailwind",
-        "Crie uma landing page em Astro com Tailwind, com três seções:\n"
+        "Crie uma landing page em Astro com Tailwind, com três seções.\n"
+        "\n"
+        "<tarefas>\n"
         "- Hero\n"
         "- Depoimentos\n"
-        "- Formulário de contato",
+        "- Formulário de contato\n"
+        "</tarefas>",
     ),
     (
         "escreva o prompt é o seguinte a gente tem um app flask e o "
@@ -185,26 +189,58 @@ CLEANUP_EXAMPLES_PROMPT: tuple[tuple[str, str], ...] = (
         "melhora esse prompt e analisa o código final se existe alguma "
         "falha de segurança se não tiver crie a solução seguindo as "
         "melhores práticas do mercado",
-        "Analise o código final em busca de falhas de segurança:\n"
-        "- se houver falhas, aponte cada uma;\n"
-        "- se não houver, crie a solução seguindo as melhores práticas "
-        "do mercado.",
+        "Analise o código final em busca de falhas de segurança.\n"
+        "\n"
+        "<tarefas>\n"
+        "- Se houver falhas, aponte cada uma.\n"
+        "- Se não houver, crie a solução seguindo as melhores práticas "
+        "do mercado.\n"
+        "</tarefas>",
     ),
     (
         "quero um prompt pra gerar três posts de instagram sobre café "
         "coado um pra iniciante um pra intermediário e um pra avançado",
-        "Gere três posts de Instagram sobre café coado:\n"
-        "- um para iniciantes;\n"
-        "- um para nível intermediário;\n"
-        "- um para nível avançado.",
+        "Gere três posts de Instagram sobre café coado.\n"
+        "\n"
+        "<tarefas>\n"
+        "- Um para iniciantes.\n"
+        "- Um para nível intermediário.\n"
+        "- Um para nível avançado.\n"
+        "</tarefas>",
     ),
 )
 
+_VERBO_GATILHO = r"(?:escrev|atualiz|melhor|aprimor|cri|ger)\w*|quero|preciso"
+_JANELA_ORACAO = r"[^.!?]{0,60}"
+_SEM_SUJEITO_3A_PESSOA_OU_NEGACAO = (
+    r"(?<!\bele )(?<!\bela )(?<!\bnão )(?<!\bnao )"
+)
+
+_PATTERNS = (
+    # comando dirigido ao editor: verbo antes de "prompt", mesma oração
+    re.compile(
+        rf"{_SEM_SUJEITO_3A_PESSOA_OU_NEGACAO}\b(?:{_VERBO_GATILHO})\b"
+        rf"{_JANELA_ORACAO}\bprompt\b"
+    ),
+    # comando dirigido ao editor: "prompt" antes do verbo, mesma oração
+    re.compile(
+        rf"\bprompt\b{_JANELA_ORACAO}"
+        rf"{_SEM_SUJEITO_3A_PESSOA_OU_NEGACAO}\b(?:{_VERBO_GATILHO})\b"
+    ),
+    # meta-declaração: demonstrativo adjacente + "é um prompt" no presente
+    re.compile(r"\b(?:isso|isto|esse|essa)\b(?:\s+\w+)?\s+é\s+um\s+prompt\b"),
+)
+
+
+def prompt_register_triggered(text: str) -> bool:
+    texto = text.casefold()
+    return any(padrao.search(texto) for padrao in _PATTERNS)
+
 
 def cleanup_messages(text: str) -> list[dict]:
-    # Invariante: todo gatilho do registro PROMPT contém a substring "prompt";
-    # um gatilho novo sem a palavra quebra este gate em silêncio.
-    is_prompt = "prompt" in text.casefold()
+    # Invariante do gate: todo exemplo de CLEANUP_EXAMPLES_PROMPT satisfaz
+    # prompt_register_triggered; nenhum exemplo de CLEANUP_EXAMPLES satisfaz.
+    is_prompt = prompt_register_triggered(text)
     system_prompt = (
         CLEANUP_SYSTEM_PROMPT_PROMPT if is_prompt else CLEANUP_SYSTEM_PROMPT_MENSAGEM
     )

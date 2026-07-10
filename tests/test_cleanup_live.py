@@ -91,6 +91,32 @@ def test_melhore_o_prompt_nao_vira_meta_prompt(cleaner):
     assert "<think>" not in saida.lower()
 
 
+def test_meta_fala_sobre_prompt_vira_mensagem_e_nao_alucina(cleaner):
+    # Bug real (2026-07-09): reclamacao ditada SOBRE o editor disparava o
+    # registro PROMPT e o modelo ecoou o few-shot do cafe coado verbatim.
+    saida = cleaner.clean(
+        "esse texto entre chaves era um prompt eu ainda avisei e ele nao "
+        "gerou bullet points nao gerou a estrutura que a anthropic diz "
+        "que tem que fazer nao fez nada disso"
+    )
+    assert "café" not in saida.lower()
+    assert "instagram" not in saida.lower()
+    assert "<tarefas>" not in saida
+    assert "prompt" in saida.lower()  # conteudo preservado, nao convertido
+
+
+def test_prompt_simples_com_duas_tarefas_ganha_estrutura(cleaner):
+    # Caso real (2026-07-09): saia em 1 linha; decisao do Raul: estrutura
+    # Anthropic sempre que houver 2+ informacoes ditadas.
+    saida = cleaner.clean(
+        "isso é um prompt eu quero que você gere um relatório final "
+        "e um pr final sobre tudo que foi feito"
+    )
+    assert "<tarefas>" in saida
+    assert "relat" in saida.lower()
+    assert "isso é um prompt" not in saida.lower()
+
+
 def test_prompt_composto_ganha_tags_xml(cleaner):
     saida = cleaner.clean(
         "escreva o prompt a gente tem uma api em rails e o endpoint de "
