@@ -2,7 +2,29 @@
 
 > Última atualização: 2026-07-10
 
-## Estado atual: Deadlock PortAudio×CoreAudio CORRIGIDO — RED→GREEN testado
+## Estado atual: Gatilho de Registro PROMPT Explícito + Temperatura 0 — RED→GREEN testado
+
+**Task concluída (2026-07-10):** dois bugs corrigidos em sessão de revisão/refinamento do fix anterior (branch `fix/gatilho-explicito-estrutura-sempre`, rebased na main `b73ef31`):
+
+### Bug 1: Saída sem estrutura (parágrafos/bullets) dependendo do conteúdo
+**Causa raiz:** `temperature=0.2` no `GroqCleaner` causava variância de estrutura; registro PROMPT com system prompt longo permitia saída "curta sem tags" como alternativa válida.
+**Fix:** `temperature=0` em `src/core/providers/groq_provider.py` (temperatura determinística). Registro PROMPT com estrutura Anthropic **SEMPRE** que houver 2+ informações: tags XML `<contexto>/<tarefas>/<restricoes>` em vez de parágrafo corrido; few-shots reancorados com exemplos de múltiplos blocos.
+
+### Bug 2: Menção casual à palavra "prompt" gerava prompt aleatório
+**Causa raiz:** gate do registro PROMPT era substring (`"prompt" in text.casefold()`) em `src/core/providers/base.py` — qualquer menção casual ligava o registro PROMPT, cujo system prompt transformava o ditado em prompt de LLM (meta-prompt não intencional).
+**Fix:** gate substituído por `prompt_register_triggered()` — regex de comando dirigido ao editor (verbo gatilho + "prompt(s)" na mesma oração, com exclusão de sujeito 3ª pessoa ele/ela/eles/elas e negação) OU meta-declaração (ex: "isso é um prompt"). A função está em `src/core/providers/base.py`; suporta plural "prompts" e valida contexto da menção.
+
+- Arquivos: `src/core/providers/base.py` (gate regex, estrutura XML, few-shots), `src/core/providers/groq_provider.py` (temperatura 0)
+- Testes: **229 passed, 3 skipped, 10 deselected** (RED verificado com 6 casos falhando antes do fix; todos passam pós-correção)
+- Ruff: limpo (CC ≤ 4)
+- Fumaça live Groq (`pytest -m groq_live`): **10/10 na primeira tentativa** — enumeração→bullets, menção casual "prompt" não alucina, "melhore o prompt" não vira meta-prompt, prompt composto→tags XML, "prompts" no plural, exclusão eles/elas validada
+- **PR desta branch** (número ainda não definido): será aberta a partir de `fix/gatilho-explicito-estrutura-sempre` (rebased em main `b73ef31`)
+- ⚠️ **O .app instalado hoje (2026-07-09) NÃO tem estes fixes** — rebuild obrigatório via `./install.sh` após merge (será preciso re-conceder TCC Acessibilidade + Monitoramento de Entrada novamente)
+- **Pendências que continuam:** fumaça Ubuntu real; backlog (avisar usuário quando limpeza falha; Wayland; notarização/Releases)
+- **Removido do backlog:** "temperatura 0 no cleaner" — entregue nesta branch (commit `cc337b2` + fixes pós-rebase)
+- Retomar: `cd /Users/raul/Documents/dev/SagmoWhisper/voz && claude`
+
+## Estado anterior: Deadlock PortAudio×CoreAudio CORRIGIDO — RED→GREEN testado
 
 **Task concluída (2026-07-10):** app congelou por ~4h40 (0% CPU) por deadlock nativo
 PortAudio×CoreAudio ao parar gravação. **Causa raiz:** toque rápido de F8 → `stop()`
