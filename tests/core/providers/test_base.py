@@ -100,6 +100,10 @@ DITADOS_QUE_DISPARAM_PROMPT = [
     "atualize esse prompt pra incluir o passo de deploy",
     # verbo DEPOIS da palavra ("um prompt, melhore ele")
     "um prompt, melhore ele pra ficar mais objetivo",
+    # substantivo no plural ("prompts") — mesmo padrão de comando
+    "crie dois prompts pra mim",
+    "quero três prompts sobre café",
+    "melhora esses prompts",
 ]
 
 # Contêm "prompt" (ou não), mas NÃO são comando/meta-declaração no presente:
@@ -118,6 +122,10 @@ DITADOS_QUE_NAO_DISPARAM_PROMPT = [
     "esse texto entre chaves era um prompt eu ainda avisei e ele nao "
     "gerou bullet points nao gerou a estrutura que a anthropic diz que "
     "tem que fazer nao fez nada disso",
+    # sujeito de 3ª pessoa do PLURAL + verbo: mesma exclusão de "ele/ela",
+    # agora com "prompts" no plural.
+    "eles geram prompts aleatorios toda hora",
+    "elas criam prompts sozinhas",
 ]
 
 

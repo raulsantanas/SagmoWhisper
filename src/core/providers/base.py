@@ -213,22 +213,22 @@ CLEANUP_EXAMPLES_PROMPT: tuple[tuple[str, str], ...] = (
 _VERBO_GATILHO = r"(?:escrev|atualiz|melhor|aprimor|cri|ger)\w*|quero|preciso"
 _JANELA_ORACAO = r"[^.!?]{0,60}"
 _SEM_SUJEITO_3A_PESSOA_OU_NEGACAO = (
-    r"(?<!\bele )(?<!\bela )(?<!\bnão )(?<!\bnao )"
+    r"(?<!\bele )(?<!\bela )(?<!\beles )(?<!\belas )(?<!\bnão )(?<!\bnao )"
 )
 
 _PATTERNS = (
-    # comando dirigido ao editor: verbo antes de "prompt", mesma oração
+    # comando dirigido ao editor: verbo antes de "prompt(s)", mesma oração
     re.compile(
         rf"{_SEM_SUJEITO_3A_PESSOA_OU_NEGACAO}\b(?:{_VERBO_GATILHO})\b"
-        rf"{_JANELA_ORACAO}\bprompt\b"
+        rf"{_JANELA_ORACAO}\bprompts?\b"
     ),
-    # comando dirigido ao editor: "prompt" antes do verbo, mesma oração
+    # comando dirigido ao editor: "prompt(s)" antes do verbo, mesma oração
     re.compile(
-        rf"\bprompt\b{_JANELA_ORACAO}"
+        rf"\bprompts?\b{_JANELA_ORACAO}"
         rf"{_SEM_SUJEITO_3A_PESSOA_OU_NEGACAO}\b(?:{_VERBO_GATILHO})\b"
     ),
-    # meta-declaração: demonstrativo adjacente + "é um prompt" no presente
-    re.compile(r"\b(?:isso|isto|esse|essa)\b(?:\s+\w+)?\s+é\s+um\s+prompt\b"),
+    # meta-declaração: demonstrativo adjacente + "é um prompt(s)" no presente
+    re.compile(r"\b(?:isso|isto|esse|essa)\b(?:\s+\w+)?\s+é\s+um\s+prompts?\b"),
 )
 
 
