@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from src.core.config import DEFAULTS, Config, migrate_env_key_if_needed
 
 
@@ -7,7 +9,7 @@ def test_load_sem_json_e_sem_env_usa_defaults(tmp_path):
     cfg = Config.load(path=tmp_path / "config.json", env={})
     assert cfg.provider == "groq"
     assert cfg.transcription_model == "whisper-large-v3-turbo"
-    assert cfg.cleanup_model == "openai/gpt-oss-120b"
+    assert cfg.cleanup_model == "llama-3.3-70b-versatile"
     assert cfg.language == "pt"
     assert cfg.enable_cleanup is True
     assert cfg.hotkey == "f8"
@@ -131,23 +133,44 @@ def test_caminho_no_linux_respeita_xdg_config_home():
     assert str(path) == "/tmp/xdg/sagmowhisper/config.json"
 
 
-def test_modelo_de_limpeza_descontinuado_no_json_migra_para_o_default(tmp_path):
+# Groq bloqueou (403 model_permission_blocked_org) todos os modelos de chat
+# exceto llama-3.3-70b-versatile: configs salvas com um bloqueado migram no load.
+_MODELOS_BLOQUEADOS = [
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "llama-3.1-8b-instant",
+]
+
+
+@pytest.mark.parametrize("bloqueado", _MODELOS_BLOQUEADOS)
+def test_modelo_de_limpeza_bloqueado_no_json_migra_para_o_default(
+    tmp_path, bloqueado
+):
     p = tmp_path / "config.json"
-    p.write_text(json.dumps({"cleanup_model": "llama-3.1-8b-instant"}))
+    p.write_text(json.dumps({"cleanup_model": bloqueado}))
     cfg = Config.load(path=p, env={})
-    assert cfg.cleanup_model == "openai/gpt-oss-120b"
+    assert cfg.cleanup_model == "llama-3.3-70b-versatile"
 
 
-def test_modelo_de_limpeza_descontinuado_no_env_tambem_migra(tmp_path):
+@pytest.mark.parametrize("bloqueado", _MODELOS_BLOQUEADOS)
+def test_modelo_de_limpeza_bloqueado_no_env_tambem_migra(tmp_path, bloqueado):
     cfg = Config.load(
         path=tmp_path / "c.json",
-        env={"CLEANUP_MODEL": "llama-3.3-70b-versatile"},
+        env={"CLEANUP_MODEL": bloqueado},
     )
-    assert cfg.cleanup_model == "openai/gpt-oss-120b"
+    assert cfg.cleanup_model == "llama-3.3-70b-versatile"
 
 
-def test_modelo_de_limpeza_customizado_e_preservado(tmp_path):
+def test_modelo_default_llama_versatile_salvo_e_preservado(tmp_path):
+    # O novo default NÃO está no conjunto de migração — se já salvo, permanece.
     p = tmp_path / "config.json"
-    p.write_text(json.dumps({"cleanup_model": "openai/gpt-oss-20b"}))
+    p.write_text(json.dumps({"cleanup_model": "llama-3.3-70b-versatile"}))
     cfg = Config.load(path=p, env={})
-    assert cfg.cleanup_model == "openai/gpt-oss-20b"
+    assert cfg.cleanup_model == "llama-3.3-70b-versatile"
+
+
+def test_modelo_de_limpeza_fora_do_conjunto_e_preservado(tmp_path):
+    p = tmp_path / "config.json"
+    p.write_text(json.dumps({"cleanup_model": "gpt-4o-mini"}))
+    cfg = Config.load(path=p, env={})
+    assert cfg.cleanup_model == "gpt-4o-mini"
