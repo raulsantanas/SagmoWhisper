@@ -1,8 +1,23 @@
 # STATUS — Voz
 
-> Última atualização: 2026-07-10
+> Última atualização: 2026-09-19
 
-## Estado atual: Few-Shots Corrigidos (4 itens da PR #30) — Fidelidade Literal + Info Única — RED→GREEN testado
+## Estado atual: Guarda de Erro quando Microfone Fica Indisponível (TCC Revogado) — RED→GREEN testado
+
+**Task concluída (2026-09-19):** bug real em produção — quando a permissão de microfone (TCC) é revogada (cenário comum após reinstalar o app), `AudioRecorder.start()` falhava silenciosamente e o app crashava com `AttributeError` cru ao tentar parar a gravação. **Solução:** nova classe de erro de domínio `RecordingUnavailableError` em `src/audio_recorder.py`; guarda explícita em `start()`/`stop()`; tratamento em `src/app.py::_main_start_recording()` que evita a exceção vazar para o dispatcher PyObjC (reseta estado, esconde overlay, notifica erro ao usuário em vez de crashar).
+
+### Análise e decisão arquitetural
+
+**Causa raiz:** quando TCC Acessibilidade é revogado, `PortAudioStream` falha internamente mas a API Python não levanta exceção até `stop()` tentar fechar — erro inesperado no dispatcher causa crash em vez de tratamento graciôso. Decisão: criar erro de domínio específico (`RecordingUnavailableError` ≠ `AttributeError` genérico) para separar a lógica de "mic indisponível" da lógica de "bug de código". Justificativa: (1) clara intenção no código (SRP); (2) rastreável em logs; (3) isola do resto da pilha PyObjC; (4) preparação para futuros cenários de mic desligado/ausente (não só TCC).
+
+- Arquivos: `src/audio_recorder.py` (nova classe + guarda), `src/app.py` (tratamento no dispatcher)
+- Testes: **RED** (commit `6665268`) — `test_start_com_mic_indisponivel_levanta_recording_unavailable` falhou antes da correção; **GREEN** (commit `e815712`) — ambos os testes passam pós-correção
+- Suíte completa: **243 passed** (pré-merge)
+- Ruff: limpo (CC ≤ 4)
+- **Próximo passo:** segurança (obrigatória — código toca microfone/TCC) → revisão-qa pré-merge → PR
+- **Retomar:** `cd /Users/raul/Documents/dev/SagmoWhisper/SagmoWhisper--audio-recorder-guard && claude`
+
+## Estado anterior: Few-Shots Corrigidos (4 itens da PR #30) — Fidelidade Literal + Info Única — RED→GREEN testado
 
 **Task concluída (2026-07-10):** análise da PR #30 identificou riscos inversos ao bug anterior (few-shots contradiziam regra do gate). **4 melhorias entregues** em `src/core/providers/base.py` + testes:
 
