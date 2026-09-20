@@ -17,7 +17,7 @@ from AppKit import (
 from Foundation import NSObject, NSTimer
 from pynput import keyboard
 
-from src.audio_recorder import AudioRecorder
+from src.audio_recorder import AudioRecorder, RecordingUnavailableError
 from src.core.app_logging import setup_logging
 from src.core.config import Config, migrate_env_key_if_needed
 from src.core.providers import factory
@@ -175,7 +175,17 @@ class VozMenuBar:
     def _main_start_recording(self):
         self._set_title(ICON_RECORDING)
         self._overlay.show()
-        self._recorder.start()
+        try:
+            self._recorder.start()
+        except Exception as e:
+            self._handle_start_recording_failure(e)
+
+    def _handle_start_recording_failure(self, error):
+        logger.exception("Falha ao iniciar gravação")
+        self._recording = False
+        self._overlay.hide()
+        self._set_title(ICON_IDLE)
+        self._notify_error(str(error))
 
     def _on_release(self, key):
         if key == self._hotkey and self._recording:
