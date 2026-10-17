@@ -12,7 +12,7 @@ sem try/except). Consequências reais:
 
 Contrato fixado aqui (ainda NÃO implementado): no caminho de falha,
 _main_start_recording deve
-  - resetar self._recording = False;
+  - abandonar o gesto da tecla (o soltar não pode tentar parar o gravador);
   - esconder o overlay de gravação;
   - acionar o mecanismo de erro limpo já existente (_notify_error);
   - NÃO deixar a exceção vazar pro dispatcher.
@@ -28,11 +28,20 @@ from unittest.mock import MagicMock
 pytest.importorskip("objc")
 
 import src.app as app_module  # noqa: E402
+from src.core.gesto_tecla import GestoTecla  # noqa: E402
 
 
 def _voz_stub_with_failing_recorder():
     voz = app_module.VozMenuBar.__new__(app_module.VozMenuBar)
-    voz._recording = True  # estado deixado por _on_press antes do start
+    voz.eventos_do_gesto = []
+    voz._gesto = GestoTecla(
+        tecla="ctrl_r",
+        ao_iniciar=lambda: voz.eventos_do_gesto.append("iniciar"),
+        ao_concluir=lambda: voz.eventos_do_gesto.append("concluir"),
+        ao_cancelar=lambda: voz.eventos_do_gesto.append("cancelar"),
+        relogio=lambda: 0.0 if not voz.eventos_do_gesto else 10.0,
+    )
+    voz._gesto.pressionar("ctrl_r")  # estado deixado pelo listener antes do start
     voz._overlay = MagicMock()
     voz._recorder = MagicMock()
     voz._recorder.start.side_effect = RuntimeError("mic indisponível (TCC)")
@@ -52,15 +61,16 @@ def test_main_start_recording_does_not_leak_exception_on_start_failure():
         )
 
 
-def test_main_start_recording_resets_recording_flag_on_start_failure():
+def test_soltar_a_tecla_apos_falha_no_start_nao_tenta_parar_o_gravador():
     voz = _voz_stub_with_failing_recorder()
     try:
         voz._main_start_recording()
     except Exception:
         pass
 
-    assert voz._recording is False, (
-        "_recording ficou True após falha no start — o release da tecla "
+    voz._gesto.soltar("ctrl_r")
+    assert voz.eventos_do_gesto == ["iniciar"], (
+        "o gesto seguiu gravando após falha no start — o release da tecla "
         "tentaria stop() sobre um recorder inconsistente"
     )
 

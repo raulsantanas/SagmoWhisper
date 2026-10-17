@@ -98,6 +98,16 @@ def test_apos_cancelar_nova_pressao_grava_normalmente():
     assert eventos == ["iniciar", "cancelar", "iniciar", "concluir"]
 
 
+def test_abandonar_faz_o_soltar_seguinte_nao_disparar_nada():
+    gesto, eventos, relogio = _gesto()
+    gesto.pressionar(CTRL_R)
+    gesto.abandonar()
+    relogio.agora = 1.0
+    gesto.soltar(CTRL_R)
+    gesto.pressionar(CTRL_R)
+    assert eventos == ["iniciar", "iniciar"]
+
+
 def test_f8_continua_funcionando_como_tecla():
     gesto, eventos, relogio = _gesto(tecla=keyboard.Key.f8)
     gesto.pressionar(keyboard.Key.f8)

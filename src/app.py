@@ -194,7 +194,7 @@ class VozMenuBar:
 
     def _handle_start_recording_failure(self, error):
         logger.exception("Falha ao iniciar gravação")
-        self._recording = False
+        self._gesto.abandonar()
         self._overlay.hide()
         self._set_title(ICON_IDLE)
         self._notify_error(str(error))

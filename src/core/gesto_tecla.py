@@ -41,6 +41,10 @@ class GestoTecla:
         else:
             self._ao_concluir()
 
+    def abandonar(self):
+        """Esquece a gravação em curso sem avisar ninguém (o gravador falhou)."""
+        self._inicio = None
+
     def _iniciar(self):
         if self._gravando:
             return
