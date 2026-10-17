@@ -6,10 +6,10 @@
 
 | # | Task | Critério de aceite | Status |
 |---|------|---------------------|--------|
-| 1.0 | Ponte de Voz: tecla F8 → segurar Control direito | Segurar sozinho grava; combinação ou toque < 0,3 s descarta; Control esquerdo nunca grava; F8 aceito | EM ANDAMENTO (PR aberta) |
-| — | Interface mais moderna | A definir com o Raul (desenho antes do código) | EM ANDAMENTO |
+| — | Limpeza Groq: modelo vivo | Limpeza usa `openai/gpt-oss-120b` (único liberado na org); modelos removidos migram sozinhos | EM ANDAMENTO (PR aberta) |
+| — | Interface "de assistente" | Desenho aprovado pelo Raul; falta o plano e a implementação | EM ANDAMENTO |
+| 1.0 | Ponte de Voz: tecla F8 → segurar Control direito | Segurar sozinho grava; combinação ou toque < 0,3 s descarta; Control esquerdo nunca grava; F8 aceito | DONE (#34) |
 
-**Próxima:** 1.1 (glossário no Whisper), depois de o Raul aprovar o 1.0.
-**Pendências do Raul:** reinstalar o app (`./install.sh`), reconceder Microfone, Acessibilidade e
-Monitoramento de Entrada, e testar ao vivo o Control direito (DEC-PV-009) e a auto-cura do Groq (#32).
-**Suíte:** 265 passed / 0 falhas
+**Próxima:** 1.1 (glossário no Whisper), quando o Raul aprovar.
+**Limite da Groq (free tier):** 8000 tokens/min no `gpt-oss-120b`; cada limpeza gasta ~700.
+**Suíte:** 267 passed / 0 falhas
