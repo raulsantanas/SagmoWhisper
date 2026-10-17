@@ -31,7 +31,7 @@ duplicaria tudo isso. Ver DEC-PV-001 em `DECISOES.md`.
 | `ROTEAMENTO.md` | Regras de negócio: dúvida/comando/ditado, modelo e esforço |
 | `ROADMAP.md` | Fases, itens, critérios de aceite e testes RED |
 | `DECISOES.md` | Decisões tomadas e decisões pendentes do Raul |
-| `STATUS.md` | Estado atual do épico (curto, só o presente) |
+| `../STATUS.md` | Estado atual do projeto e do épico (curto, só o presente) |
 
 ## Como iniciar no Claude Code
 
