@@ -33,17 +33,17 @@ from AppKit import (
 )
 from Foundation import NSTimer
 
-from src.core.audio_level import rms_to_level
 from src.core.indicador import (
     AMPLITUDE_TRANSCREVENDO,
     ESTILOS_ESCUTA,
     ONDAS,
     EscutaComCarencia,
+    NivelDaVoz,
+    PicoEntreQuadros,
     amplitude_ouvindo,
     first_line,
     formatar_tempo,
     pontos_da_onda,
-    suavizar,
 )
 
 _WIN_W = 420
@@ -110,7 +110,8 @@ class _IndicadorView(NSView):
 
     def _reset_state(self):
         self._estado = "ouvindo"
-        self._pending_rms = 0.0
+        self._pico = PicoEntreQuadros()
+        self._nivel_voz = NivelDaVoz()
         self._nivel = 0.0
         self._inicio = time.monotonic()
         self._texto, self._cor_texto = ESTILOS_ESCUTA["ok"]
@@ -130,6 +131,11 @@ class _IndicadorView(NSView):
             self._estado = "erro"
             self._texto, self._cor_texto = first_line(message), _TEXTO_ERRO
 
+    @objc.python_method
+    def registrar_rms(self, rms: float):
+        with self._lock:
+            self._pico.registrar(rms)
+
     def drawRect_(self, rect):
         with self._lock:
             if self._estado == "ouvindo":
@@ -147,8 +153,9 @@ class _IndicadorView(NSView):
 
     @objc.python_method
     def _avancar(self):
-        self._nivel = suavizar(self._nivel, rms_to_level(self._pending_rms))
-        escuta = self._escuta.classificar(self._pending_rms)
+        rms = self._pico.consumir()
+        self._nivel = self._nivel_voz.avancar(rms)
+        escuta = self._escuta.classificar(rms)
         self._texto, self._cor_texto = ESTILOS_ESCUTA[escuta]
 
     @objc.python_method
@@ -307,8 +314,7 @@ class IndicadorVoz:
 
     def update_bars(self, rms: float):
         # Chamado no thread de áudio: só armazena; o timer de 30fps desenha.
-        with self._view._lock:
-            self._view._pending_rms = rms
+        self._view.registrar_rms(rms)
 
     def _start_timer(self):
         if self._timer is not None:

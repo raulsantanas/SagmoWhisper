@@ -4,12 +4,13 @@ from src.core.indicador import (
     AMPLITUDE_MINIMA,
     ESTILOS_ESCUTA,
     EscutaComCarencia,
+    NivelDaVoz,
+    PicoEntreQuadros,
     ONDAS,
     amplitude_ouvindo,
     first_line,
     formatar_tempo,
     pontos_da_onda,
-    suavizar,
 )
 
 
@@ -26,10 +27,6 @@ def test_onda_nunca_passa_da_amplitude():
 
 def test_onda_com_amplitude_zero_e_plana():
     assert all(p == 0 for p in pontos_da_onda(0.0, 5.0, 2.0))
-
-
-def test_suavizar_anda_um_quarto_do_caminho():
-    assert suavizar(0.0, 1.0) == pytest.approx(0.25)
 
 
 def test_amplitude_ouvindo_tem_piso():
@@ -119,3 +116,50 @@ def test_estilos_tem_os_textos_do_spec():
         "#FFB4B4",
     )
     assert ESTILOS_ESCUTA["alto"] == ("Volume alto", "#F5B942")
+
+
+def _rms(db):
+    return 10 ** (db / 20)
+
+
+def _alimentar(nivel, db, quadros):
+    for _ in range(quadros):
+        resultado = nivel.avancar(_rms(db))
+    return resultado
+
+
+def test_ruido_constante_fica_perto_do_piso():
+    assert _alimentar(NivelDaVoz(), -42, 90) < 0.1
+
+
+def test_fala_acima_do_ruido_chega_perto_do_topo_rapido():
+    nivel = NivelDaVoz()
+    _alimentar(nivel, -48, 60)
+    assert _alimentar(nivel, -28, 3) > 0.8
+
+
+def test_pico_sobe_rapido_e_desce_devagar():
+    nivel = NivelDaVoz()
+    _alimentar(nivel, -48, 60)
+    _alimentar(nivel, -28, 3)
+    assert nivel.avancar(_rms(-48)) > 0.5
+
+
+def test_fala_continua_nao_vira_ruido_de_fundo():
+    nivel = NivelDaVoz()
+    _alimentar(nivel, -48, 60)
+    assert _alimentar(nivel, -28, 90) > 0.6
+
+
+def test_silencio_digital_nao_derruba_o_piso_abaixo_de_60db():
+    nivel = NivelDaVoz()
+    _alimentar(nivel, -120, 30)
+    assert _alimentar(nivel, -50, 3) < 0.5
+
+
+def test_pico_entre_quadros_guarda_o_maior_e_zera_ao_consumir():
+    pico = PicoEntreQuadros()
+    for rms in (0.01, 0.2, 0.05):
+        pico.registrar(rms)
+    assert pico.consumir() == 0.2
+    assert pico.consumir() == 0.0
