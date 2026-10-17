@@ -28,13 +28,15 @@ def default_config_path(
 
 DEFAULT_CONFIG_PATH = default_config_path()
 
+HOTKEYS_SUPORTADAS = ("ctrl_r",) + tuple(f"f{n}" for n in range(1, 13))
+
 DEFAULTS = {
     "provider": "groq",
     "transcription_model": "whisper-large-v3-turbo",
     "cleanup_model": "meta-llama/llama-4-scout-17b-16e-instruct",
     "language": "pt",
     "enable_cleanup": True,
-    "hotkey": "f8",
+    "hotkey": "ctrl_r",
     "sample_rate": 16000,
 }
 

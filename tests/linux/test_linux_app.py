@@ -31,7 +31,19 @@ class _SpyPipeline:
         return self._result
 
 
-def _app(pipeline=None):
+class _RelogioQueAvanca:
+    """Cada leitura avança 1 s: segurar e soltar sempre passa do toque mínimo."""
+
+    def __init__(self, passo=1.0):
+        self._agora = 0.0
+        self._passo = passo
+
+    def __call__(self):
+        self._agora += self._passo
+        return self._agora
+
+
+def _app(pipeline=None, relogio=None):
     recorder = _SpyRecorder()
     echoed = []
     app = LinuxApp(
@@ -39,6 +51,7 @@ def _app(pipeline=None):
         pipeline=pipeline or _SpyPipeline(),
         hotkey=HOTKEY,
         echo=echoed.append,
+        relogio=relogio or _RelogioQueAvanca(),
     )
     return app, recorder, echoed
 
@@ -97,3 +110,22 @@ def test_gravacao_vazia_avisa_que_nada_foi_colado():
     app.on_press(HOTKEY)
     app.on_release(HOTKEY)
     assert any("vazia" in m for m in echoed)
+
+
+def test_combinacao_durante_gravacao_descarta_sem_transcrever():
+    pipeline = _SpyPipeline()
+    app, recorder, _ = _app(pipeline)
+    app.on_press(HOTKEY)
+    app.on_press(OUTRA_TECLA)
+    app.on_release(HOTKEY)
+    assert recorder.calls == ["start", "stop"]
+    assert pipeline.calls == []
+
+
+def test_toque_curto_descarta_sem_transcrever():
+    pipeline = _SpyPipeline()
+    app, recorder, _ = _app(pipeline, relogio=_RelogioQueAvanca(passo=0.0))
+    app.on_press(HOTKEY)
+    app.on_release(HOTKEY)
+    assert recorder.calls == ["start", "stop"]
+    assert pipeline.calls == []

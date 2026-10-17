@@ -18,7 +18,7 @@ from AppKit import (
 from Foundation import NSObject
 
 from src.core import login_item, secrets
-from src.core.config import Config
+from src.core.config import HOTKEYS_SUPORTADAS, Config
 from src.core.providers import factory
 from src.core.providers.base import PROVIDER_CATALOG
 
@@ -26,7 +26,7 @@ _W, _H = 440, 380
 _LABEL_X, _LABEL_W = 20, 130
 _FIELD_X, _FIELD_W = 160, 260
 _ROW_H = 24
-_HOTKEYS = tuple(f"F{n}" for n in range(1, 13))
+_HOTKEYS = tuple(t.upper() for t in HOTKEYS_SUPORTADAS)
 _PROVIDER_KEYS = tuple(PROVIDER_CATALOG)  # ("groq", "openai", "local")
 
 

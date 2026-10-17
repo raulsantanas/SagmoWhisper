@@ -2,7 +2,7 @@
 
 > 🇺🇸 [Read in English](README.md)
 
-Segure **F8** em qualquer app (browser, Slack, seu editor, um terminal…), fale,
+Segure **só o Control direito** em qualquer app (browser, Slack, seu editor, um terminal…), fale,
 solte. O áudio é transcrito pelo Groq Whisper, opcionalmente limpo pelo Groq
 Llama, e colado onde o cursor estiver — via clipboard + Cmd+V (acentos do
 PT-BR preservados).
@@ -13,7 +13,7 @@ demais.
 
 ## Funcionalidades
 
-- **Ditado push-to-talk em qualquer lugar** — uma tecla (F8 por padrão), funciona em todo app
+- **Ditado push-to-talk em qualquer lugar** — uma tecla (Control direito por padrão; F8 continua aceito), funciona em todo app
 - **Providers plugáveis** — Groq, OpenAI ou faster-whisper local, trocáveis na janela nativa de Configurações (API keys no Keychain do macOS)
 - **Limpeza opcional** — hesitações e pontuação corrigidas pelo modelo do provider
 - **Orbe ao vivo** — orbe pulsante estilo assistente de IA com barras em escala dB e avisos de sinal fraco/alto
@@ -66,7 +66,7 @@ cp .env.example .env
 ## Linux (Ubuntu) — Beta
 
 O SagmoWhisper também funciona no Ubuntu como app de linha de comando:
-segure F8, fale, solte — o texto é colado no cursor (Ctrl+V), em
+segure o Control direito, fale, solte — o texto é colado no cursor (Ctrl+V), em
 qualquer janela.
 
 > **Beta:** a suíte completa de testes e um teste real de integração
@@ -84,7 +84,7 @@ essas mesmas instruções.
 ```bash
 ./install-linux.sh     # instala dependências do sistema (pede sudo) + o app
 sagmowhisper setup     # assistente: provider, chave de API, opções
-sagmowhisper run       # segure F8 para ditar; Ctrl+C para sair
+sagmowhisper run       # segure o Control direito para ditar; Ctrl+C para sair
 ```
 
 Sua chave de API fica no cofre de senhas do sistema (SecretService),
@@ -119,7 +119,7 @@ A configuração é feita pelo menu **🎙️ > Configurações…** (escolha de
 | `CLEANUP_MODEL` | por provider | override de modelo de limpeza |
 | `LANGUAGE` | `pt` | idioma da transcrição (`en`, `pt`, …) |
 | `ENABLE_CLEANUP` | `true` | limpar hesitações/pontuação |
-| `HOTKEY` | `f8` | tecla de gravação (`pynput.keyboard.Key`) |
+| `HOTKEY` | `ctrl_r` | tecla de gravação (`pynput.keyboard.Key`); apertar outra tecla junto cancela |
 | `SAMPLE_RATE` | `16000` | taxa de amostragem do áudio |
 
 ## Permissões macOS obrigatórias — passo a passo
@@ -138,7 +138,7 @@ lateral para baixo até encontrar.
    ative o **SagmoWhisper.app**. Se não estiver na lista, clique em **+**,
    escolha `/Applications/SagmoWhisper.app` e depois ative a chavinha.
 
-2. **Monitoramento de Entrada** — permite capturar a tecla F8 global em
+2. **Monitoramento de Entrada** — permite capturar a tecla de gravação global em
    qualquer app.
    Ainda em **Privacidade e Segurança**, abra **Monitoramento de Entrada** e
    ative o **SagmoWhisper.app** do mesmo jeito.
@@ -152,7 +152,7 @@ lateral para baixo até encontrar.
    em /Applications.
 
 Depois faça o primeiro teste: clique em qualquer campo de texto, segure
-**F8**, fale uma frase, solte — aceite o pedido de Microfone — e segure **F8**
+**o Control direito**, fale uma frase, solte — aceite o pedido de Microfone — e segure **o Control direito**
 de novo: o texto aparece no cursor.
 
 Sem as três, o app não captura a tecla, não grava, ou não cola. Em modo dev
@@ -172,7 +172,7 @@ Sem as três, o app não captura a tecla, não grava, ou não cola. Em modo dev
    ativado) — o ícone 🎙️ aparece na barra de menu, sem ícone no Dock.
 2. Configure sua API key em **🎙️ > Configurações…** (guardada no Keychain
    do macOS).
-3. Segure **F8**, fale, solte. O texto aparece no cursor.
+3. Segure **o Control direito**, fale, solte. O texto aparece no cursor.
 
 Se algo falhar, o ícone da barra vira ⚠️ — clique nele para ver a mensagem e o
 log (`~/Library/Logs/SagmoWhisper.log`). Para iniciar no login, use o checkbox

@@ -15,12 +15,12 @@ LOG_PATH = Path.home() / ".local" / "state" / "sagmowhisper" / "app.log"
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="sagmowhisper",
-        description="Ditado por voz: segure F8, fale, solte — o texto "
+        description="Ditado por voz: segure o Control direito, fale, solte — o texto "
         "aparece no cursor.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("setup", help="assistente de configuração")
-    sub.add_parser("run", help="inicia o ditado (segure F8 para falar)")
+    sub.add_parser("run", help="inicia o ditado (segure o Control direito para falar)")
     login = sub.add_parser("login", help="abrir sozinho no login")
     login.add_argument("action", choices=["on", "off", "status"])
     return parser
