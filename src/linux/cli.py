@@ -15,12 +15,12 @@ LOG_PATH = Path.home() / ".local" / "state" / "sagmowhisper" / "app.log"
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="sagmowhisper",
-        description="Ditado por voz: segure F8, fale, solte — o texto "
+        description="Ditado por voz: segure o Control direito, fale, solte — o texto "
         "aparece no cursor.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("setup", help="assistente de configuração")
-    sub.add_parser("run", help="inicia o ditado (segure F8 para falar)")
+    sub.add_parser("run", help="inicia o ditado (segure o Control direito para falar)")
     login = sub.add_parser("login", help="abrir sozinho no login")
     login.add_argument("action", choices=["on", "off", "status"])
     return parser
@@ -68,7 +68,7 @@ def _start_dictation() -> int:  # pragma: no cover — exige X11 e microfone
     from src.audio_recorder import AudioRecorder
     from src.core.app_logging import setup_logging
     from src.core.config import Config, default_config_path
-    from src.core.config import migrate_env_key_if_needed
+    from src.core.config import migrate_env_key_if_needed, rotulo_hotkey
     from src.core.providers import factory
     from src.core.providers.base import TranscriptionError
     from src.core.single_instance import (
@@ -105,7 +105,7 @@ def _start_dictation() -> int:  # pragma: no cover — exige X11 e microfone
         hotkey=resolve_hotkey(config.hotkey),
         logger=logger,
     )
-    print(f"SagmoWhisper pronto — segure {config.hotkey.upper()} para ditar. "
+    print(f"SagmoWhisper pronto — segure {rotulo_hotkey(config.hotkey)} para ditar. "
           "Ctrl+C para sair.")
     with keyboard.Listener(
         on_press=app.on_press, on_release=app.on_release

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sagmowhisper"
 version = "0.1.0"
-description = "Ditado por voz global: F8 -> Whisper -> cola no cursor (macOS e Ubuntu)"
+description = "Ditado por voz global: Control direito -> Whisper -> cola no cursor (macOS e Ubuntu)"
 requires-python = ">=3.11"
 # Sem "dependencies" aqui de propósito: o build do .app do Mac (setup.py py2app)
 # quebra com setuptools >= 82 ("install_requires is no longer supported") quando

@@ -18,7 +18,12 @@ from AppKit import (
 from Foundation import NSObject
 
 from src.core import login_item, secrets
-from src.core.config import Config
+from src.core.config import (
+    HOTKEYS_SUPORTADAS,
+    Config,
+    hotkey_do_rotulo,
+    rotulo_hotkey,
+)
 from src.core.providers import factory
 from src.core.providers.base import PROVIDER_CATALOG
 
@@ -26,7 +31,7 @@ _W, _H = 440, 380
 _LABEL_X, _LABEL_W = 20, 130
 _FIELD_X, _FIELD_W = 160, 260
 _ROW_H = 24
-_HOTKEYS = tuple(f"F{n}" for n in range(1, 13))
+_HOTKEYS = tuple(rotulo_hotkey(t) for t in HOTKEYS_SUPORTADAS)
 _PROVIDER_KEYS = tuple(PROVIDER_CATALOG)  # ("groq", "openai", "local")
 
 
@@ -162,7 +167,9 @@ class SettingsWindowController(NSObject):
             _PROVIDER_KEYS.index(self._config.provider)
         )
         self._cleanup_check.setState_(1 if self._config.enable_cleanup else 0)
-        self._hotkey_popup.selectItemWithTitle_(self._config.hotkey.upper())
+        self._hotkey_popup.selectItemWithTitle_(
+            rotulo_hotkey(self._config.hotkey)
+        )
         self._status_label.setStringValue_("")
         self._reload_provider_fields(self._config.provider)
         self._refresh_login_controls()
@@ -220,7 +227,7 @@ class SettingsWindowController(NSObject):
             language=self._config.language,
             enable_cleanup=bool(self._cleanup_check.state())
             and bool(info.cleanup_models),
-            hotkey=self._hotkey_popup.titleOfSelectedItem().lower(),
+            hotkey=hotkey_do_rotulo(self._hotkey_popup.titleOfSelectedItem()),
             sample_rate=self._config.sample_rate,
         )
 

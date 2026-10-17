@@ -20,6 +20,7 @@ from pynput import keyboard
 from src.audio_recorder import AudioRecorder
 from src.core.app_logging import setup_logging
 from src.core.config import Config, migrate_env_key_if_needed
+from src.core.gesto_tecla import GestoTecla
 from src.core.providers import factory
 from src.core.providers.base import TranscriptionError
 from src.core.single_instance import (
@@ -59,6 +60,9 @@ class MainThreadDispatcher(NSObject):
     def stopRecordingOnMainThread(self):
         self._app._main_stop_recording()
 
+    def cancelRecordingOnMainThread(self):
+        self._app._main_cancel_recording()
+
     def setProcessingOnMainThread(self):
         self._app._set_title(ICON_PROCESSING)
 
@@ -85,7 +89,6 @@ class MainThreadDispatcher(NSObject):
 class VozMenuBar:
     def __init__(self, config: Config):
         self._config = config
-        self._recording = False
         self._had_error = False
         self._overlay = OrbOverlay()
         self._recorder = AudioRecorder(
@@ -98,7 +101,7 @@ class VozMenuBar:
                 config, self._apply_config
             )
         )
-        self._hotkey = resolve_hotkey(config.hotkey)
+        self._gesto = self._novo_gesto(config.hotkey)
 
         self._dispatcher = (
             MainThreadDispatcher.alloc().initWithApp_(self)
@@ -165,12 +168,21 @@ class VozMenuBar:
         ) as listener:
             listener.join()
 
+    def _novo_gesto(self, hotkey_name):
+        return GestoTecla(
+            tecla=resolve_hotkey(hotkey_name),
+            ao_iniciar=lambda: self._on_main("startRecordingOnMainThread"),
+            ao_concluir=lambda: self._on_main("stopRecordingOnMainThread"),
+            ao_cancelar=lambda: self._on_main("cancelRecordingOnMainThread"),
+        )
+
+    def _on_main(self, selector):
+        self._dispatcher.performSelectorOnMainThread_withObject_waitUntilDone_(
+            selector, None, False
+        )
+
     def _on_press(self, key):
-        if key == self._hotkey and not self._recording:
-            self._recording = True
-            self._dispatcher.performSelectorOnMainThread_withObject_waitUntilDone_(
-                "startRecordingOnMainThread", None, False
-            )
+        self._gesto.pressionar(key)
 
     def _main_start_recording(self):
         self._set_title(ICON_RECORDING)
@@ -182,17 +194,24 @@ class VozMenuBar:
 
     def _handle_start_recording_failure(self, error):
         logger.exception("Falha ao iniciar gravação")
-        self._recording = False
+        self._gesto.abandonar()
         self._overlay.hide()
         self._set_title(ICON_IDLE)
         self._notify_error(str(error))
 
     def _on_release(self, key):
-        if key == self._hotkey and self._recording:
-            self._recording = False
-            self._dispatcher.performSelectorOnMainThread_withObject_waitUntilDone_(
-                "stopRecordingOnMainThread", None, False
-            )
+        self._gesto.soltar(key)
+
+    def _main_cancel_recording(self):
+        self._overlay.hide()
+        self._set_title(ICON_IDLE)
+        threading.Thread(target=self._discard_recording, daemon=True).start()
+
+    def _discard_recording(self):
+        try:
+            self._recorder.stop()
+        except Exception:
+            logger.exception("Falha ao descartar gravação cancelada")
 
     def _main_stop_recording(self):
         self._overlay.set_transcribing()
@@ -250,7 +269,7 @@ class VozMenuBar:
     def _apply_config(self, new_config):
         # chamado pela janela de Configurações (main thread) — aplica na hora
         self._config = new_config
-        self._hotkey = resolve_hotkey(new_config.hotkey)
+        self._gesto = self._novo_gesto(new_config.hotkey)
         self._had_error = False
         self._set_title(ICON_IDLE)
         self._error_item.setHidden_(True)

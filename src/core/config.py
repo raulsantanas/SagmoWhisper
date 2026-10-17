@@ -28,13 +28,26 @@ def default_config_path(
 
 DEFAULT_CONFIG_PATH = default_config_path()
 
+# cmd_r: teclado de PC com Control↔Command trocado no macOS manda o "Ctrl"
+# físico da direita como Command direito.
+HOTKEYS_SUPORTADAS = ("ctrl_r", "cmd_r") + tuple(f"f{n}" for n in range(1, 13))
+_ROTULOS_ESPECIAIS = {"ctrl_r": "Control direito", "cmd_r": "Command direito"}
+
+
+def rotulo_hotkey(nome: str) -> str:
+    return _ROTULOS_ESPECIAIS.get(nome, nome.upper())
+
+
+def hotkey_do_rotulo(rotulo: str) -> str:
+    return next(n for n in HOTKEYS_SUPORTADAS if rotulo_hotkey(n) == rotulo)
+
 DEFAULTS = {
     "provider": "groq",
     "transcription_model": "whisper-large-v3-turbo",
     "cleanup_model": "meta-llama/llama-4-scout-17b-16e-instruct",
     "language": "pt",
     "enable_cleanup": True,
-    "hotkey": "f8",
+    "hotkey": "ctrl_r",
     "sample_rate": 16000,
 }
 

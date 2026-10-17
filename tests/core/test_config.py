@@ -3,7 +3,14 @@ import json
 import pytest
 
 import src.core.config as config_module
-from src.core.config import DEFAULTS, Config, migrate_env_key_if_needed
+from src.core.config import (
+    DEFAULTS,
+    HOTKEYS_SUPORTADAS,
+    Config,
+    hotkey_do_rotulo,
+    rotulo_hotkey,
+    migrate_env_key_if_needed,
+)
 
 
 def test_load_sem_json_e_sem_env_usa_defaults(tmp_path):
@@ -13,7 +20,7 @@ def test_load_sem_json_e_sem_env_usa_defaults(tmp_path):
     assert cfg.cleanup_model == "meta-llama/llama-4-scout-17b-16e-instruct"
     assert cfg.language == "pt"
     assert cfg.enable_cleanup is True
-    assert cfg.hotkey == "f8"
+    assert cfg.hotkey == "ctrl_r"
     assert cfg.sample_rate == 16000
 
 
@@ -227,3 +234,33 @@ def test_defaults_nunca_sao_modelos_depreciados():
         config_module.DEFAULTS["transcription_model"]
         not in config_module._DEPRECATED_TRANSCRIPTION_MODELS
     )
+
+
+def test_control_direito_e_f8_estao_entre_as_teclas_suportadas():
+    assert "ctrl_r" in HOTKEYS_SUPORTADAS
+    assert "f8" in HOTKEYS_SUPORTADAS
+
+
+def test_config_com_f8_continua_aceito(tmp_path):
+    p = tmp_path / "config.json"
+    p.write_text(json.dumps({"hotkey": "f8"}))
+    cfg = Config.load(path=p, env={})
+    assert cfg.hotkey == "f8"
+
+
+def test_rotulo_do_control_direito_e_legivel_na_janela():
+    assert rotulo_hotkey("ctrl_r") == "Control direito"
+    assert rotulo_hotkey("f8") == "F8"
+
+
+def test_rotulo_escolhido_na_janela_volta_ao_nome_do_config():
+    assert hotkey_do_rotulo("Control direito") == "ctrl_r"
+    assert hotkey_do_rotulo("F8") == "f8"
+
+
+def test_command_direito_e_suportado_para_teclado_de_pc_remapeado():
+    # Teclado de PC com Control↔Command trocado no macOS: o "Ctrl" físico da
+    # direita chega como cmd_r.
+    assert "cmd_r" in HOTKEYS_SUPORTADAS
+    assert rotulo_hotkey("cmd_r") == "Command direito"
+    assert hotkey_do_rotulo("Command direito") == "cmd_r"

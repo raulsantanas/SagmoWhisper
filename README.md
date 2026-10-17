@@ -2,7 +2,7 @@
 
 > 🇧🇷 [Leia em Português](README.pt-BR.md)
 
-Hold **F8** in any app (browser, Slack, your editor, a terminal…), speak, release.
+Hold the **right Control** key alone in any app (browser, Slack, your editor, a terminal…), speak, release.
 Your audio is transcribed by Groq Whisper, optionally cleaned up by Groq Llama,
 and pasted right where your cursor is — via clipboard + Cmd+V (accents and
 non-ASCII text are preserved).
@@ -12,7 +12,7 @@ dB scale and warnings when your mic signal is genuinely too weak or too loud.
 
 ## Features
 
-- **Push-to-talk dictation anywhere** — one hotkey (F8 by default), works in every app
+- **Push-to-talk dictation anywhere** — one hotkey (right Control by default; F8 still works), works in every app
 - **Pluggable providers** — Groq, OpenAI or local faster-whisper, switchable in the native Settings window (API keys in the macOS Keychain)
 - **Optional cleanup** — hesitations and punctuation fixed by the provider's model
 - **Live orb overlay** — a pulsing AI-assistant-style orb with dB-scaled bars and weak/loud signal warnings
@@ -63,7 +63,7 @@ cp .env.example .env
 
 ## Linux (Ubuntu) — Beta
 
-SagmoWhisper also works on Ubuntu as a command-line app: hold F8, speak,
+SagmoWhisper also works on Ubuntu as a command-line app: hold right Control, speak,
 release — the text is pasted at your cursor (Ctrl+V), in any window.
 
 > **Beta:** the full test suite and a real X11 clipboard/paste integration
@@ -80,7 +80,7 @@ The app detects Wayland and tells you exactly this if you forget.
 ```bash
 ./install-linux.sh     # installs system deps (asks for sudo) + the app
 sagmowhisper setup     # interactive wizard: provider, API key, options
-sagmowhisper run       # hold F8 to dictate; Ctrl+C to quit
+sagmowhisper run       # hold right Control to dictate; Ctrl+C to quit
 ```
 
 Your API key is stored in the system keyring (SecretService), never in a
@@ -115,7 +115,7 @@ Configuration is done via the menu **🎙️ > Configurações…** (provider Gr
 | `CLEANUP_MODEL` | per provider | override cleanup model |
 | `LANGUAGE` | `pt` | transcription language (`en`, `pt`, …) |
 | `ENABLE_CLEANUP` | `true` | fix hesitations/punctuation |
-| `HOTKEY` | `f8` | push-to-talk key (`pynput.keyboard.Key`) |
+| `HOTKEY` | `ctrl_r` | push-to-talk key (`pynput.keyboard.Key`); pressing any other key while holding it cancels |
 | `SAMPLE_RATE` | `16000` | audio sample rate |
 
 ## Required macOS permissions — step by step
@@ -133,7 +133,7 @@ SagmoWhisper needs three permissions, granted once. All of them live in
    **SagmoWhisper.app**. If it is not listed, click **+**, pick
    `/Applications/SagmoWhisper.app` and then turn it on.
 
-2. **Input Monitoring** — lets the global F8 hotkey be captured in any app.
+2. **Input Monitoring** — lets the global hotkey be captured in any app.
    Still in **Privacy & Security**, open **Input Monitoring** and turn on
    **SagmoWhisper.app** the same way.
 
@@ -145,8 +145,8 @@ SagmoWhisper needs three permissions, granted once. All of them live in
    click **🎙️ > Sair** in the menu bar, then open SagmoWhisper again from
    /Applications.
 
-Then do a first test: click into any text field, hold **F8**, say a sentence,
-release — accept the Microphone prompt — and hold **F8** again: the text
+Then do a first test: click into any text field, hold **right Control**, say a sentence,
+release — accept the Microphone prompt — and hold **right Control** again: the text
 appears at your cursor.
 
 Without all three the app can't capture the key, record, or paste. When
@@ -165,7 +165,7 @@ terminal instead.
 1. Open **SagmoWhisper** from /Applications (it also starts at login when
    enabled) — a 🎙️ icon appears in the menu bar, with no Dock icon.
 2. Set your API key in **🎙️ > Configurações…** (stored in the macOS Keychain).
-3. Hold **F8**, speak, release. The text appears at your cursor.
+3. Hold **right Control**, speak, release. The text appears at your cursor.
 
 If anything fails, the menu-bar icon turns ⚠️ — click it for the error message
 and the log (`~/Library/Logs/SagmoWhisper.log`). To start at login, use the
