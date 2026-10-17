@@ -2,6 +2,7 @@ import re
 
 import pytest
 
+from src.core.config import DEFAULTS
 from src.core.providers import base
 from src.core.providers.base import (
     CLEANUP_EXAMPLES,
@@ -37,12 +38,20 @@ def test_catalogo_tem_os_tres_providers():
 
 
 def test_modelos_groq_verbatim_do_spec():
+    # Allowlist real confirmada no console Groq em 19/09/2026: whisper-large-v3
+    # (sem turbo) e llama-3.3-70b-versatile saíram; sobram os modelos vivos.
     info = PROVIDER_CATALOG["groq"]
-    assert info.transcription_models == (
-        "whisper-large-v3-turbo", "whisper-large-v3"
-    )
-    assert info.cleanup_models == ("llama-3.3-70b-versatile",)
+    assert info.transcription_models == ("whisper-large-v3-turbo",)
+    assert info.cleanup_models == ("meta-llama/llama-4-scout-17b-16e-instruct",)
     assert info.needs_api_key is True
+
+
+def test_defaults_de_config_existem_no_catalogo_groq():
+    # Consistência: o default que Config aplica precisa ser um modelo que o
+    # catálogo oferece — senão o dropdown e o fallback divergem.
+    info = PROVIDER_CATALOG["groq"]
+    assert DEFAULTS["transcription_model"] in info.transcription_models
+    assert DEFAULTS["cleanup_model"] in info.cleanup_models
 
 
 def test_modelos_openai_verbatim_do_spec():

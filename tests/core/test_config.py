@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+import src.core.config as config_module
 from src.core.config import DEFAULTS, Config, migrate_env_key_if_needed
 
 
@@ -9,7 +10,7 @@ def test_load_sem_json_e_sem_env_usa_defaults(tmp_path):
     cfg = Config.load(path=tmp_path / "config.json", env={})
     assert cfg.provider == "groq"
     assert cfg.transcription_model == "whisper-large-v3-turbo"
-    assert cfg.cleanup_model == "llama-3.3-70b-versatile"
+    assert cfg.cleanup_model == "meta-llama/llama-4-scout-17b-16e-instruct"
     assert cfg.language == "pt"
     assert cfg.enable_cleanup is True
     assert cfg.hotkey == "f8"
@@ -133,40 +134,78 @@ def test_caminho_no_linux_respeita_xdg_config_home():
     assert str(path) == "/tmp/xdg/sagmowhisper/config.json"
 
 
-# Groq bloqueou (403 model_permission_blocked_org) todos os modelos de chat
-# exceto llama-3.3-70b-versatile: configs salvas com um bloqueado migram no load.
-_MODELOS_BLOQUEADOS = [
+# 19/09/2026: Groq removeu llama-3.3-70b-versatile (404 model_not_found) e
+# mantém bloqueados (403 model_permission_blocked_org) os chat models legados.
+# whisper-large-v3 também está bloqueado (403). Config salva com qualquer um
+# deles — via JSON ou env var — migra para o default vigente no load.
+_NOVO_DEFAULT_CLEANUP = "meta-llama/llama-4-scout-17b-16e-instruct"
+_DEFAULT_TRANSCRICAO = "whisper-large-v3-turbo"
+
+_MODELOS_LIMPEZA_BLOQUEADOS = [
     "openai/gpt-oss-120b",
     "openai/gpt-oss-20b",
     "llama-3.1-8b-instant",
+    "llama-3.3-70b-versatile",
 ]
 
+_MODELOS_TRANSCRICAO_BLOQUEADOS = ["whisper-large-v3"]
 
-@pytest.mark.parametrize("bloqueado", _MODELOS_BLOQUEADOS)
+
+@pytest.mark.parametrize("bloqueado", _MODELOS_LIMPEZA_BLOQUEADOS)
 def test_modelo_de_limpeza_bloqueado_no_json_migra_para_o_default(
     tmp_path, bloqueado
 ):
     p = tmp_path / "config.json"
     p.write_text(json.dumps({"cleanup_model": bloqueado}))
     cfg = Config.load(path=p, env={})
-    assert cfg.cleanup_model == "llama-3.3-70b-versatile"
+    assert cfg.cleanup_model == _NOVO_DEFAULT_CLEANUP
 
 
-@pytest.mark.parametrize("bloqueado", _MODELOS_BLOQUEADOS)
+@pytest.mark.parametrize("bloqueado", _MODELOS_LIMPEZA_BLOQUEADOS)
 def test_modelo_de_limpeza_bloqueado_no_env_tambem_migra(tmp_path, bloqueado):
     cfg = Config.load(
         path=tmp_path / "c.json",
         env={"CLEANUP_MODEL": bloqueado},
     )
-    assert cfg.cleanup_model == "llama-3.3-70b-versatile"
+    assert cfg.cleanup_model == _NOVO_DEFAULT_CLEANUP
 
 
-def test_modelo_default_llama_versatile_salvo_e_preservado(tmp_path):
-    # O novo default NÃO está no conjunto de migração — se já salvo, permanece.
+@pytest.mark.parametrize("bloqueado", _MODELOS_TRANSCRICAO_BLOQUEADOS)
+def test_modelo_de_transcricao_bloqueado_no_json_migra_para_o_default(
+    tmp_path, bloqueado
+):
     p = tmp_path / "config.json"
-    p.write_text(json.dumps({"cleanup_model": "llama-3.3-70b-versatile"}))
+    p.write_text(json.dumps({"transcription_model": bloqueado}))
     cfg = Config.load(path=p, env={})
-    assert cfg.cleanup_model == "llama-3.3-70b-versatile"
+    assert cfg.transcription_model == _DEFAULT_TRANSCRICAO
+
+
+@pytest.mark.parametrize("bloqueado", _MODELOS_TRANSCRICAO_BLOQUEADOS)
+def test_modelo_de_transcricao_bloqueado_no_env_tambem_migra(
+    tmp_path, bloqueado
+):
+    # Vetor real do crash de 19/09: TRANSCRIPTION_MODEL vinha via env var.
+    cfg = Config.load(
+        path=tmp_path / "c.json",
+        env={"TRANSCRIPTION_MODEL": bloqueado},
+    )
+    assert cfg.transcription_model == _DEFAULT_TRANSCRICAO
+
+
+def test_valores_validos_de_modelo_passam_intactos(tmp_path):
+    # Regressão: os defaults vigentes não podem ser migrados por engano.
+    p = tmp_path / "config.json"
+    p.write_text(
+        json.dumps(
+            {
+                "transcription_model": _DEFAULT_TRANSCRICAO,
+                "cleanup_model": _NOVO_DEFAULT_CLEANUP,
+            }
+        )
+    )
+    cfg = Config.load(path=p, env={})
+    assert cfg.transcription_model == _DEFAULT_TRANSCRICAO
+    assert cfg.cleanup_model == _NOVO_DEFAULT_CLEANUP
 
 
 def test_modelo_de_limpeza_fora_do_conjunto_e_preservado(tmp_path):
@@ -174,3 +213,17 @@ def test_modelo_de_limpeza_fora_do_conjunto_e_preservado(tmp_path):
     p.write_text(json.dumps({"cleanup_model": "gpt-4o-mini"}))
     cfg = Config.load(path=p, env={})
     assert cfg.cleanup_model == "gpt-4o-mini"
+
+
+def test_defaults_nunca_sao_modelos_depreciados():
+    # Guarda anti-causa-raiz: o crash de 19/09 foi um default que virou modelo
+    # morto sem ninguém atualizar. Esta invariante trava toda futura
+    # depreciação que esqueça de mover o default para um modelo vivo.
+    assert (
+        config_module.DEFAULTS["cleanup_model"]
+        not in config_module._DEPRECATED_CLEANUP_MODELS
+    )
+    assert (
+        config_module.DEFAULTS["transcription_model"]
+        not in config_module._DEPRECATED_TRANSCRIPTION_MODELS
+    )

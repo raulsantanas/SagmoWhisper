@@ -17,6 +17,18 @@
 - **Próximo passo:** segurança (obrigatória — código toca microfone/TCC) → revisão-qa pré-merge → PR
 - **Retomar:** `cd /Users/raul/Documents/dev/SagmoWhisper/SagmoWhisper--audio-recorder-guard && claude`
 
+## Checkpoint Corrente
+
+| # | Task | Critério de aceite | Status |
+|---|------|---------------------|--------|
+| 1 | Auto-cura de modelo Groq (transcription + cleanup) | Config nunca persiste modelo bloqueado/removido do Groq, mesmo vindo de .env | DONE (aguardando PR) |
+
+**Próxima:** github-pm abre PR desta branch
+**Suíte:** 243 passed / 0 falhas
+**Retomar:** cd SagmoWhisper--groq-model-config && claude --resume
+
+---
+
 ## Estado anterior: Few-Shots Corrigidos (4 itens da PR #30) — Fidelidade Literal + Info Única — RED→GREEN testado
 
 **Task concluída (2026-07-10):** análise da PR #30 identificou riscos inversos ao bug anterior (few-shots contradiziam regra do gate). **4 melhorias entregues** em `src/core/providers/base.py` + testes:
