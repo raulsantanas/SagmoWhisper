@@ -193,7 +193,7 @@ ruff check src tests    # lint + cyclomatic complexity <= 4
 
 Architecture: pure units (`src/core/`, `config`, `transcriber`, `cleaner`,
 `pipeline`) are TDD-covered with 100% coverage on core modules; AppKit/I-O
-adapters (`audio_recorder`, `text_injector`, `macos/orb_overlay`, `app`) are
+adapters (`audio_recorder`, `text_injector`, `macos/indicador_voz`, `app`) are
 validated by documented manual smoke tests. The core is platform-agnostic by
 design to allow a future Windows port.
 

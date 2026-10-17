@@ -252,10 +252,22 @@ class IndicadorVoz:
 
     def show(self):
         self._cancel_error_timer()
-        self._hiding = False
+        self._reaparecer()
         self._view.reset()
         self._window.orderFront_(None)
         self._start_timer()
+
+    def _reaparecer(self):
+        # Um fade de hide() ainda em curso terminaria em alpha 0 e deixaria o
+        # cartão invisível na gravação seguinte; uma animação de duração 0
+        # sobrescreve a que está rodando.
+        self._hiding = False
+
+        def animate(ctx):
+            ctx.setDuration_(0.0)
+            self._window.animator().setAlphaValue_(1.0)
+
+        NSAnimationContext.runAnimationGroup_completionHandler_(animate, None)
 
     def hide(self):
         self._cancel_error_timer()
@@ -279,6 +291,8 @@ class IndicadorVoz:
         self._view.freeze()
 
     def show_error(self, message: str):
+        self._cancel_error_timer()
+        self._reaparecer()
         self._view.set_error(message)
         self._window.orderFront_(None)
         self._start_timer()
