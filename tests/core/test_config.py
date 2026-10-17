@@ -7,6 +7,8 @@ from src.core.config import (
     DEFAULTS,
     HOTKEYS_SUPORTADAS,
     Config,
+    hotkey_do_rotulo,
+    rotulo_hotkey,
     migrate_env_key_if_needed,
 )
 
@@ -244,3 +246,13 @@ def test_config_com_f8_continua_aceito(tmp_path):
     p.write_text(json.dumps({"hotkey": "f8"}))
     cfg = Config.load(path=p, env={})
     assert cfg.hotkey == "f8"
+
+
+def test_rotulo_do_control_direito_e_legivel_na_janela():
+    assert rotulo_hotkey("ctrl_r") == "Control direito"
+    assert rotulo_hotkey("f8") == "F8"
+
+
+def test_rotulo_escolhido_na_janela_volta_ao_nome_do_config():
+    assert hotkey_do_rotulo("Control direito") == "ctrl_r"
+    assert hotkey_do_rotulo("F8") == "f8"

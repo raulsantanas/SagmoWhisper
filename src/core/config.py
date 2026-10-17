@@ -29,6 +29,15 @@ def default_config_path(
 DEFAULT_CONFIG_PATH = default_config_path()
 
 HOTKEYS_SUPORTADAS = ("ctrl_r",) + tuple(f"f{n}" for n in range(1, 13))
+_ROTULOS_ESPECIAIS = {"ctrl_r": "Control direito"}
+
+
+def rotulo_hotkey(nome: str) -> str:
+    return _ROTULOS_ESPECIAIS.get(nome, nome.upper())
+
+
+def hotkey_do_rotulo(rotulo: str) -> str:
+    return next(n for n in HOTKEYS_SUPORTADAS if rotulo_hotkey(n) == rotulo)
 
 DEFAULTS = {
     "provider": "groq",
