@@ -1,5 +1,8 @@
 """Lógica pura do indicador de voz (ondas, tempo, aviso de mudo). Sem AppKit."""
 import math
+import time
+
+from src.core.audio_level import RecentPeakClassifier
 
 # (cor, ciclos na largura, velocidade de fase em rad/s)
 ONDAS = (
@@ -10,6 +13,16 @@ ONDAS = (
 AMPLITUDE_MINIMA = 0.04
 AMPLITUDE_TRANSCREVENDO = 0.25
 SUAVIZACAO = 0.25
+# Sem carência o aviso de mudo dispararia em toda gravação, antes de a pessoa
+# começar a falar, e viraria ruído ignorado.
+CARENCIA_S = 1.5
+
+ESTILOS_ESCUTA = {
+    "ok": ("Ouvindo…", "#E6E7EE"),
+    "mudo": ("Não estou ouvindo nada — microfone mudo?", "#FFB4B4"),
+    "alto": ("Volume alto", "#F5B942"),
+}
+_CLASSE_PARA_ESCUTA = {"ok": "ok", "weak": "mudo", "loud": "alto"}
 
 
 def pontos_da_onda(
@@ -43,3 +56,23 @@ def first_line(message: str, max_chars: int = 60) -> str:
     if len(line) <= max_chars:
         return line
     return line[: max_chars - 1] + "…"
+
+
+class EscutaComCarencia:
+    def __init__(self, relogio=time.monotonic):
+        self._relogio = relogio
+        self._classificador = RecentPeakClassifier(clock=relogio)
+        self._inicio = relogio()
+
+    def classificar(self, rms: float) -> str:
+        escuta = _CLASSE_PARA_ESCUTA[self._classificador.classify(rms)]
+        if escuta == "mudo" and self._em_carencia():
+            return "ok"
+        return escuta
+
+    def reiniciar(self) -> None:
+        self._classificador.reset()
+        self._inicio = self._relogio()
+
+    def _em_carencia(self) -> bool:
+        return self._relogio() - self._inicio < CARENCIA_S

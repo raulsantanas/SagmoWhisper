@@ -2,6 +2,8 @@ import pytest
 
 from src.core.indicador import (
     AMPLITUDE_MINIMA,
+    ESTILOS_ESCUTA,
+    EscutaComCarencia,
     ONDAS,
     amplitude_ouvindo,
     first_line,
@@ -63,3 +65,57 @@ def test_primeira_linha_curta_fica_intacta():
 
 def test_primeira_linha_vazia_devolve_vazio():
     assert first_line("") == ""
+
+
+SILENCIO = 1e-5
+VOZ = 0.05
+GRITO = 0.9
+
+
+def _escuta():
+    t = [0.0]
+    return EscutaComCarencia(relogio=lambda: t[0]), t
+
+
+def test_silencio_na_carencia_e_ok():
+    escuta, t = _escuta()
+    t[0] = 1.0
+    assert escuta.classificar(SILENCIO) == "ok"
+
+
+def test_mudo_desde_o_inicio_avisa_apos_carencia():
+    escuta, t = _escuta()
+    for instante in (0.0, 0.5, 1.0, 1.6):
+        t[0] = instante
+        resultado = escuta.classificar(SILENCIO)
+    assert resultado == "mudo"
+
+
+def test_voz_depois_da_carencia_e_ok():
+    escuta, t = _escuta()
+    t[0] = 2.0
+    assert escuta.classificar(VOZ) == "ok"
+
+
+def test_volume_alto_ignora_carencia():
+    escuta, t = _escuta()
+    t[0] = 0.1
+    assert escuta.classificar(GRITO) == "alto"
+
+
+def test_reiniciar_zera_carencia_e_historico():
+    escuta, t = _escuta()
+    t[0] = 3.0
+    assert escuta.classificar(SILENCIO) == "mudo"
+    escuta.reiniciar()
+    t[0] = 3.5
+    assert escuta.classificar(SILENCIO) == "ok"
+
+
+def test_estilos_tem_os_textos_do_spec():
+    assert ESTILOS_ESCUTA["ok"] == ("Ouvindo…", "#E6E7EE")
+    assert ESTILOS_ESCUTA["mudo"] == (
+        "Não estou ouvindo nada — microfone mudo?",
+        "#FFB4B4",
+    )
+    assert ESTILOS_ESCUTA["alto"] == ("Volume alto", "#F5B942")
