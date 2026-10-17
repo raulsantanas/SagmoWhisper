@@ -175,7 +175,17 @@ class VozMenuBar:
     def _main_start_recording(self):
         self._set_title(ICON_RECORDING)
         self._overlay.show()
-        self._recorder.start()
+        try:
+            self._recorder.start()
+        except Exception as e:
+            self._handle_start_recording_failure(e)
+
+    def _handle_start_recording_failure(self, error):
+        logger.exception("Falha ao iniciar gravação")
+        self._recording = False
+        self._overlay.hide()
+        self._set_title(ICON_IDLE)
+        self._notify_error(str(error))
 
     def _on_release(self, key):
         if key == self._hotkey and self._recording:

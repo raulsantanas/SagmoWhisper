@@ -9,6 +9,12 @@ import sounddevice as sd
 import soundfile as sf
 
 
+class RecordingUnavailableError(Exception):
+    """Gravação indisponível: microfone/stream não pôde iniciar (permissão TCC
+    revogada, PortAudio falhou na construção/start) ou stop() foi chamado sem
+    um start() bem-sucedido. Erro de domínio tipado que a UI mostra via str()."""
+
+
 class AudioRecorder:
     def __init__(
         self,
@@ -26,12 +32,18 @@ class AudioRecorder:
     def start(self) -> None:
         self._queue = queue.Queue()
         self._first_block = threading.Event()
-        self._stream = sd.InputStream(
-            samplerate=self._sample_rate,
-            channels=1,
-            callback=self._on_audio,
-        )
-        self._stream.start()
+        try:
+            self._stream = sd.InputStream(
+                samplerate=self._sample_rate,
+                channels=1,
+                callback=self._on_audio,
+            )
+            self._stream.start()
+        except Exception as e:
+            self._stream = None
+            raise RecordingUnavailableError(
+                f"não foi possível iniciar a gravação: {e}"
+            ) from e
 
     def stop(self) -> Path:
         # Pa_StartStream retorna antes de o CoreAudio concluir o start
@@ -40,6 +52,10 @@ class AudioRecorder:
         # o mutex do AudioUnit no startStopCallback) e congela o app. O 1º
         # bloco de áudio prova que o stream está ativo; o timeout evita
         # esperar para sempre com mic mudo/sem permissão.
+        if self._stream is None:
+            raise RecordingUnavailableError(
+                "gravação não foi iniciada com sucesso"
+            )
         self._first_block.wait(self._start_grace_timeout)
         self._stream.stop()
         self._stream.close()
