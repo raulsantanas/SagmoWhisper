@@ -29,7 +29,7 @@ from src.core.single_instance import (
     release_lock,
 )
 from src.hotkey import resolve_hotkey
-from src.macos.orb_overlay import OrbOverlay
+from src.macos.indicador_voz import IndicadorVoz
 from src.macos.settings_window import SettingsWindowController
 from src.pipeline import DictationPipeline
 from src.text_injector import TextInjector
@@ -90,7 +90,7 @@ class VozMenuBar:
     def __init__(self, config: Config):
         self._config = config
         self._had_error = False
-        self._overlay = OrbOverlay()
+        self._overlay = IndicadorVoz()
         self._recorder = AudioRecorder(
             config.sample_rate,
             sample_callback=self._overlay.update_bars,
