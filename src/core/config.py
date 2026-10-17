@@ -31,7 +31,7 @@ DEFAULT_CONFIG_PATH = default_config_path()
 DEFAULTS = {
     "provider": "groq",
     "transcription_model": "whisper-large-v3-turbo",
-    "cleanup_model": "llama-3.3-70b-versatile",
+    "cleanup_model": "meta-llama/llama-4-scout-17b-16e-instruct",
     "language": "pt",
     "enable_cleanup": True,
     "hotkey": "f8",
@@ -41,10 +41,22 @@ DEFAULTS = {
 # 17/06/2026: Groq descontinuou os Llamas 3.1/3.3 no free tier (migrou para
 # gpt-oss). 09/07/2026: Groq bloqueou gpt-oss e os demais chat models no
 # nível da org (403 model_permission_blocked_org) — só llama-3.3-70b-versatile
-# segue disponível, voltando a ser o default.
+# seguia disponível, voltando a ser o default.
+# 19/09/2026: llama-3.3-70b-versatile foi REMOVIDO da plataforma (404
+# model_not_found) e whisper-large-v3 (sem turbo) passou a ser bloqueado no
+# allowlist do projeto (403). O default de cleanup migra para
+# meta-llama/llama-4-scout-17b-16e-instruct e a auto-cura passa a cobrir também
+# transcription_model — antes o crash escapava porque só cleanup era saneado.
 _DEPRECATED_CLEANUP_MODELS = frozenset(
-    {"openai/gpt-oss-120b", "openai/gpt-oss-20b", "llama-3.1-8b-instant"}
+    {
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b",
+        "llama-3.1-8b-instant",
+        "llama-3.3-70b-versatile",
+    }
 )
+
+_DEPRECATED_TRANSCRIPTION_MODELS = frozenset({"whisper-large-v3"})
 
 _ENV_PARSERS = {
     "PROVIDER": ("provider", str.lower),
@@ -68,6 +80,20 @@ def _apply_env(data: dict, env: Mapping) -> None:
             data[field] = parse(env[var])
 
 
+# Modelo depreciado por campo → migra para o default vigente. Vale para valor
+# vindo do JSON OU de env var (o vetor real do crash de 19/09 foi env var).
+_DEPRECATED_BY_FIELD = {
+    "cleanup_model": _DEPRECATED_CLEANUP_MODELS,
+    "transcription_model": _DEPRECATED_TRANSCRIPTION_MODELS,
+}
+
+
+def _heal_deprecated_models(data: dict) -> None:
+    for field, deprecated in _DEPRECATED_BY_FIELD.items():
+        if data[field] in deprecated:
+            data[field] = DEFAULTS[field]
+
+
 @dataclass
 class Config:
     provider: str
@@ -88,8 +114,7 @@ class Config:
         if path.exists():
             data.update(json.loads(path.read_text()))
         _apply_env(data, env)
-        if data["cleanup_model"] in _DEPRECATED_CLEANUP_MODELS:
-            data["cleanup_model"] = DEFAULTS["cleanup_model"]
+        _heal_deprecated_models(data)
         return cls(**data)
 
     def save(self, path: Path = DEFAULT_CONFIG_PATH) -> None:
