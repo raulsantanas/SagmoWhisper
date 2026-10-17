@@ -114,3 +114,14 @@ def test_f8_continua_funcionando_como_tecla():
     relogio.agora = 1.0
     gesto.soltar(keyboard.Key.f8)
     assert eventos == ["iniciar", "concluir"]
+
+
+def test_command_direito_segue_as_mesmas_regras_do_gesto():
+    gesto, eventos, relogio = _gesto(tecla=keyboard.Key.cmd_r)
+    gesto.pressionar(keyboard.Key.cmd_r)
+    gesto.pressionar(TECLA_C)
+    gesto.soltar(keyboard.Key.cmd_r)
+    gesto.pressionar(keyboard.Key.cmd_r)
+    relogio.agora = 1.0
+    gesto.soltar(keyboard.Key.cmd_r)
+    assert eventos == ["iniciar", "cancelar", "iniciar", "concluir"]

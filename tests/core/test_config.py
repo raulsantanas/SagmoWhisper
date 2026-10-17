@@ -256,3 +256,11 @@ def test_rotulo_do_control_direito_e_legivel_na_janela():
 def test_rotulo_escolhido_na_janela_volta_ao_nome_do_config():
     assert hotkey_do_rotulo("Control direito") == "ctrl_r"
     assert hotkey_do_rotulo("F8") == "f8"
+
+
+def test_command_direito_e_suportado_para_teclado_de_pc_remapeado():
+    # Teclado de PC com Control↔Command trocado no macOS: o "Ctrl" físico da
+    # direita chega como cmd_r.
+    assert "cmd_r" in HOTKEYS_SUPORTADAS
+    assert rotulo_hotkey("cmd_r") == "Command direito"
+    assert hotkey_do_rotulo("Command direito") == "cmd_r"

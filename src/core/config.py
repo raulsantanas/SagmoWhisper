@@ -28,8 +28,10 @@ def default_config_path(
 
 DEFAULT_CONFIG_PATH = default_config_path()
 
-HOTKEYS_SUPORTADAS = ("ctrl_r",) + tuple(f"f{n}" for n in range(1, 13))
-_ROTULOS_ESPECIAIS = {"ctrl_r": "Control direito"}
+# cmd_r: teclado de PC com Control↔Command trocado no macOS manda o "Ctrl"
+# físico da direita como Command direito.
+HOTKEYS_SUPORTADAS = ("ctrl_r", "cmd_r") + tuple(f"f{n}" for n in range(1, 13))
+_ROTULOS_ESPECIAIS = {"ctrl_r": "Control direito", "cmd_r": "Command direito"}
 
 
 def rotulo_hotkey(nome: str) -> str:

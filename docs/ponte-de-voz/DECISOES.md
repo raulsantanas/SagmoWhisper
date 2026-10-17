@@ -48,8 +48,9 @@ Substitui o F8. Grava enquanto o Control direito estiver pressionado; soltar enc
 Combinação com qualquer outra tecla cancela e descarta; toque menor que 0,3 s não grava;
 Control esquerdo nunca grava. Tocar o Control direito enquanto a voz fala interrompe a fala.
 Alternativas descartadas: dois toques no Control; segurar qualquer Control.
-Verificar no item 1.0: se o teclado do Raul envia o Control direito como tecla distinta
-(pynput `ctrl_r`) no macOS.
+Verificado no item 1.0 (2026-10-17): o teclado do Raul é de PC, com Control↔Command trocado no
+macOS; o "Ctrl" físico da direita chega como `cmd_r`. Decisão do Raul: o app oferece também
+"Command direito" (`cmd_r`), com as mesmas regras do gesto; o remapeamento do macOS fica intacto.
 
 **DEC-PV-010 — Detecção automática de prompt.**
 O Raul não precisa dizer "isso é um prompt". O classificador decide pela intenção da fala

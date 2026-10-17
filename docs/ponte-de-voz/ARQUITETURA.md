@@ -30,6 +30,8 @@ Regras do gesto (DEC-PV-009):
 - Toque curto (menos de 0,3 s) não grava: evita disparo acidental.
 - O Control esquerdo **nunca** dispara a gravação.
 - F8 deixa de ser padrão, mas continua aceito no config.
+- "Command direito" (`cmd_r`) também é aceito: em teclado de PC com Control↔Command trocado no
+  macOS, é assim que o "Ctrl" físico da direita chega (DEC-PV-009).
 
 ## Módulos novos (todos em `src/core/`)
 
