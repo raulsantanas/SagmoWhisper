@@ -17,7 +17,7 @@ from AppKit import (
 from Foundation import NSObject, NSTimer
 from pynput import keyboard
 
-from src.audio_recorder import AudioRecorder, RecordingUnavailableError
+from src.audio_recorder import AudioRecorder
 from src.core.app_logging import setup_logging
 from src.core.config import Config, migrate_env_key_if_needed
 from src.core.providers import factory

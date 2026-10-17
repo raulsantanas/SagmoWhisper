@@ -24,7 +24,10 @@ colaboradores que o método toca — comportamento sobre o método, sem subir a 
 import pytest
 from unittest.mock import MagicMock
 
-import src.app as app_module
+# src.app importa AppKit/objc: só existe no macOS (o job test-linux não tem).
+pytest.importorskip("objc")
+
+import src.app as app_module  # noqa: E402
 
 
 def _voz_stub_with_failing_recorder():
