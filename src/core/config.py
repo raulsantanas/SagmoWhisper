@@ -44,7 +44,7 @@ def hotkey_do_rotulo(rotulo: str) -> str:
 DEFAULTS = {
     "provider": "groq",
     "transcription_model": "whisper-large-v3-turbo",
-    "cleanup_model": "meta-llama/llama-4-scout-17b-16e-instruct",
+    "cleanup_model": "openai/gpt-oss-120b",
     "language": "pt",
     "enable_cleanup": True,
     "hotkey": "ctrl_r",
@@ -60,9 +60,11 @@ DEFAULTS = {
 # allowlist do projeto (403). O default de cleanup migra para
 # meta-llama/llama-4-scout-17b-16e-instruct e a auto-cura passa a cobrir também
 # transcription_model — antes o crash escapava porque só cleanup era saneado.
+# 17/10/2026: os Llamas sumiram da Groq (llama-4-scout também dá 404); o Raul
+# liberou só openai/gpt-oss-120b na org, que volta a ser o default.
 _DEPRECATED_CLEANUP_MODELS = frozenset(
     {
-        "openai/gpt-oss-120b",
+        "meta-llama/llama-4-scout-17b-16e-instruct",
         "openai/gpt-oss-20b",
         "llama-3.1-8b-instant",
         "llama-3.3-70b-versatile",

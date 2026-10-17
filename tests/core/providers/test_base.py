@@ -42,7 +42,7 @@ def test_modelos_groq_verbatim_do_spec():
     # (sem turbo) e llama-3.3-70b-versatile saíram; sobram os modelos vivos.
     info = PROVIDER_CATALOG["groq"]
     assert info.transcription_models == ("whisper-large-v3-turbo",)
-    assert info.cleanup_models == ("meta-llama/llama-4-scout-17b-16e-instruct",)
+    assert info.cleanup_models == ("openai/gpt-oss-120b",)
     assert info.needs_api_key is True
 
 

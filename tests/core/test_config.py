@@ -17,7 +17,7 @@ def test_load_sem_json_e_sem_env_usa_defaults(tmp_path):
     cfg = Config.load(path=tmp_path / "config.json", env={})
     assert cfg.provider == "groq"
     assert cfg.transcription_model == "whisper-large-v3-turbo"
-    assert cfg.cleanup_model == "meta-llama/llama-4-scout-17b-16e-instruct"
+    assert cfg.cleanup_model == "openai/gpt-oss-120b"
     assert cfg.language == "pt"
     assert cfg.enable_cleanup is True
     assert cfg.hotkey == "ctrl_r"
@@ -145,12 +145,14 @@ def test_caminho_no_linux_respeita_xdg_config_home():
 # mantém bloqueados (403 model_permission_blocked_org) os chat models legados.
 # whisper-large-v3 também está bloqueado (403). Config salva com qualquer um
 # deles — via JSON ou env var — migra para o default vigente no load.
-_NOVO_DEFAULT_CLEANUP = "meta-llama/llama-4-scout-17b-16e-instruct"
+# 17/10/2026: os Llamas sumiram da Groq (llama-4-scout também dá 404) e o
+# Raul liberou só openai/gpt-oss-120b na org — ele volta a ser o default.
+_NOVO_DEFAULT_CLEANUP = "openai/gpt-oss-120b"
 _DEFAULT_TRANSCRICAO = "whisper-large-v3-turbo"
 
 _MODELOS_LIMPEZA_BLOQUEADOS = [
-    "openai/gpt-oss-120b",
     "openai/gpt-oss-20b",
+    "meta-llama/llama-4-scout-17b-16e-instruct",
     "llama-3.1-8b-instant",
     "llama-3.3-70b-versatile",
 ]
