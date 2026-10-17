@@ -13,6 +13,7 @@ _PLIST = {
     "CFBundleName": "SagmoWhisper",
     "CFBundleShortVersionString": _VERSION,
     "LSUIElement": True,
+    "LSMinimumSystemVersion": "12.0",
     "NSMicrophoneUsageDescription": (
         "O SagmoWhisper usa o microfone para transcrever sua voz "
         "enquanto você segura a tecla de ditado."
