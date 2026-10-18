@@ -18,7 +18,6 @@ from src.core.providers.base import TranscriptionError
         ("abre o cloud code", "abre o Claude Code"),
         ("abre o Cloud Code agora", "abre o Claude Code agora"),
         ("lê o Rhythm.md e me fala", "lê o README.md e me fala"),
-        ("pergunta pro cloud", "pergunta pro Claude"),
         ("roda o Claudio Code", "roda o Claude Code"),
         ("roda o Cláudio code", "roda o Claude Code"),
     ],
@@ -29,7 +28,11 @@ def test_corrige_os_erros_conhecidos(falado, esperado):
 
 @pytest.mark.parametrize(
     "intocado",
-    ["o DNS está na cloudflare", "o Cláudio ligou ontem", "soundcloud", ""],
+    [
+        "o DNS está na cloudflare", "o Cláudio ligou ontem", "soundcloud", "",
+        # Decisão de 18/10: "cloud" sozinho é nuvem, não Claude.
+        "salvar na cloud", "app cloud-native",
+    ],
 )
 def test_so_troca_palavra_inteira(intocado):
     assert aplicar(intocado, CORRECOES_INICIAIS) == intocado
@@ -41,12 +44,13 @@ def test_sem_arquivo_usa_correcoes_iniciais(tmp_path):
 
 def test_arquivo_do_raul_soma_e_pode_reescrever_uma_inicial(tmp_path):
     caminho = tmp_path / "correcoes.json"
-    caminho.write_text(json.dumps({"Hostinguer": "Hostinger", "cloud": "nuvem"}))
+    pares = {"Hostinguer": "Hostinger", "rhythm.md": "Readme.md"}
+    caminho.write_text(json.dumps(pares))
 
     correcoes = carregar_correcoes(caminho)
 
     assert correcoes["hostinguer"] == "Hostinger"
-    assert correcoes["cloud"] == "nuvem"
+    assert correcoes["rhythm.md"] == "Readme.md"
     assert correcoes["cloud code"] == "Claude Code"
 
 

@@ -1,6 +1,6 @@
 """Troca, depois da transcrição, o que o Whisper erra sempre igual (ROADMAP 1.2).
 
-Só palavra inteira: "cloud" vira Claude, "cloudflare" fica como está."""
+Só palavra inteira: "cloud code" vira Claude Code, "cloudflare" fica como está."""
 import re
 from pathlib import Path
 
@@ -8,7 +8,6 @@ from src.core.dados_usuario import PASTA_DADOS, erro_no_arquivo, ler_json
 
 CORRECOES_INICIAIS = {
     "cloud code": "Claude Code",
-    "cloud": "Claude",
     "rhythm.md": "README.md",
     # Decisão de 18/10: só com "Code"; um Cláudio de verdade fica intocado.
     "claudio code": "Claude Code",
