@@ -15,7 +15,7 @@ from src.core.glossario import (
 
 def test_glossario_inicial_tem_os_termos_do_roadmap():
     for termo in ("Claude", "Anthropic", "Claude Code", "README", "Laya",
-                  "Groq", "Sagmo", "NeuroEnf"):
+                  "Groq", "Sagmo", "NeuroEnf", "Paula Thuany"):
         assert termo in GLOSSARIO_INICIAL
 
 

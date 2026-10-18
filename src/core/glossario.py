@@ -8,7 +8,7 @@ from src.core.providers.base import TranscriptionError
 
 GLOSSARIO_INICIAL = (
     "Claude", "Anthropic", "Claude Code", "README", "Laya", "Groq", "Sagmo",
-    "NeuroEnf",
+    "NeuroEnf", "Paula Thuany",
 )
 PASTA_DADOS = Path.home() / ".sagmowhisper"
 CAMINHO_PADRAO = PASTA_DADOS / "glossario.json"
