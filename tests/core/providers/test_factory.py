@@ -40,7 +40,7 @@ def test_resolve_api_key_local_nao_tem_env_var(monkeypatch):
 def test_build_groq(monkeypatch):
     monkeypatch.setattr(factory, "resolve_api_key", lambda p: "gsk_x")
     transcriber, cleaner = factory.build_components(_cfg())
-    assert isinstance(transcriber, GroqTranscriber)
+    assert isinstance(transcriber.original, GroqTranscriber)
     assert isinstance(cleaner, GroqCleaner)
 
 
@@ -53,7 +53,7 @@ def test_build_openai(monkeypatch):
             cleanup_model="gpt-4o-mini",
         )
     )
-    assert isinstance(transcriber, OpenAITranscriber)
+    assert isinstance(transcriber.original, OpenAITranscriber)
     assert isinstance(cleaner, OpenAICleaner)
 
 
@@ -64,7 +64,7 @@ def test_build_local_sem_key_e_sem_cleaner(monkeypatch):
     transcriber, cleaner = factory.build_components(
         _cfg(provider="local", transcription_model="small")
     )
-    assert isinstance(transcriber, LocalTranscriber)
+    assert isinstance(transcriber.original, LocalTranscriber)
     assert cleaner is None
 
 
@@ -113,7 +113,7 @@ def test_build_groq_leva_o_glossario_ao_transcriber(monkeypatch, tmp_path):
     monkeypatch.setattr(glossario, "CAMINHO_PADRAO", tmp_path / "nao_existe.json")
     transcriber, _ = factory.build_components(_cfg())
 
-    assert transcriber._prompt == glossario.montar_prompt(
+    assert transcriber.original._prompt == glossario.montar_prompt(
         glossario.GLOSSARIO_INICIAL
     )
 
@@ -126,3 +126,13 @@ def test_glossario_malformado_vira_transcription_error(monkeypatch, tmp_path):
 
     with pytest.raises(TranscriptionError):
         factory.build_components(_cfg())
+
+
+@pytest.mark.parametrize("provider", ["groq", "openai", "local"])
+def test_todo_transcriber_sai_com_correcoes(monkeypatch, provider):
+    from src.core.correcoes import TranscriberCorrigido
+
+    monkeypatch.setattr(factory, "resolve_api_key", lambda p: "k")
+    transcriber, _ = factory.build_components(_cfg(provider=provider))
+
+    assert isinstance(transcriber, TranscriberCorrigido)

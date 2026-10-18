@@ -8,9 +8,10 @@
 |---|------|---------------------|--------|
 | — | Limpeza Groq: modelo vivo | Limpeza usa `openai/gpt-oss-120b` (único liberado na org); modelos removidos migram sozinhos | DONE (#35) |
 | — | Interface "de assistente" | Indicador (#36, #37), ícone+menu (#38) e Configurações escuras (#39). Ajuste futuro: onda um pouco lenta (Raul, 17/10) | DONE |
-| 1.1 | Glossário no Whisper | Termos vão no `prompt` da Groq (≤ 224 tokens); `~/.sagmowhisper/glossario.json` soma termos ao inicial | EM ANDAMENTO |
+| 1.2 | Correções pós-transcrição | "cloud code"→Claude Code, "Rhythm.md"→README.md, "Claudio Code"→Claude Code; palavra inteira; `~/.sagmowhisper/correcoes.json` soma pares | EM ANDAMENTO |
+| 1.1 | Glossário no Whisper | Termos vão no `prompt` da Groq (≤ 224 tokens); `~/.sagmowhisper/glossario.json` soma termos ao inicial | DONE (#40) |
 | 1.0 | Ponte de Voz: tecla F8 → segurar Control direito | Segurar sozinho grava; combinação ou toque < 0,3 s descarta; Control esquerdo nunca grava; F8 aceito | DONE (#34) |
 
-**Próxima:** 1.2 (correções pós-transcrição), quando o Raul aprovar.
+**Próxima:** 1.3 (aprender correção nas Configurações), quando o Raul aprovar.
 **Limite da Groq (free tier):** 8000 tokens/min no `gpt-oss-120b`; cada limpeza gasta ~700.
-**Suíte:** 317 passed / 0 falhas
+**Suíte:** 340 passed / 0 falhas
