@@ -4,13 +4,25 @@ import threading
 import objc
 from AppKit import (
     NSApp,
+    NSAppearance,
+    NSAppearanceNameDarkAqua,
+    NSAttributedString,
     NSBackingStoreBuffered,
+    NSBezierPath,
     NSButton,
-    NSButtonTypeSwitch,
+    NSFont,
+    NSFontAttributeName,
+    NSFontWeightRegular,
+    NSFontWeightSemibold,
+    NSForegroundColorAttributeName,
+    NSGradient,
+    NSMakePoint,
     NSMakeRect,
     NSPopUpButton,
     NSSecureTextField,
+    NSSwitch,
     NSTextField,
+    NSView,
     NSWindow,
     NSWindowStyleMaskClosable,
     NSWindowStyleMaskTitled,
@@ -26,13 +38,83 @@ from src.core.config import (
 )
 from src.core.providers import factory
 from src.core.providers.base import PROVIDER_CATALOG
+from src.macos.cores import hex_to_nscolor
 
-_W, _H = 440, 380
-_LABEL_X, _LABEL_W = 20, 130
-_FIELD_X, _FIELD_W = 160, 260
-_ROW_H = 24
+_W, _H = 460, 520
+_MARGEM = 20
+_LINHA_H = 40
+_ROTULO_X = _MARGEM + 14
+_CONTROLE_W = 220
+_CONTROLE_X = _W - _MARGEM - 12 - _CONTROLE_W
 _HOTKEYS = tuple(rotulo_hotkey(t) for t in HOTKEYS_SUPORTADAS)
 _PROVIDER_KEYS = tuple(PROVIDER_CATALOG)  # ("groq", "openai", "local")
+
+_FUNDO = "#14141C"
+_GRUPO = "#1E1E29"
+_DIVISOR = "#2A2A38"
+_TEXTO = "#E6E7EE"
+_FAIXA = ("#7C5CFF", "#36D1FF", "#FF5CB4")
+_SALVAR = ("#7C5CFF", "#36D1FF")
+_SECUNDARIO = (_DIVISOR, _DIVISOR)
+
+
+class _Faixa(NSView):
+    def drawRect_(self, rect):
+        _degrade(_FAIXA).drawInBezierPath_angle_(
+            NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
+                self.bounds(), 2.0, 2.0
+            ),
+            0.0,
+        )
+
+
+class _BotaoColorido(NSButton):
+    def drawRect_(self, rect):
+        caminho = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
+            self.bounds(), 8.0, 8.0
+        )
+        _degrade(self.cores).drawInBezierPath_angle_(caminho, 0.0)
+        if self.isHighlighted():
+            hex_to_nscolor("#000000", 0.25).set()
+            caminho.fill()
+        self._desenhar_titulo()
+
+    @objc.python_method
+    def _desenhar_titulo(self):
+        titulo = NSAttributedString.alloc().initWithString_attributes_(
+            self.title(),
+            {
+                NSFontAttributeName: NSFont.systemFontOfSize_weight_(
+                    13.0, NSFontWeightSemibold
+                ),
+                NSForegroundColorAttributeName: hex_to_nscolor("#FFFFFF"),
+            },
+        )
+        tamanho, caixa = titulo.size(), self.bounds().size
+        titulo.drawAtPoint_(
+            NSMakePoint(
+                (caixa.width - tamanho.width) / 2,
+                (caixa.height - tamanho.height) / 2,
+            )
+        )
+
+
+def _degrade(cores):
+    return NSGradient.alloc().initWithColors_([hex_to_nscolor(c) for c in cores])
+
+
+class _Caixa(NSView):
+    def drawRect_(self, rect):
+        hex_to_nscolor(self.cor).set()
+        NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
+            self.bounds(), self.raio, self.raio
+        ).fill()
+
+
+def _caixa_colorida(frame, cor, raio=0.0):
+    caixa = _Caixa.alloc().initWithFrame_(frame)
+    caixa.cor, caixa.raio = cor, raio
+    return caixa
 
 
 class SettingsWindowController(NSObject):
@@ -59,6 +141,11 @@ class SettingsWindowController(NSObject):
         )
         self._window.setTitle_("Configurações")
         self._window.setReleasedWhenClosed_(False)
+        self._window.setAppearance_(
+            NSAppearance.appearanceNamed_(NSAppearanceNameDarkAqua)
+        )
+        self._window.setBackgroundColor_(hex_to_nscolor(_FUNDO))
+        self._window.setTitlebarAppearsTransparent_(True)
         self._window.center()
         self._build_fields()
         self._build_buttons()
@@ -66,60 +153,121 @@ class SettingsWindowController(NSObject):
     @objc.python_method
     def _build_fields(self):
         content = self._window.contentView()
-        self._login_check = self._checkbox(346, "Abrir no login")
+        self._topo = 14
+        content.addSubview_(
+            _Faixa.alloc().initWithFrame_(
+                NSMakeRect(_MARGEM, _H - self._topo - 4, _W - 2 * _MARGEM, 4)
+            )
+        )
+        self._topo += 20
+        self._build_geral(content)
+        self._build_transcricao(content)
+        self._build_limpeza(content)
+        self._status_label = self._label(
+            "", NSMakeRect(_MARGEM, 64, _W - 2 * _MARGEM, 18), 12.0, 0.8
+        )
+        content.addSubview_(self._status_label)
+
+    @objc.python_method
+    def _build_geral(self, content):
+        self._login_check = self._switch()
         self._login_check.setTarget_(self)
         self._login_check.setAction_("loginToggled:")
-        content.addSubview_(self._login_check)
-        self._login_hint = self._label(
-            "Instale o app (./install.sh) para ativar", 326, _FIELD_W
-        )
-        self._login_hint.setFrame_(NSMakeRect(_FIELD_X, 326, _FIELD_W, 18))
-        content.addSubview_(self._login_hint)
-        self._provider_popup = self._popup(292, "providerChanged:")
-        self._add_row(content, "Provider", 292, self._provider_popup)
-        self._api_key_field = NSSecureTextField.alloc().initWithFrame_(
-            NSMakeRect(_FIELD_X, 252, _FIELD_W, _ROW_H)
-        )
-        self._api_key_label = self._add_row(
-            content, "API key", 252, self._api_key_field
-        )
-        self._model_popup = self._popup(212, None)
-        self._add_row(content, "Modelo", 212, self._model_popup)
-        self._cleanup_check = self._checkbox(172, "Limpar hesitações")
-        content.addSubview_(self._cleanup_check)
-        self._cleanup_popup = self._popup(132, None)
-        self._add_row(content, "Modelo de limpeza", 132, self._cleanup_popup)
-        self._hotkey_popup = self._popup(92, None)
+        self._hotkey_popup = self._popup(None)
         self._hotkey_popup.addItemsWithTitles_(list(_HOTKEYS))
-        self._add_row(content, "Tecla de ditado", 92, self._hotkey_popup)
-        self._status_label = self._label("", 56, _W - 40)
-        content.addSubview_(self._status_label)
+        rotulos = self._grupo(content, "GERAL", (
+            ("Abrir no login", self._login_check),
+            ("Tecla de ditado", self._hotkey_popup),
+        ))
+        y = rotulos[0].frame().origin.y
+        self._login_hint = self._label(
+            "Instale o app (./install.sh) para ativar",
+            NSMakeRect(_ROTULO_X + 100, y, 240, 18), 11.0, 0.5,
+        )
+        content.addSubview_(self._login_hint)
+
+    @objc.python_method
+    def _build_transcricao(self, content):
+        self._provider_popup = self._popup("providerChanged:")
+        self._api_key_field = NSSecureTextField.alloc().initWithFrame_(
+            NSMakeRect(0, 0, _CONTROLE_W, 22)
+        )
+        self._model_popup = self._popup(None)
+        rotulos = self._grupo(content, "TRANSCRIÇÃO", (
+            ("Provider", self._provider_popup),
+            ("API key", self._api_key_field),
+            ("Modelo", self._model_popup),
+        ))
+        self._api_key_label = rotulos[1]
+
+    @objc.python_method
+    def _build_limpeza(self, content):
+        self._cleanup_check = self._switch()
+        self._cleanup_popup = self._popup(None)
+        self._grupo(content, "LIMPEZA DO TEXTO", (
+            ("Limpar hesitações", self._cleanup_check),
+            ("Modelo de limpeza", self._cleanup_popup),
+        ))
+
+    @objc.python_method
+    def _grupo(self, content, titulo, linhas):
+        content.addSubview_(self._label(
+            titulo,
+            NSMakeRect(_ROTULO_X - 14, _H - self._topo - 14, 200, 14),
+            11.0, 0.6, NSFontWeightSemibold,
+        ))
+        self._topo += 20
+        altura = len(linhas) * _LINHA_H
+        content.addSubview_(_caixa_colorida(
+            NSMakeRect(_MARGEM, _H - self._topo - altura,
+                       _W - 2 * _MARGEM, altura),
+            _GRUPO, 10.0,
+        ))
+        rotulos = [
+            self._linha(content, i, texto, controle)
+            for i, (texto, controle) in enumerate(linhas)
+        ]
+        self._topo += altura + 18
+        return rotulos
+
+    @objc.python_method
+    def _linha(self, content, indice, texto, controle):
+        base = _H - self._topo - (indice + 1) * _LINHA_H
+        centro = base + _LINHA_H / 2
+        if indice > 0:
+            content.addSubview_(_caixa_colorida(
+                NSMakeRect(_ROTULO_X, base + _LINHA_H,
+                           _W - 2 * _ROTULO_X, 1),
+                _DIVISOR,
+            ))
+        rotulo = self._label(texto, NSMakeRect(_ROTULO_X, centro - 9, 160, 18))
+        content.addSubview_(rotulo)
+        tamanho = controle.frame().size
+        controle.setFrameOrigin_(NSMakePoint(
+            _W - _MARGEM - 12 - tamanho.width, centro - tamanho.height / 2
+        ))
+        content.addSubview_(controle)
+        return rotulo
 
     @objc.python_method
     def _build_buttons(self):
         content = self._window.contentView()
         self._test_button = self._button(
-            "Testar conexão", 20, 20, 140, "testConnection:"
+            "Testar conexão", _MARGEM, 140, "testConnection:", _SECUNDARIO
         )
         self._save_button = self._button(
-            "Salvar", _W - 120, 20, 100, "saveSettings:"
+            "Salvar", _W - _MARGEM - 120, 120, "saveSettings:", _SALVAR
         )
         content.addSubview_(self._test_button)
         content.addSubview_(self._save_button)
 
     @objc.python_method
-    def _add_row(self, content, title, y, control):
-        label = self._label(title + ":", y + 3, _LABEL_W)
-        content.addSubview_(label)
-        content.addSubview_(control)
-        return label
-
-    @objc.python_method
-    def _label(self, text, y, width):
-        field = NSTextField.alloc().initWithFrame_(
-            NSMakeRect(_LABEL_X, y, width, 18)
-        )
+    def _label(self, text, frame, tamanho=13.0, alpha=1.0,
+               peso=NSFontWeightRegular):
+        field = NSTextField.alloc().initWithFrame_(frame)
         field.setStringValue_(text)
+        field.setFont_(NSFont.systemFontOfSize_weight_(tamanho, peso))
+        field.setTextColor_(hex_to_nscolor(_TEXTO, alpha))
         field.setBezeled_(False)
         field.setDrawsBackground_(False)
         field.setEditable_(False)
@@ -127,9 +275,9 @@ class SettingsWindowController(NSObject):
         return field
 
     @objc.python_method
-    def _popup(self, y, action):
+    def _popup(self, action):
         popup = NSPopUpButton.alloc().initWithFrame_pullsDown_(
-            NSMakeRect(_FIELD_X, y, _FIELD_W, _ROW_H + 2), False
+            NSMakeRect(0, 0, _CONTROLE_W, 26), False
         )
         if action:
             popup.setTarget_(self)
@@ -137,21 +285,19 @@ class SettingsWindowController(NSObject):
         return popup
 
     @objc.python_method
-    def _checkbox(self, y, title):
-        check = NSButton.alloc().initWithFrame_(
-            NSMakeRect(_FIELD_X, y, _FIELD_W, _ROW_H)
-        )
-        check.setButtonType_(NSButtonTypeSwitch)
-        check.setTitle_(title)
-        return check
+    def _switch(self):
+        # NSSwitch não aceita tint próprio no PyObjC atual: usa a cor de
+        # destaque do sistema.
+        return NSSwitch.alloc().initWithFrame_(NSMakeRect(0, 0, 38, 22))
 
     @objc.python_method
-    def _button(self, title, x, y, width, action):
-        button = NSButton.alloc().initWithFrame_(
-            NSMakeRect(x, y, width, 28)
+    def _button(self, title, x, width, action, cores):
+        button = _BotaoColorido.alloc().initWithFrame_(
+            NSMakeRect(x, 20, width, 32)
         )
+        button.cores = cores
         button.setTitle_(title)
-        button.setBezelStyle_(1)  # NSBezelStyleRounded
+        button.setBordered_(False)
         button.setTarget_(self)
         button.setAction_(action)
         return button
