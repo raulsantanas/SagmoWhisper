@@ -75,7 +75,7 @@ Nenhum outro módulo pode depender de qual classificador está ativo.
 
 | Arquivo | Conteúdo |
 |---|---|
-| `glossario.json` | `{"termos": ["Claude", "Anthropic", "Claude Code", "README", ...]}` |
+| `glossario.json` | `{"termos": ["Claude", "Anthropic", "Claude Code", "README", ...]}` Quando existe, **substitui** o glossário inicial do código; vale ao abrir o app ou salvar Configurações. Formato inválido vira erro no menu |
 | `correcoes.json` | `{"cloud code": "Claude Code", "cloud": "Claude", "rhythm.md": "README.md", ...}` |
 | `treino/decisoes.jsonl` | Uma linha por fala (formato em `ROTEAMENTO.md`) |
 

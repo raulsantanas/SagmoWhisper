@@ -1,7 +1,7 @@
 import os
 from collections.abc import Mapping
 
-from src.core import secrets
+from src.core import glossario, secrets
 from src.core.config import Config
 from src.core.providers import (
     groq_provider,
@@ -59,14 +59,15 @@ def _build_transcriber(config: Config, api_key: str | None):
         return local_provider.LocalTranscriber(
             config.transcription_model, config.language
         )
-    module = _MODULES[config.provider]
-    transcriber_cls = (
-        groq_provider.GroqTranscriber
-        if config.provider == "groq"
-        else openai_provider.OpenAITranscriber
-    )
-    return transcriber_cls(
-        module.make_client(api_key),
+    if config.provider == "groq":
+        return groq_provider.GroqTranscriber(
+            groq_provider.make_client(api_key),
+            config.transcription_model,
+            config.language,
+            prompt=glossario.montar_prompt(glossario.carregar_termos()),
+        )
+    return openai_provider.OpenAITranscriber(
+        openai_provider.make_client(api_key),
         config.transcription_model,
         config.language,
     )
