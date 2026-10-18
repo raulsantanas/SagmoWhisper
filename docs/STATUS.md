@@ -7,7 +7,7 @@
 | # | Task | Critério de aceite | Status |
 |---|------|---------------------|--------|
 | — | Limpeza Groq: modelo vivo | Limpeza usa `openai/gpt-oss-120b` (único liberado na org); modelos removidos migram sozinhos | DONE (#35) |
-| — | Interface "de assistente" | Indicador (#36, #37), ícone+menu (#38) e Configurações escuras (PR 3). Ajuste futuro: onda um pouco lenta (Raul, 17/10) | EM ANDAMENTO |
+| — | Interface "de assistente" | Indicador (#36, #37), ícone+menu (#38) e Configurações escuras (#39). Ajuste futuro: onda um pouco lenta (Raul, 17/10) | DONE |
 | 1.0 | Ponte de Voz: tecla F8 → segurar Control direito | Segurar sozinho grava; combinação ou toque < 0,3 s descarta; Control esquerdo nunca grava; F8 aceito | DONE (#34) |
 
 **Próxima:** 1.1 (glossário no Whisper), quando o Raul aprovar.
