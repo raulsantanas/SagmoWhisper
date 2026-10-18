@@ -124,3 +124,29 @@ def test_transcribe_sem_glossario_nao_envia_prompt(tmp_path):
     GroqTranscriber(client, "m", "pt").transcribe(audio)
 
     assert "prompt" not in client.calls[0]
+
+
+@pytest.mark.parametrize(
+    "eco", ["Claude, Anthropic, Claude Code.", "Claude, Anthropic, Claude Code"]
+)
+def test_eco_do_glossario_em_silencio_nao_vira_texto(tmp_path, eco):
+    # Em áudio curto ou silencioso, o Whisper às vezes devolve o prompt.
+    audio = tmp_path / "fala.wav"
+    audio.write_bytes(b"RIFFfake")
+    t = GroqTranscriber(
+        _FakeClient(text=eco), "m", "pt",
+        prompt="Claude, Anthropic, Claude Code, README",
+    )
+
+    assert t.transcribe(audio) == ""
+
+
+def test_fala_curta_com_um_termo_do_glossario_passa(tmp_path):
+    audio = tmp_path / "fala.wav"
+    audio.write_bytes(b"RIFFfake")
+    t = GroqTranscriber(
+        _FakeClient(text="README"), "m", "pt",
+        prompt="Claude, Anthropic, Claude Code, README",
+    )
+
+    assert t.transcribe(audio) == "README"

@@ -24,7 +24,14 @@ class GroqTranscriber:
                 )
         except Exception as e:
             raise TranscriptionError("groq", str(e)) from e
-        return result.text.strip()
+        texto = result.text.strip()
+        return "" if self._e_eco_do_prompt(texto) else texto
+
+    def _e_eco_do_prompt(self, texto: str) -> bool:
+        # Em áudio curto ou silencioso o Whisper às vezes devolve o próprio
+        # prompt. Dois ou mais termos seguidos da lista não são fala real.
+        trecho = texto.rstrip(".!?… ")
+        return bool(self._prompt) and ", " in trecho and trecho in self._prompt
 
 
 class GroqCleaner:

@@ -116,3 +116,13 @@ def test_build_groq_leva_o_glossario_ao_transcriber(monkeypatch, tmp_path):
     assert transcriber._prompt == glossario.montar_prompt(
         glossario.GLOSSARIO_INICIAL
     )
+
+
+def test_glossario_malformado_vira_transcription_error(monkeypatch, tmp_path):
+    from src.core import glossario
+
+    monkeypatch.setattr(factory, "resolve_api_key", lambda p: "gsk_x")
+    glossario.CAMINHO_PADRAO.write_text('{"termos": ["Claude",]}')
+
+    with pytest.raises(TranscriptionError):
+        factory.build_components(_cfg())

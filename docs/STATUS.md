@@ -13,4 +13,4 @@
 
 **Próxima:** 1.2 (correções pós-transcrição), quando o Raul aprovar.
 **Limite da Groq (free tier):** 8000 tokens/min no `gpt-oss-120b`; cada limpeza gasta ~700.
-**Suíte:** 309 passed / 0 falhas
+**Suíte:** 317 passed / 0 falhas

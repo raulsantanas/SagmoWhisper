@@ -1,8 +1,10 @@
 import json
+from pathlib import Path
 
 import pytest
 
 from src.core import glossario
+from src.core.providers.base import TranscriptionError
 from src.core.glossario import (
     GLOSSARIO_INICIAL,
     LIMITE_CARACTERES,
@@ -46,13 +48,24 @@ def test_arquivo_do_raul_substitui_o_inicial(tmp_path):
     assert carregar_termos(caminho) == ("Claude", "Hostinger")
 
 
-def test_arquivo_invalido_vira_erro_claro(tmp_path):
+@pytest.mark.parametrize(
+    "conteudo",
+    ['{"termos": "Claude"}', '{"termos": ["Claude",]}', '["Claude"]', "\xff"],
+)
+def test_arquivo_invalido_vira_erro_que_o_app_mostra(tmp_path, conteudo):
     caminho = tmp_path / "glossario.json"
-    caminho.write_text('{"termos": "Claude"}')
+    caminho.write_bytes(conteudo.encode("latin-1"))
 
-    with pytest.raises(ValueError, match="glossario.json"):
+    with pytest.raises(TranscriptionError, match="glossario.json"):
         carregar_termos(caminho)
 
 
-def test_caminho_padrao_e_o_da_arquitetura():
-    assert glossario.CAMINHO_PADRAO.parts[-2:] == (".sagmowhisper", "glossario.json")
+def test_ignora_termos_vazios_repetidos_e_que_nao_sao_texto(tmp_path):
+    caminho = tmp_path / "glossario.json"
+    caminho.write_text('{"termos": ["Claude", null, "", " ", "Claude", 3, "Groq"]}')
+
+    assert carregar_termos(caminho) == ("Claude", "Groq")
+
+
+def test_pasta_de_dados_e_a_da_arquitetura():
+    assert glossario.PASTA_DADOS == Path.home() / ".sagmowhisper"
