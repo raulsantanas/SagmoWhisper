@@ -104,3 +104,25 @@ def test_test_connection_provider_desconhecido_erro_tipado():
         factory.test_connection("inexistente", "chave")
     assert "inexistente" in str(exc.value)
     assert type(exc.value) is TranscriptionError
+
+
+def test_build_groq_leva_o_glossario_ao_transcriber(monkeypatch, tmp_path):
+    from src.core import glossario
+
+    monkeypatch.setattr(factory, "resolve_api_key", lambda p: "gsk_x")
+    monkeypatch.setattr(glossario, "CAMINHO_PADRAO", tmp_path / "nao_existe.json")
+    transcriber, _ = factory.build_components(_cfg())
+
+    assert transcriber._prompt == glossario.montar_prompt(
+        glossario.GLOSSARIO_INICIAL
+    )
+
+
+def test_glossario_malformado_vira_transcription_error(monkeypatch, tmp_path):
+    from src.core import glossario
+
+    monkeypatch.setattr(factory, "resolve_api_key", lambda p: "gsk_x")
+    glossario.CAMINHO_PADRAO.write_text('{"termos": ["Claude",]}')
+
+    with pytest.raises(TranscriptionError):
+        factory.build_components(_cfg())
