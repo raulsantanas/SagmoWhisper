@@ -33,7 +33,7 @@ def carregar_termos(caminho: Path | None = None) -> tuple[str, ...]:
     caminho = CAMINHO_PADRAO if caminho is None else caminho
     if not caminho.exists():
         return GLOSSARIO_INICIAL
-    return _termos_validos(_lista_de_termos(caminho))
+    return _termos_validos([*GLOSSARIO_INICIAL, *_lista_de_termos(caminho)])
 
 
 def _lista_de_termos(caminho: Path) -> list:

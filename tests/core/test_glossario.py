@@ -41,11 +41,11 @@ def test_sem_arquivo_usa_glossario_inicial(tmp_path):
     assert carregar_termos(tmp_path / "nao_existe.json") == GLOSSARIO_INICIAL
 
 
-def test_arquivo_do_raul_substitui_o_inicial(tmp_path):
+def test_arquivo_do_raul_soma_ao_inicial_sem_repetir(tmp_path):
     caminho = tmp_path / "glossario.json"
     caminho.write_text(json.dumps({"termos": ["Claude", "Hostinger"]}))
 
-    assert carregar_termos(caminho) == ("Claude", "Hostinger")
+    assert carregar_termos(caminho) == GLOSSARIO_INICIAL + ("Hostinger",)
 
 
 @pytest.mark.parametrize(
@@ -64,7 +64,7 @@ def test_ignora_termos_vazios_repetidos_e_que_nao_sao_texto(tmp_path):
     caminho = tmp_path / "glossario.json"
     caminho.write_text('{"termos": ["Claude", null, "", " ", "Claude", 3, "Groq"]}')
 
-    assert carregar_termos(caminho) == ("Claude", "Groq")
+    assert carregar_termos(caminho) == GLOSSARIO_INICIAL
 
 
 def test_pasta_de_dados_e_a_da_arquitetura():
