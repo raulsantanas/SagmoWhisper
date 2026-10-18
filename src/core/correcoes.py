@@ -18,11 +18,14 @@ CAMINHO_PADRAO = PASTA_DADOS / "correcoes.json"
 
 
 def aplicar(texto: str, correcoes: dict[str, str]) -> str:
+    if not correcoes:
+        return texto
+    por_chave = {errado.lower(): certo for errado, certo in correcoes.items()}
     # Chaves longas primeiro: "cloud code" vence "cloud".
-    chaves = sorted(correcoes, key=len, reverse=True)
+    chaves = sorted(por_chave, key=len, reverse=True)
     padrao = r"(?<!\w)(" + "|".join(map(re.escape, chaves)) + r")(?!\w)"
     return re.sub(
-        padrao, lambda m: correcoes[m.group(0).lower()], texto,
+        padrao, lambda m: por_chave[m.group(0).lower()], texto,
         flags=re.IGNORECASE,
     )
 

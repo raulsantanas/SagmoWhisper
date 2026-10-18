@@ -69,3 +69,13 @@ def test_transcriber_corrigido_corrige_o_que_o_outro_devolve():
     t = TranscriberCorrigido(_Fake(), CORRECOES_INICIAIS)
 
     assert t.transcribe(Path("x.wav")) == "abre o Claude Code"
+
+
+def test_sem_correcoes_o_texto_passa_intacto():
+    assert aplicar("a  b", {}) == "a  b"
+
+
+def test_chave_com_maiuscula_funciona_sem_normalizar_antes():
+    assert aplicar("abre o hostinguer", {"Hostinguer": "Hostinger"}) == (
+        "abre o Hostinger"
+    )
