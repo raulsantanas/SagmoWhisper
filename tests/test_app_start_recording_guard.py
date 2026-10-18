@@ -45,7 +45,7 @@ def _voz_stub_with_failing_recorder():
     voz._overlay = MagicMock()
     voz._recorder = MagicMock()
     voz._recorder.start.side_effect = RuntimeError("mic indisponível (TCC)")
-    voz._set_title = MagicMock()
+    voz._set_estado = MagicMock()
     voz._notify_error = MagicMock()
     return voz
 

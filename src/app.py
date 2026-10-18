@@ -7,8 +7,14 @@ from pathlib import Path
 
 import objc
 from AppKit import (
+    NSAppearance,
+    NSAppearanceNameDarkAqua,
     NSApplication,
     NSApplicationActivationPolicyAccessory,
+    NSAttributedString,
+    NSFont,
+    NSFontAttributeName,
+    NSForegroundColorAttributeName,
     NSMenu,
     NSMenuItem,
     NSStatusBar,
@@ -19,8 +25,9 @@ from pynput import keyboard
 
 from src.audio_recorder import AudioRecorder
 from src.core.app_logging import setup_logging
-from src.core.config import Config, migrate_env_key_if_needed
+from src.core.config import Config, migrate_env_key_if_needed, rotulo_hotkey
 from src.core.gesto_tecla import GestoTecla
+from src.core.menu_status import linha_de_status
 from src.core.providers import factory
 from src.core.providers.base import TranscriptionError
 from src.core.single_instance import (
@@ -29,15 +36,12 @@ from src.core.single_instance import (
     release_lock,
 )
 from src.hotkey import resolve_hotkey
+from src.macos.cores import hex_to_nscolor
+from src.macos.icone_barra import imagem_do_icone
 from src.macos.indicador_voz import IndicadorVoz
 from src.macos.settings_window import SettingsWindowController
 from src.pipeline import DictationPipeline
 from src.text_injector import TextInjector
-
-ICON_IDLE = "🎙️"
-ICON_RECORDING = "🔴"
-ICON_PROCESSING = "⏳"
-ICON_ERROR = "⚠️"
 
 LOG_PATH = Path.home() / "Library" / "Logs" / "SagmoWhisper.log"
 logger = setup_logging(LOG_PATH)
@@ -64,16 +68,17 @@ class MainThreadDispatcher(NSObject):
         self._app._main_cancel_recording()
 
     def setProcessingOnMainThread(self):
-        self._app._set_title(ICON_PROCESSING)
+        self._app._set_estado("transcrevendo")
 
     def finishRecordingOnMainThread(self):
         if self._app._had_error:
             # overlay em estado de erro se esconde sozinho após 2s;
-            # ícone ⚠️ e item "Último erro" permanecem no menu
+            # ícone de erro e "Último erro" permanecem no menu
             return
         self._app._overlay.hide()
-        self._app._set_title(ICON_IDLE)
-        self._app._error_item.setHidden_(True)
+        self._app._set_estado("parado")
+        self._app._ultimo_erro = None
+        self._app._atualizar_linha_de_status()
 
     def showErrorOnMainThread_(self, message):
         self._app._show_error(str(message))
@@ -90,6 +95,7 @@ class VozMenuBar:
     def __init__(self, config: Config):
         self._config = config
         self._had_error = False
+        self._ultimo_erro = None
         self._overlay = IndicadorVoz()
         self._recorder = AudioRecorder(
             config.sample_rate,
@@ -107,7 +113,7 @@ class VozMenuBar:
             MainThreadDispatcher.alloc().initWithApp_(self)
         )
         self._status_item = self._create_status_item()
-        self._set_title(ICON_IDLE)
+        self._set_estado("parado")
         self._setup_menu()
         self._rebuild_pipeline()
         threading.Thread(
@@ -120,16 +126,35 @@ class VozMenuBar:
             NSVariableStatusItemLength
         )
 
-    def _set_title(self, title: str):
-        self._status_item.button().setTitle_(title)
+    def _set_estado(self, estado: str):
+        botao = self._status_item.button()
+        botao.setImage_(imagem_do_icone(estado))
+        botao.setTitle_("")
+
+    def _atualizar_linha_de_status(self):
+        texto, cor = linha_de_status(
+            rotulo_hotkey(self._config.hotkey), self._ultimo_erro
+        )
+        attrs = {
+            NSFontAttributeName: NSFont.menuFontOfSize_(13.0),
+            NSForegroundColorAttributeName: hex_to_nscolor(cor),
+        }
+        self._linha_status.setAttributedTitle_(
+            NSAttributedString.alloc().initWithString_attributes_(texto, attrs)
+        )
 
     def _setup_menu(self):
         menu = NSMenu.alloc().init()
-        self._error_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
-            "", None, ""
+        menu.setAppearance_(
+            NSAppearance.appearanceNamed_(NSAppearanceNameDarkAqua)
         )
-        self._error_item.setHidden_(True)
-        menu.addItem_(self._error_item)
+        self._linha_status = (
+            NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("", None, "")
+        )
+        self._linha_status.setEnabled_(False)
+        self._atualizar_linha_de_status()
+        menu.addItem_(self._linha_status)
+        menu.addItem_(NSMenuItem.separatorItem())
 
         settings_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
             "Configurações…", "openSettings:", ","
@@ -185,7 +210,7 @@ class VozMenuBar:
         self._gesto.pressionar(key)
 
     def _main_start_recording(self):
-        self._set_title(ICON_RECORDING)
+        self._set_estado("gravando")
         self._overlay.show()
         try:
             self._recorder.start()
@@ -196,7 +221,7 @@ class VozMenuBar:
         logger.exception("Falha ao iniciar gravação")
         self._gesto.abandonar()
         self._overlay.hide()
-        self._set_title(ICON_IDLE)
+        self._set_estado("parado")
         self._notify_error(str(error))
 
     def _on_release(self, key):
@@ -204,7 +229,7 @@ class VozMenuBar:
 
     def _main_cancel_recording(self):
         self._overlay.hide()
-        self._set_title(ICON_IDLE)
+        self._set_estado("parado")
         threading.Thread(target=self._discard_recording, daemon=True).start()
 
     def _discard_recording(self):
@@ -242,9 +267,9 @@ class VozMenuBar:
 
     def _show_error(self, message: str):
         self._had_error = True
-        self._set_title(ICON_ERROR)
-        self._error_item.setTitle_(f"Último erro: {message[:80]}")
-        self._error_item.setHidden_(False)
+        self._ultimo_erro = message
+        self._set_estado("erro")
+        self._atualizar_linha_de_status()
 
     def _notify_error(self, message: str):
         self._dispatcher.performSelectorOnMainThread_withObject_waitUntilDone_(
@@ -271,8 +296,9 @@ class VozMenuBar:
         self._config = new_config
         self._gesto = self._novo_gesto(new_config.hotkey)
         self._had_error = False
-        self._set_title(ICON_IDLE)
-        self._error_item.setHidden_(True)
+        self._ultimo_erro = None
+        self._set_estado("parado")
+        self._atualizar_linha_de_status()
         self._rebuild_pipeline()
 
 

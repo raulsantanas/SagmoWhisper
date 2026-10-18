@@ -21,7 +21,7 @@ dB scale and warnings when your mic signal is genuinely too weak or too loud.
 
 ## Requirements
 
-- macOS
+- macOS 12 (Monterey) or newer
 - Python 3.11
 - A [Groq](https://console.groq.com) account (free tier works) for the API key
 - System libraries: `portaudio`, `libsndfile`

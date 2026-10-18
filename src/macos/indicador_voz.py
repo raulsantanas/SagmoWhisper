@@ -33,6 +33,7 @@ from AppKit import (
 )
 from Foundation import NSTimer
 
+from src.macos.cores import hex_to_nscolor
 from src.core.indicador import (
     AMPLITUDE_TRANSCREVENDO,
     ESTILOS_ESCUTA,
@@ -66,16 +67,10 @@ _TEXTO_ERRO = "#FFB4B4"
 _TEXTO_TEMPO = "#CFD2DC"
 
 
-def _hex_to_nscolor(hex_color: str, alpha: float = 1.0) -> NSColor:
-    h = hex_color.lstrip("#")
-    r, g, b = (int(h[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
-    return NSColor.colorWithRed_green_blue_alpha_(r, g, b, alpha)
-
-
 def _texto(conteudo, fonte, cor_hex):
     attrs = {
         NSFontAttributeName: fonte,
-        NSForegroundColorAttributeName: _hex_to_nscolor(cor_hex),
+        NSForegroundColorAttributeName: hex_to_nscolor(cor_hex),
     }
     return NSAttributedString.alloc().initWithString_attributes_(
         conteudo, attrs
@@ -165,9 +160,9 @@ class _IndicadorView(NSView):
         cartao = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
             rect, 24.0, 24.0
         )
-        _hex_to_nscolor("#0E0E16", 0.85).set()
+        hex_to_nscolor("#0E0E16", 0.85).set()
         cartao.fill()
-        _hex_to_nscolor("#FFFFFF", 0.07).set()
+        hex_to_nscolor("#FFFFFF", 0.07).set()
         cartao.setLineWidth_(1.0)
         cartao.stroke()
 
@@ -175,13 +170,13 @@ class _IndicadorView(NSView):
     def _desenhar_ponto(self, estado, nivel):
         cor = _AMARELO if estado == "transcrevendo" else _VERMELHO
         halo_r = _PONTO_R + 3.0 + 6.0 * nivel
-        _hex_to_nscolor(cor, 0.3).set()
+        hex_to_nscolor(cor, 0.3).set()
         NSBezierPath.bezierPathWithOvalInRect_(
             NSMakeRect(
                 _PONTO_X - halo_r, _LINHA_Y - halo_r, halo_r * 2, halo_r * 2
             )
         ).fill()
-        _hex_to_nscolor(cor).set()
+        hex_to_nscolor(cor).set()
         NSBezierPath.bezierPathWithOvalInRect_(
             NSMakeRect(
                 _PONTO_X - _PONTO_R, _LINHA_Y - _PONTO_R,
@@ -223,7 +218,7 @@ def _amplitude(estado, nivel, decorrido):
 
 
 def _tracar(path, cor, largura, alpha):
-    _hex_to_nscolor(cor, alpha).set()
+    hex_to_nscolor(cor, alpha).set()
     path.setLineWidth_(largura)
     path.stroke()
 
