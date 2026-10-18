@@ -106,3 +106,21 @@ def test_test_connection_falha_vira_transcription_error():
 def test_make_client_retorna_cliente_groq():
     client = make_client("gsk_x")
     assert isinstance(client, Groq)
+
+
+def test_transcribe_envia_glossario_no_prompt(tmp_path):
+    audio = tmp_path / "fala.wav"
+    audio.write_bytes(b"RIFFfake")
+    client = _FakeClient()
+    GroqTranscriber(client, "m", "pt", prompt="Claude, README").transcribe(audio)
+
+    assert client.calls[0]["prompt"] == "Claude, README"
+
+
+def test_transcribe_sem_glossario_nao_envia_prompt(tmp_path):
+    audio = tmp_path / "fala.wav"
+    audio.write_bytes(b"RIFFfake")
+    client = _FakeClient()
+    GroqTranscriber(client, "m", "pt").transcribe(audio)
+
+    assert "prompt" not in client.calls[0]

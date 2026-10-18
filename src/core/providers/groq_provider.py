@@ -6,18 +6,21 @@ from src.core.providers.base import TranscriptionError, cleanup_messages
 
 
 class GroqTranscriber:
-    def __init__(self, client, model: str, language: str):
+    def __init__(self, client, model: str, language: str, prompt: str = ""):
         self._client = client
         self._model = model
         self._language = language
+        self._prompt = prompt
 
     def transcribe(self, audio_path: Path) -> str:
+        extras = {"prompt": self._prompt} if self._prompt else {}
         try:
             with open(audio_path, "rb") as audio_file:
                 result = self._client.audio.transcriptions.create(
                     file=(Path(audio_path).name, audio_file.read()),
                     model=self._model,
                     language=self._language,
+                    **extras,
                 )
         except Exception as e:
             raise TranscriptionError("groq", str(e)) from e
