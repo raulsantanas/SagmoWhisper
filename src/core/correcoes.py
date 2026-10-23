@@ -66,9 +66,14 @@ def _par_valido(par) -> bool:
 
 
 class TranscriberCorrigido:
-    def __init__(self, original, correcoes: dict[str, str]):
+    def __init__(self, original, correcoes: dict[str, str], registro=None):
         self.original = original
+        self.registro = registro
         self._correcoes = correcoes
 
     def transcribe(self, audio_path: Path) -> str:
-        return aplicar(self.original.transcribe(audio_path), self._correcoes)
+        bruto = self.original.transcribe(audio_path)
+        corrigido = aplicar(bruto, self._correcoes)
+        if self.registro is not None and bruto.strip():
+            self.registro.registrar(bruto, corrigido)
+        return corrigido

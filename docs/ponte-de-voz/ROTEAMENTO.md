@@ -64,6 +64,10 @@ Regras fixas:
 `correcao_do_raul` é preenchido quando o Raul diz que a decisão estava errada, por exemplo
 `{"tipo": "duvida"}`. Essas linhas são o material de treino do Laya.
 
+Desde a 1.4 (23/10) toda fala não vazia gera uma linha, com `texto_bruto` (Whisper) e
+`texto_corrigido` (depois de `correcoes.py`). Até a Fase 2 não há classificador nem app em
+foco: `decisao` e `app_em_foco` saem `null`. Falha ao gravar só vai para o log; o ditado segue.
+
 ## 4. Respostas em voz
 
 | Situação | Quem gera o texto | Limite |

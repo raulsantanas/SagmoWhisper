@@ -136,3 +136,12 @@ def test_todo_transcriber_sai_com_correcoes(monkeypatch, provider):
     transcriber, _ = factory.build_components(_cfg(provider=provider))
 
     assert isinstance(transcriber, TranscriberCorrigido)
+
+
+def test_transcriber_da_factory_grava_registro_de_treino(monkeypatch):
+    from src.core import registro_treino
+
+    monkeypatch.setattr(factory, "resolve_api_key", lambda p: "k")
+    transcriber, _ = factory.build_components(_cfg())
+
+    assert isinstance(transcriber.registro, registro_treino.RegistroTreino)
