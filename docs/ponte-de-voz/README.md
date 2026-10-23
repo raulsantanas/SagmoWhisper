@@ -11,7 +11,7 @@ A Ponte de Voz faz ele também **entender, decidir e responder falando**:
 1. Transcreve sem errar termos técnicos ("Claude", não "cloud"; "README", não "Rhythm") e **aprende** com as correções do Raul.
 2. Decide **sozinho** se a fala é **dúvida**, **comando** para o Claude Code ou **ditado**.
    O Raul **não precisa** dizer "isso é um prompt" (DEC-PV-010 e `ROTEAMENTO.md`).
-3. Dúvida → responde em voz, sem acionar o Claude (zero token Anthropic).
+3. Dúvida → não é respondida em voz: a voz só fala a saída do Claude Code (DEC-PV-013).
 4. Comando → prompt estruturado + escolha de **modelo e esforço** → Claude Code.
 5. Quando o Claude termina → fala **uma frase** com o resultado e o próximo passo.
 6. Registra cada decisão para, no futuro, treinar o **Laya** como classificador local.
@@ -49,7 +49,7 @@ Primeiro prompt sugerido:
 
 | Parte | Quem faz | Custo |
 |---|---|---|
-| Transcrição, classificação, dúvidas, prompt | Groq (plano gratuito) | R$ 0 |
+| Transcrição, classificação, prompt | Groq (plano gratuito) | R$ 0 |
 | Voz de resposta | Edge TTS, voz pt-BR-FranciscaNeural | R$ 0 (usa internet) |
 | Trabalho de código | Claude Code | plano Anthropic |
 | Resumo falado | linha `VOZ:` no fim da resposta | ~40 palavras por resposta |

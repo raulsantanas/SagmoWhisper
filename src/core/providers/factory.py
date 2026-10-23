@@ -2,8 +2,6 @@ import os
 from collections.abc import Mapping
 
 from src.core import correcoes, glossario, registro_treino, secrets
-from src.core.intencao import ClassificadorGroq
-from src.core.resposta_duvida import AtendenteDeDuvida, RespostaGroq
 from src.core.config import Config
 from src.core.providers import (
     groq_provider,
@@ -56,18 +54,6 @@ def build_components(config: Config):
         registro_treino.RegistroTreino(),
     )
     return transcriber, _build_cleaner(config, api_key, info)
-
-
-def build_atendente_de_duvida(config: Config, voz) -> AtendenteDeDuvida | None:
-    """Classificador e resposta usam o Groq (DEC-PV-002); sem Groq, só ditado."""
-    if config.provider != "groq":
-        return None
-    client = groq_provider.make_client(resolve_api_key("groq"))
-    return AtendenteDeDuvida(
-        ClassificadorGroq(client, config.cleanup_model),
-        RespostaGroq(client, config.cleanup_model),
-        voz,
-    )
 
 
 def _build_transcriber(config: Config, api_key: str | None):

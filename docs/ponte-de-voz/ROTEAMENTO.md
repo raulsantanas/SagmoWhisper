@@ -78,9 +78,10 @@ foco: `decisao` e `app_em_foco` saem `null`. Falha ao gravar só vai para o log;
 
 ## 4. Respostas em voz
 
+A voz só fala a saída do Claude Code; dúvida não é respondida em voz (DEC-PV-013).
+
 | Situação | Quem gera o texto | Limite |
 |---|---|---|
-| Dúvida | Groq | 3 frases |
 | Confirmação antes de enviar comando | Groq (resumo do prompt) | 1 frase — ver DEC-PV-006 |
 | Fim do trabalho | Claude, linha `VOZ:` | 2 frases |
 | Progresso (fase 3) | Texto fixo por evento | 1 frase curta |

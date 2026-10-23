@@ -9,7 +9,7 @@ sem banco de dados: arquivos JSON/JSONL em `~/.sagmowhisper/`.
 Segurar Control direito → gravação (existe) → [1] Whisper Groq + glossário → [2] correções aprendidas
    → [3] classificador de intenção (texto + app em foco)
         ├─ ditado  → limpeza (existe) → cola no cursor (existe)
-        ├─ dúvida  → [4] resposta Groq curta → [6] voz
+        ├─ dúvida  → cola como ditado (sem voz, DEC-PV-013)
         └─ comando → limpeza/prompt XML (existe)
                      → [5] ponte Claude Code (modelo + esforço)
                      → Claude trabalha
@@ -41,7 +41,6 @@ Regras do gesto (DEC-PV-009):
 | 1 | `glossario.py` | Lista de termos enviada no parâmetro `prompt` do Whisper | `GroqTranscriber` (hoje não envia `prompt`) |
 | 2 | `correcoes.py` | Substituições pós-transcrição + aprendizado com correções | — |
 | 3 | `intencao.py` | Decide tipo, modelo, esforço e confiança | `prompt_register_triggered`, cliente Groq |
-| 4 | `resposta_duvida.py` | Responde dúvidas em até 3 frases | `GroqCleaner` (mesmo cliente) |
 | 5 | `ponte_claude.py` | Entrega o comando ao Claude Code com o roteamento | `text_injector.py` |
 | 6 | `voz.py` | Fala texto (Edge TTS), fila e interrupção | `gesto_tecla.py` |
 | 7 | `registro_treino.py` | Grava decisões e correções do Raul em JSONL | — |
@@ -93,7 +92,7 @@ Nenhum outro módulo pode depender de qual classificador está ativo.
 
 ## Fronteiras
 
-- Não altera o fluxo de ditado atual: ditado continua colando no cursor como hoje. Só a fala classificada como dúvida deixa de colar (DEC-PV-012).
+- Não altera o fluxo de ditado atual: ditado continua colando no cursor como hoje.
 - Não chama a API da Anthropic diretamente. Só o Claude Code fala com a Anthropic.
 - Nenhuma chave de API em arquivo do repositório: usar `src/core/secrets.py` (já existe).
 

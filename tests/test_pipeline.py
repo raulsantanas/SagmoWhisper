@@ -128,37 +128,3 @@ def test_resposta_do_editor_e_aceita_sem_guard():
     assert injector.calls == ["Quanto é dois mais dois?"]
     assert result == "Quanto é dois mais dois?"
 
-
-class _Atendente:
-    def __init__(self, atende):
-        self._atende = atende
-        self.calls = []
-
-    def atender(self, text):
-        self.calls.append(text)
-        return self._atende
-
-
-def test_duvida_atendida_em_voz_nao_cola_nada():
-    injector = _SpyInjector()
-    atendente = _Atendente(atende=True)
-    pipeline = DictationPipeline(
-        _SpyTranscriber(" O que é Turbo Stream? "), _SpyCleaner("x"), injector,
-        enable_cleanup=True, atendente=atendente,
-    )
-
-    assert pipeline.run(Path("a.wav")) == ""
-    assert atendente.calls == ["O que é Turbo Stream?"]
-    assert injector.calls == []
-
-
-def test_fala_nao_atendida_segue_limpeza_e_cola():
-    injector = _SpyInjector()
-    pipeline = DictationPipeline(
-        _SpyTranscriber("oi amor"), _SpyCleaner("Oi, amor."), injector,
-        enable_cleanup=True, atendente=_Atendente(atende=False),
-    )
-
-    pipeline.run(Path("a.wav"))
-
-    assert injector.calls == ["Oi, amor."]

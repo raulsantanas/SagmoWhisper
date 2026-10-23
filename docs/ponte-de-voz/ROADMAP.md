@@ -20,7 +20,7 @@ Cada item: teste RED primeiro, depois implementação mínima. Um item por PR.
 | 2.2 | `intencao.py` com Groq em modo JSON | Classifica **todos** os exemplos reais de `ROTEAMENTO.md` §1 sem o Raul dizer "isso é um prompt" (teste ao vivo opt-in). O caso "eu alterei o README... dá uma olhada" sai como `comando` com 2 tarefas |
 | 2.3 | `voz.py` com Edge TTS Francisca | Fala sem travar o app; tocar o Control direito interrompe a fala |
 | 2.4 | Voz reserva Piper Faber (DEC-PV-008) | Com o Edge falhando (simulado no teste), a mesma frase sai pela Faber local; volta para a Francisca quando o Edge responde |
-| 2.5 | `resposta_duvida.py` | Dúvida gera resposta de até 3 frases falada; Claude não é acionado |
+| 2.5 | ~~`resposta_duvida.py`~~ | **Descartado** (DEC-PV-013): a voz só fala a saída do Claude Code. Pergunta ditada é colada como ditado |
 | 2.6 | Ditado sem regressão | Os 237 testes atuais continuam passando |
 
 ## Fase 3 — Ponte com o Claude Code

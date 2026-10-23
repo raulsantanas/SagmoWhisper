@@ -64,10 +64,17 @@ macOS ("Mensagens", "Ajustes do Sistema") e mudaria com o idioma. Decisão do Ra
 item 2.1). Consequência: Google Docs roda dentro do navegador e não é detectável pelo app em
 foco; Chrome e Safari não favorecem nenhum tipo. Ids verificados no Mac do Raul em `ROTEAMENTO.md` §1.
 
-**DEC-PV-012 — Toda fala passa pelo classificador; falha vira ditado.**
+**DEC-PV-012 — Toda fala passa pelo classificador; falha vira ditado.** *Revogada pela DEC-PV-013.*
 Com o provider Groq, o pipeline classifica cada fala antes de colar (decisão do Raul,
 2026-10-23, item 2.5). Dúvida é respondida em voz e não cola nada; ditado e comando seguem o
 fluxo de colar. Custo medido: +0,5 a 1,2 s por fala e ~1.030 tokens a mais. Se o classificador
 ou a resposta falharem, a fala é colada como ditado: perder a fala é pior do que colar uma
 pergunta. A resposta diz que não sabe quando não reconhece um termo (o Groq inventou o que eram
 Laya e Jev). Sem Groq (OpenAI, local) não há classificação.
+
+**DEC-PV-013 — A voz só fala a saída do Claude Code.**
+Decisão do Raul (2026-10-23), logo após a 2.5 ir para o app: "A voz tem que sair somente na
+saída do Claude Code e não numa pergunta ou dúvida." A resposta de dúvida pelo Groq
+(`resposta_duvida.py`, #47) foi removida, e o classificador saiu do caminho do ditado: toda fala
+volta a colar como antes, sem a demora de 0,5 a 1,2 s nem os ~1.030 tokens a mais. A Francisca
+(`voz.py`) e a interrupção pela tecla ficam para a linha `VOZ:` do Claude Code (Fase 3).
