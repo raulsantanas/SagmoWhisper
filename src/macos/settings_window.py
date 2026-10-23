@@ -395,6 +395,7 @@ class SettingsWindowController(NSObject):
             and bool(info.cleanup_models),
             hotkey=hotkey_do_rotulo(self._hotkey_popup.titleOfSelectedItem()),
             sample_rate=self._config.sample_rate,
+            voice_port=self._config.voice_port,
         )
 
     # ---------- ações (selectors AppKit) ----------

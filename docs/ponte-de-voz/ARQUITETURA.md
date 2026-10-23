@@ -84,7 +84,10 @@ Nenhum outro módulo pode depender de qual classificador está ativo.
 
 - **Hook `Stop`** (em `~/.claude/settings.json`): script curto que pega a última resposta,
   extrai a linha que começa com `VOZ:` e envia o texto ao app.
-- **Canal hook → app:** HTTP local em `127.0.0.1` (porta definida em config), rota `POST /falar`.
+- **Canal hook → app:** HTTP local em `127.0.0.1` (`voice_port` no config, padrão 47821), rota
+  `POST /falar` com `{"texto": "..."}` (até 1000 caracteres). Exige `Content-Type: application/json` e
+  `Host` local, porque qualquer página do navegador alcança 127.0.0.1. Porta ocupada: o app abre sem a voz.
+  O cliente do hook (`cliente_voz.enviar`) devolve `False` em vez de levantar erro.
   Assim o app controla a fila e a tecla consegue interromper. Ver DEC-PV-005.
 - **Hooks de progresso** (fase 3, `PreToolUse`/`PostToolUse`): enviam ao app o passo atual
   (rodando testes, editando arquivo, subagente acionado) por `POST /progresso`. O app só guarda;

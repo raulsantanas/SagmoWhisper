@@ -27,6 +27,7 @@ from src.audio_recorder import AudioRecorder
 from src.core.app_logging import setup_logging
 from src.core.config import Config, migrate_env_key_if_needed, rotulo_hotkey
 from src.core.gesto_tecla import GestoTecla
+from src.core.servidor_voz import ServidorVoz
 from src.core.voz import VozEdge
 from src.core.menu_status import linha_de_status
 from src.core.providers import factory
@@ -104,6 +105,7 @@ class VozMenuBar:
         )
         self._pipeline = None
         self._voz = VozEdge()
+        self._servidor_voz = self._iniciar_servidor_de_voz()
         self._settings = (
             SettingsWindowController.alloc().initWithConfig_onSave_(
                 config, self._apply_config
@@ -202,6 +204,11 @@ class VozMenuBar:
             ao_concluir=lambda: self._on_main("stopRecordingOnMainThread"),
             ao_cancelar=lambda: self._on_main("cancelRecordingOnMainThread"),
         )
+
+    def _iniciar_servidor_de_voz(self):
+        servidor = ServidorVoz(self._voz, self._config.voice_port)
+        servidor.iniciar()
+        return servidor
 
     def _ao_iniciar_gesto(self):
         # Tocar a tecla enquanto ela fala é o jeito de calar a voz (2.3).

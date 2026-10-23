@@ -22,6 +22,14 @@ def test_load_sem_json_e_sem_env_usa_defaults(tmp_path):
     assert cfg.enable_cleanup is True
     assert cfg.hotkey == "ctrl_r"
     assert cfg.sample_rate == 16000
+    assert cfg.voice_port == 47821
+
+
+def test_voice_port_vem_do_json(tmp_path):
+    p = tmp_path / "config.json"
+    p.write_text(json.dumps({"voice_port": 50123}))
+
+    assert Config.load(path=p, env={}).voice_port == 50123
 
 
 def test_load_le_json_existente(tmp_path):

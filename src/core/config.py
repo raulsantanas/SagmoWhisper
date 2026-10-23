@@ -49,6 +49,8 @@ DEFAULTS = {
     "enable_cleanup": True,
     "hotkey": "ctrl_r",
     "sample_rate": 16000,
+    # porta local por onde o hook do Claude Code manda o texto a falar (3.2)
+    "voice_port": 47821,
 }
 
 # 17/06/2026: Groq descontinuou os Llamas 3.1/3.3 no free tier (migrou para
@@ -118,6 +120,7 @@ class Config:
     enable_cleanup: bool
     hotkey: str
     sample_rate: int
+    voice_port: int
 
     @classmethod
     def load(
