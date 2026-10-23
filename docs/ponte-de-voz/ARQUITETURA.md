@@ -59,6 +59,7 @@ class Decisao:
     esforco: Literal["low", "medium", "high"] | None    # só para comando
     confianca: float                                    # 0.0 a 1.0
     origem: Literal["groq", "laya", "regra"]
+    tarefas: tuple[str, ...] = ()                       # só para comando; 1 por pedido (2.2)
 
 class ClassificadorIntencao(Protocol):
     def classificar(self, texto: str, tem_imagem: bool, app_em_foco: str | None) -> Decisao: ...

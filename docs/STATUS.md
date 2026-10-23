@@ -8,13 +8,14 @@
 |---|------|---------------------|--------|
 | — | Limpeza Groq: modelo vivo | Limpeza usa `openai/gpt-oss-120b` (único liberado na org); modelos removidos migram sozinhos | DONE (#35) |
 | — | Interface "de assistente" | Indicador (#36, #37), ícone+menu (#38) e Configurações escuras (#39). Ajuste futuro: onda um pouco lenta (Raul, 17/10) | DONE |
-| 2.1 | App em foco | `app_em_foco()` devolve o bundle id do app na frente no macOS (DEC-PV-011); `None` no Linux | DONE |
+| 2.2 | Classificador de intenção | `ClassificadorGroq` acerta os 6 casos do ROTEAMENTO §1 e o caso README sai com 2 tarefas (`pytest -m groq_live`, estável em 3 rodadas). Ainda não ligado ao app | DONE |
+| 2.1 | App em foco | `app_em_foco()` devolve o bundle id do app na frente no macOS (DEC-PV-011); `None` no Linux | DONE (#44) |
 | 1.4 | Registro de treino | Cada fala não vazia vira uma linha em `~/.sagmowhisper/treino/decisoes.jsonl` (`decisao` null até a Fase 2) | DONE (#43) |
 | 1.3 | Aprender correção nas Configurações | Grupo Correções: "Quando ouvir" → "Escrever" grava em `correcoes.json` e vale sem reiniciar | DONE (#42) |
 | 1.2 | Correções pós-transcrição | "cloud code"→Claude Code, "Rhythm.md"→README.md, "Claudio Code"→Claude Code; palavra inteira; `~/.sagmowhisper/correcoes.json` soma pares | DONE (#41) |
 | 1.1 | Glossário no Whisper | Termos vão no `prompt` da Groq (≤ 224 tokens); `~/.sagmowhisper/glossario.json` soma termos ao inicial | DONE (#40) |
 | 1.0 | Ponte de Voz: tecla F8 → segurar Control direito | Segurar sozinho grava; combinação ou toque < 0,3 s descarta; Control esquerdo nunca grava; F8 aceito | DONE (#34) |
 
-**Próxima:** 2.2 (`intencao.py`, classificador Groq em modo JSON), quando o Raul aprovar.
+**Próxima:** 2.3 (`voz.py`, Edge TTS Francisca), quando o Raul aprovar.
 **Limite da Groq (free tier):** 8000 tokens/min no `gpt-oss-120b`; cada limpeza gasta ~700.
-**Suíte:** 361 passed / 0 falhas
+**Suíte:** 380 passed / 0 falhas
