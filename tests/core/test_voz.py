@@ -57,7 +57,7 @@ def test_fala_as_frases_em_ordem_com_a_francisca():
 
     assert falso.tocados == ["primeira", "segunda"]
     assert falso.vozes == [VOZ_PADRAO, VOZ_PADRAO]
-    assert VOZ_PADRAO == "pt-BR-FranciscaNeural"
+    assert VOZ_PADRAO == "pt-BR-ThalitaMultilingualNeural"
 
 
 def test_falar_nao_bloqueia_quem_chama():
