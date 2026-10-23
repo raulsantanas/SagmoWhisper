@@ -16,7 +16,7 @@ Cada item: teste RED primeiro, depois implementação mínima. Um item por PR.
 
 | Item | Entrega | Critério de aceite |
 |---|---|---|
-| 2.1 | `app_em_foco.py` | Retorna o nome do app na frente no macOS; `None` no Linux sem quebrar |
+| 2.1 | `app_em_foco.py` | Retorna o bundle id do app na frente no macOS (DEC-PV-011); `None` no Linux sem quebrar |
 | 2.2 | `intencao.py` com Groq em modo JSON | Classifica **todos** os exemplos reais de `ROTEAMENTO.md` §1 sem o Raul dizer "isso é um prompt" (teste ao vivo opt-in). O caso "eu alterei o README... dá uma olhada" sai como `comando` com 2 tarefas |
 | 2.3 | `voz.py` com Edge TTS Francisca | Fala sem travar o app; tocar o Control direito interrompe a fala |
 | 2.4 | Voz reserva Piper Faber (DEC-PV-008) | Com o Edge falhando (simulado no teste), a mesma frase sai pela Faber local; volta para a Francisca quando o Edge responde |
