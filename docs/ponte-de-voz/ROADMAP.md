@@ -20,19 +20,20 @@ Cada item: teste RED primeiro, depois implementação mínima. Um item por PR.
 | 2.2 | `intencao.py` com Groq em modo JSON | Classifica **todos** os exemplos reais de `ROTEAMENTO.md` §1 sem o Raul dizer "isso é um prompt" (teste ao vivo opt-in). O caso "eu alterei o README... dá uma olhada" sai como `comando` com 2 tarefas |
 | 2.3 | `voz.py` com Edge TTS Francisca | Fala sem travar o app; tocar o Control direito interrompe a fala |
 | 2.4 | Voz reserva Piper Faber (DEC-PV-008) | Com o Edge falhando (simulado no teste), a mesma frase sai pela Faber local; volta para a Francisca quando o Edge responde |
-| 2.5 | `resposta_duvida.py` | Dúvida gera resposta de até 3 frases falada; Claude não é acionado |
+| 2.5 | ~~`resposta_duvida.py`~~ | **Descartado** (DEC-PV-013): a voz só fala a saída do Claude Code. Pergunta ditada é colada como ditado |
 | 2.6 | Ditado sem regressão | Os 237 testes atuais continuam passando |
 
 ## Fase 3 — Ponte com o Claude Code
 
 | Item | Entrega | Critério de aceite |
 |---|---|---|
-| 3.1 | Regra `VOZ:` no `~/.claude/CLAUDE.md` + hook `Stop` | Ao terminar, o Mac fala só a linha `VOZ:` |
+| 3.1 | Regra `VOZ:` no `~/.claude/CLAUDE.md` + hook `Stop` | Ao terminar, o Mac fala só a linha `VOZ:`: até 5 frases curtas (testes, fazendo, feito, próxima fase, falta) |
 | 3.2 | Servidor local `POST /falar` no app | Hook entrega o texto; falha do app não quebra o Claude Code |
 | 3.3 | Subagentes com modelo e esforço fixos em `~/.claude/agents/` | Um subagente por classe de `ROTEAMENTO.md` |
-| 3.4 | Confirmação com envio automático (DEC-PV-006) | Fala o resumo; sem Esc em 3 s após o fim da fala, envia; Esc cancela e nada é enviado |
+| 3.4 | ~~Confirmação com envio automático~~ | **Descartado** (DEC-PV-014): o comando vai direto ao Claude Code |
 | 3.5 | `ponte_claude.py` | Comando chega ao Claude Code com indicação do subagente/modelo certo (ver DEC-PV-004) |
-| 3.6 | Avisos de progresso (`PreToolUse`) | Fala só "subagente acionado" e "rodando testes"; resto em silêncio |
+| 3.6 | Registro de progresso (`PreToolUse`/`PostToolUse` → `POST /progresso`) | O app guarda o passo atual e os passos feitos; nada é falado durante o trabalho |
+| 3.7 | Pergunta de status em voz | "Em que estágio está?" é respondida em voz a partir do registro da 3.6; não cola e não aciona o Claude. Como reconhecer a pergunta de status: definir com o Raul no item |
 
 ## Fase 4 — Laya (só com dados)
 

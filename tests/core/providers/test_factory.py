@@ -2,7 +2,6 @@ import pytest
 
 from src.core.config import DEFAULTS, Config
 from src.core.providers import factory
-from src.core.resposta_duvida import AtendenteDeDuvida
 from src.core.providers.base import TranscriptionError
 from src.core.providers.groq_provider import GroqCleaner, GroqTranscriber
 from src.core.providers.local_provider import LocalTranscriber
@@ -147,19 +146,3 @@ def test_transcriber_da_factory_grava_registro_de_treino(monkeypatch):
 
     assert isinstance(transcriber.registro, registro_treino.RegistroTreino)
 
-
-def test_groq_monta_atendente_de_duvida_com_a_voz(monkeypatch):
-    monkeypatch.setattr(factory, "resolve_api_key", lambda p: "gsk_x")
-    voz = object()
-
-    atendente = factory.build_atendente_de_duvida(_cfg(provider="groq"), voz)
-
-    assert isinstance(atendente, AtendenteDeDuvida)
-    assert atendente.voz is voz
-
-
-@pytest.mark.parametrize("provider", ["openai", "local"])
-def test_sem_groq_nao_ha_atendente(monkeypatch, provider):
-    monkeypatch.setattr(factory, "resolve_api_key", lambda p: "sk_x")
-
-    assert factory.build_atendente_de_duvida(_cfg(provider=provider), object()) is None

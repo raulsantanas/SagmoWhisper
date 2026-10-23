@@ -78,12 +78,13 @@ foco: `decisao` e `app_em_foco` saem `null`. Falha ao gravar só vai para o log;
 
 ## 4. Respostas em voz
 
+A voz só fala o trabalho do Claude Code; dúvida geral não é respondida em voz (DEC-PV-013).
+Nada é falado sozinho durante o trabalho: só a resposta de status pedida e o resumo final.
+
 | Situação | Quem gera o texto | Limite |
 |---|---|---|
-| Dúvida | Groq | 3 frases |
-| Confirmação antes de enviar comando | Groq (resumo do prompt) | 1 frase — ver DEC-PV-006 |
-| Fim do trabalho | Claude, linha `VOZ:` | 2 frases |
-| Progresso (fase 3) | Texto fixo por evento | 1 frase curta |
+| Pergunta de status ("em que estágio está?") | App, a partir do registro de progresso dos hooks | Curta |
+| Fim do trabalho | Claude, linha `VOZ:` | Até 5 frases curtas: testes, fazendo, feito, próxima fase, falta |
 
 Voz: Edge TTS `pt-BR-FranciscaNeural`. Medido no Mac do Raul em 2026-10-17:
 primeiro som entre 650 e 1.170 ms (normalmente ~700–900 ms); áudio completo de uma

@@ -5,22 +5,17 @@ logger = logging.getLogger("sagmowhisper")
 
 
 class DictationPipeline:
-    def __init__(self, transcriber, cleaner, injector, enable_cleanup: bool,
-                 atendente=None):
+    def __init__(self, transcriber, cleaner, injector, enable_cleanup: bool):
         self._transcriber = transcriber
-        self._atendente = atendente
         self._cleaner = cleaner
         self._injector = injector
         self._enable_cleanup = enable_cleanup
 
     def run(self, audio_path: Path) -> str:
         text = self._transcriber.transcribe(audio_path).strip()
-        if not text or self._atendida_em_voz(text):
+        if not text:
             return ""
         return self._finalize(text)
-
-    def _atendida_em_voz(self, text: str) -> bool:
-        return self._atendente is not None and self._atendente.atender(text)
 
     def _finalize(self, text: str) -> str:
         final_text = self._maybe_clean(text)

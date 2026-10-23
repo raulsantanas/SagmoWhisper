@@ -9,10 +9,11 @@ sem banco de dados: arquivos JSON/JSONL em `~/.sagmowhisper/`.
 Segurar Control direito → gravação (existe) → [1] Whisper Groq + glossário → [2] correções aprendidas
    → [3] classificador de intenção (texto + app em foco)
         ├─ ditado  → limpeza (existe) → cola no cursor (existe)
-        ├─ dúvida  → [4] resposta Groq curta → [6] voz
+        ├─ dúvida  → cola como ditado (sem voz, DEC-PV-013)
+        ├─ status  → resposta do registro de progresso → [6] voz (não cola, não toca o Claude)
         └─ comando → limpeza/prompt XML (existe)
-                     → [5] ponte Claude Code (modelo + esforço)
-                     → Claude trabalha
+                     → [5] ponte Claude Code (modelo + esforço), direto, sem confirmação (DEC-PV-014)
+                     → Claude trabalha; hooks gravam cada passo no registro de progresso (sem falar)
                      → hook Stop lê linha VOZ: → [6] voz
 Toda decisão de [3] → [7] registro de treino (JSONL)
 Tocar o Control direito enquanto ela fala → interrompe a voz
@@ -41,7 +42,6 @@ Regras do gesto (DEC-PV-009):
 | 1 | `glossario.py` | Lista de termos enviada no parâmetro `prompt` do Whisper | `GroqTranscriber` (hoje não envia `prompt`) |
 | 2 | `correcoes.py` | Substituições pós-transcrição + aprendizado com correções | — |
 | 3 | `intencao.py` | Decide tipo, modelo, esforço e confiança | `prompt_register_triggered`, cliente Groq |
-| 4 | `resposta_duvida.py` | Responde dúvidas em até 3 frases | `GroqCleaner` (mesmo cliente) |
 | 5 | `ponte_claude.py` | Entrega o comando ao Claude Code com o roteamento | `text_injector.py` |
 | 6 | `voz.py` | Fala texto (Edge TTS), fila e interrupção | `gesto_tecla.py` |
 | 7 | `registro_treino.py` | Grava decisões e correções do Raul em JSONL | — |
@@ -86,14 +86,16 @@ Nenhum outro módulo pode depender de qual classificador está ativo.
   extrai a linha que começa com `VOZ:` e envia o texto ao app.
 - **Canal hook → app:** HTTP local em `127.0.0.1` (porta definida em config), rota `POST /falar`.
   Assim o app controla a fila e a tecla consegue interromper. Ver DEC-PV-005.
-- **Hook `PreToolUse`** (fase 3): avisos de progresso só para subagente acionado e testes rodando.
-  O hook do RTK que já existe continua; este entra como uma entrada a mais.
-- **Regra no CLAUDE.md global:** toda resposta termina com uma linha `VOZ: <o que fez> <próximo passo>`,
-  em português, no máximo 2 frases, sem código.
+- **Hooks de progresso** (fase 3, `PreToolUse`/`PostToolUse`): enviam ao app o passo atual
+  (rodando testes, editando arquivo, subagente acionado) por `POST /progresso`. O app só guarda;
+  nada é falado. O hook do RTK que já existe continua; estes entram como entradas a mais.
+- **Regra no CLAUDE.md global:** toda resposta termina com uma linha `VOZ:` em português, sem código,
+  com até 5 frases curtas, uma por parte que se aplique: testes, o que está fazendo, o que já fez,
+  próxima fase e o que falta (DEC-PV-013).
 
 ## Fronteiras
 
-- Não altera o fluxo de ditado atual: ditado continua colando no cursor como hoje. Só a fala classificada como dúvida deixa de colar (DEC-PV-012).
+- Não altera o fluxo de ditado atual: ditado continua colando no cursor como hoje.
 - Não chama a API da Anthropic diretamente. Só o Claude Code fala com a Anthropic.
 - Nenhuma chave de API em arquivo do repositório: usar `src/core/secrets.py` (já existe).
 
