@@ -93,7 +93,7 @@ Nenhum outro módulo pode depender de qual classificador está ativo.
 
 ## Fronteiras
 
-- Não altera o fluxo de ditado atual: ditado continua colando no cursor como hoje.
+- Não altera o fluxo de ditado atual: ditado continua colando no cursor como hoje. Só a fala classificada como dúvida deixa de colar (DEC-PV-012).
 - Não chama a API da Anthropic diretamente. Só o Claude Code fala com a Anthropic.
 - Nenhuma chave de API em arquivo do repositório: usar `src/core/secrets.py` (já existe).
 

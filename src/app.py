@@ -296,6 +296,7 @@ class VozMenuBar:
             cleaner,
             TextInjector(),
             enable_cleanup=cleaner is not None,
+            atendente=factory.build_atendente_de_duvida(self._config, self._voz),
         )
 
     def _apply_config(self, new_config):
