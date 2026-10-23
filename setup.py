@@ -30,7 +30,12 @@ setup(
             # o modulegraph do py2app não os enxerga — sem forçar o pacote
             # inteiro, o .app quebra no launch (pynput.keyboard._darwin) ou ao
             # acessar o Keychain (keyring.backends.macOS).
+            # edge_tts é importado só na hora de falar (voz.py): mesmo caso.
+            # certifi leva o cacert.pem que o aiohttp usa na conexão TLS.
             "packages": [
+                "edge_tts",
+                "aiohttp",
+                "certifi",
                 "numpy",
                 "sounddevice",
                 "soundfile",
