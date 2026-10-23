@@ -31,8 +31,9 @@ select = ["E", "F", "C90"]
 max-complexity = 4
 
 [tool.pytest.ini_options]
-addopts = '--cov=src --cov-report=term-missing -m "not groq_live"'
+addopts = '--cov=src --cov-report=term-missing -m "not groq_live and not edge_live"'
 testpaths = ["tests"]
 markers = [
     "groq_live: chama a API real da Groq (opt-in: pytest -m groq_live --no-cov)",
+    "edge_live: sintetiza voz real no Edge TTS (opt-in: pytest -m edge_live --no-cov)",
 ]

@@ -27,6 +27,7 @@ from src.audio_recorder import AudioRecorder
 from src.core.app_logging import setup_logging
 from src.core.config import Config, migrate_env_key_if_needed, rotulo_hotkey
 from src.core.gesto_tecla import GestoTecla
+from src.core.voz import VozEdge
 from src.core.menu_status import linha_de_status
 from src.core.providers import factory
 from src.core.providers.base import TranscriptionError
@@ -102,6 +103,7 @@ class VozMenuBar:
             sample_callback=self._overlay.update_bars,
         )
         self._pipeline = None
+        self._voz = VozEdge()
         self._settings = (
             SettingsWindowController.alloc().initWithConfig_onSave_(
                 config, self._apply_config
@@ -196,10 +198,15 @@ class VozMenuBar:
     def _novo_gesto(self, hotkey_name):
         return GestoTecla(
             tecla=resolve_hotkey(hotkey_name),
-            ao_iniciar=lambda: self._on_main("startRecordingOnMainThread"),
+            ao_iniciar=self._ao_iniciar_gesto,
             ao_concluir=lambda: self._on_main("stopRecordingOnMainThread"),
             ao_cancelar=lambda: self._on_main("cancelRecordingOnMainThread"),
         )
+
+    def _ao_iniciar_gesto(self):
+        # Tocar a tecla enquanto ela fala é o jeito de calar a voz (2.3).
+        self._voz.interromper()
+        self._on_main("startRecordingOnMainThread")
 
     def _on_main(self, selector):
         self._dispatcher.performSelectorOnMainThread_withObject_waitUntilDone_(
