@@ -82,8 +82,10 @@ Nenhum outro módulo pode depender de qual classificador está ativo.
 
 ## Integração com o Claude Code
 
-- **Hook `Stop`** (em `~/.claude/settings.json`): script curto que pega a última resposta,
-  extrai a linha que começa com `VOZ:` e envia o texto ao app.
+- **Hook `Stop`** (em `~/.claude/settings.json`): `hooks/falar_stop.py` (lógica em
+  `src/core/hook_stop.py`) pega a resposta do turno, extrai a **última** linha que começa com `VOZ:` e
+  envia o texto ao app. Roda no `python3` do sistema (só stdlib, compatível com 3.9), sempre sai com 0 e
+  não imprime nada. Lê a porta do `config.json` do app (`SAGMOWHISPER_CONFIG` troca o caminho).
 - **Canal hook → app:** HTTP local em `127.0.0.1` (`voice_port` no config, padrão 47821), rota
   `POST /falar` com `{"texto": "..."}` (até 1000 caracteres). Exige `Content-Type: application/json` e
   `Host` local, porque qualquer página do navegador alcança 127.0.0.1. Porta ocupada: o app abre sem a voz.
