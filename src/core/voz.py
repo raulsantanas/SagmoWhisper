@@ -13,12 +13,15 @@ from pathlib import Path
 logger = logging.getLogger("sagmowhisper")
 
 VOZ_PADRAO = "pt-BR-FranciscaNeural"
+# Raul ouviu +0/10/20/30% em 2026-10-23 e escolheu +10% (mais natural).
+VELOCIDADE_PADRAO = "+10%"
 
 
 def sintetizar_edge(texto: str, voz: str, destino: Path) -> None:
     import edge_tts
 
-    asyncio.run(edge_tts.Communicate(texto, voz).save(str(destino)))
+    falar = edge_tts.Communicate(texto, voz, rate=VELOCIDADE_PADRAO)
+    asyncio.run(falar.save(str(destino)))
 
 
 def tocar_afplay(caminho: Path):
