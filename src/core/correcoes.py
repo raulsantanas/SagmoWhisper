@@ -1,6 +1,7 @@
 """Troca, depois da transcrição, o que o Whisper erra sempre igual (ROADMAP 1.2).
 
 Só palavra inteira: "cloud code" vira Claude Code, "cloudflare" fica como está."""
+import json
 import re
 from pathlib import Path
 
@@ -44,6 +45,20 @@ def _pares_do_arquivo(caminho: Path) -> dict[str, str]:
             caminho, "correcoes", 'esperado {"errado": "certo", ...}'
         )
     return {errado.strip().lower(): certo for errado, certo in dados.items()}
+
+
+def adicionar_correcao(errado: str, certo: str, caminho: Path | None = None) -> None:
+    """Grava o par em correcoes.json (ROADMAP 1.3); vale na próxima montagem."""
+    caminho = CAMINHO_PADRAO if caminho is None else caminho
+    if not _par_valido((errado, certo)):
+        raise ValueError("preencha o errado e o certo")
+    # Arquivo inválido levanta aqui, antes de qualquer escrita: nada se perde.
+    pares = _pares_do_arquivo(caminho) if caminho.exists() else {}
+    pares[errado.strip().lower()] = certo.strip()
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    caminho.write_text(
+        json.dumps(pares, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
 
 
 def _par_valido(par) -> bool:
