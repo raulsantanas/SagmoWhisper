@@ -76,7 +76,7 @@ Nenhum outro módulo pode depender de qual classificador está ativo.
 | Arquivo | Conteúdo |
 |---|---|
 | `glossario.json` | `{"termos": ["Claude", "Anthropic", "Claude Code", "README", ...]}` Quando existe, seus termos **somam** aos do glossário inicial do código (Raul, 18/10); vale ao abrir o app ou salvar Configurações. Formato inválido vira erro no menu |
-| `correcoes.json` | `{"cloud code": "Claude Code", "rhythm.md": "README.md", ...}` Soma às correções iniciais do código e pode reescrever uma delas; só palavra inteira, sem diferenciar maiúsculas. "Claudio Code" vira Claude Code, mas "Cláudio" sozinho não; "cloud" sozinho também não (é nuvem) (18/10) |
+| `correcoes.json` | `{"cloud code": "Claude Code", "rhythm.md": "README.md", ...}` Soma às correções iniciais do código e pode reescrever uma delas; só palavra inteira, sem diferenciar maiúsculas. "Claudio Code" vira Claude Code, mas "Cláudio" sozinho não; "cloud" sozinho também não (é nuvem) (18/10). Também recebe pares pelo grupo Correções das Configurações, que grava aqui e remonta o pipeline na hora (1.3) |
 | `treino/decisoes.jsonl` | Uma linha por fala (formato em `ROTEAMENTO.md`) |
 
 ## Integração com o Claude Code

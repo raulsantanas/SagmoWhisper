@@ -29,7 +29,7 @@ from AppKit import (
 )
 from Foundation import NSObject
 
-from src.core import login_item, secrets
+from src.core import correcoes, login_item, secrets
 from src.core.config import (
     HOTKEYS_SUPORTADAS,
     Config,
@@ -37,10 +37,10 @@ from src.core.config import (
     rotulo_hotkey,
 )
 from src.core.providers import factory
-from src.core.providers.base import PROVIDER_CATALOG
+from src.core.providers.base import PROVIDER_CATALOG, TranscriptionError
 from src.macos.cores import hex_to_nscolor
 
-_W, _H = 460, 520
+_W, _H = 460, 678
 _MARGEM = 20
 _LINHA_H = 40
 _ROTULO_X = _MARGEM + 14
@@ -163,6 +163,7 @@ class SettingsWindowController(NSObject):
         self._build_geral(content)
         self._build_transcricao(content)
         self._build_limpeza(content)
+        self._build_correcoes(content)
         self._status_label = self._label(
             "", NSMakeRect(_MARGEM, 64, _W - 2 * _MARGEM, 18), 12.0, 0.8
         )
@@ -207,6 +208,17 @@ class SettingsWindowController(NSObject):
         self._grupo(content, "LIMPEZA DO TEXTO", (
             ("Limpar hesitações", self._cleanup_check),
             ("Modelo de limpeza", self._cleanup_popup),
+        ))
+
+    @objc.python_method
+    def _build_correcoes(self, content):
+        self._errado_field = self._campo("hostinguer")
+        self._certo_field = self._campo("Hostinger")
+        self._grupo(content, "CORREÇÕES", (
+            ("Quando ouvir", self._errado_field),
+            ("Escrever", self._certo_field),
+            ("", self._button("Adicionar", 0, 120, "adicionarCorrecao:",
+                              _SECUNDARIO)),
         ))
 
     @objc.python_method
@@ -273,6 +285,14 @@ class SettingsWindowController(NSObject):
         field.setEditable_(False)
         field.setSelectable_(False)
         return field
+
+    @objc.python_method
+    def _campo(self, exemplo):
+        campo = NSTextField.alloc().initWithFrame_(
+            NSMakeRect(0, 0, _CONTROLE_W, 22)
+        )
+        campo.setPlaceholderString_(exemplo)
+        return campo
 
     @objc.python_method
     def _popup(self, action):
@@ -421,6 +441,22 @@ class SettingsWindowController(NSObject):
         self._config = new_config
         self._on_save(new_config)
         self._status_label.setStringValue_("✓ Salvo e aplicado")
+
+    def adicionarCorrecao_(self, sender):
+        errado = str(self._errado_field.stringValue())
+        certo = str(self._certo_field.stringValue())
+        try:
+            correcoes.adicionar_correcao(errado, certo)
+        except (ValueError, TranscriptionError) as e:
+            self._status_label.setStringValue_(f"✗ {e}")
+            return
+        self._errado_field.setStringValue_("")
+        self._certo_field.setStringValue_("")
+        # Remonta o pipeline com a config já salva: a correção vale na hora.
+        self._on_save(self._config)
+        self._status_label.setStringValue_(
+            f"✓ {errado.strip().lower()} → {certo.strip()}"
+        )
 
     # ---------- API pública ----------
 

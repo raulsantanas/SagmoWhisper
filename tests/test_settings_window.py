@@ -7,7 +7,7 @@ import pytest
 
 pytest.importorskip("objc")
 
-from src.core import login_item, secrets  # noqa: E402
+from src.core import correcoes, login_item, secrets  # noqa: E402
 from src.core.config import DEFAULTS, Config  # noqa: E402
 from src.core.providers import factory  # noqa: E402
 from src.macos import settings_window  # noqa: E402
@@ -57,3 +57,27 @@ def test_limpeza_desmarcada_e_salva_como_false(janela):
     controller._cleanup_check.setState_(0)
     controller.saveSettings_(None)
     assert on_save.call_args[0][0].enable_cleanup is False
+
+
+def test_adicionar_correcao_grava_e_reaplica_sem_reiniciar(janela):
+    controller, config, on_save = janela
+    controller._errado_field.setStringValue_("hostinguer")
+    controller._certo_field.setStringValue_("Hostinger")
+
+    controller.adicionarCorrecao_(None)
+
+    assert correcoes.carregar_correcoes()["hostinguer"] == "Hostinger"
+    on_save.assert_called_once_with(config)
+    assert controller._errado_field.stringValue() == ""
+    assert controller._certo_field.stringValue() == ""
+    assert "hostinguer → Hostinger" in controller._status_label.stringValue()
+
+
+def test_adicionar_correcao_vazia_avisa_e_nao_reaplica(janela):
+    controller, _, on_save = janela
+    controller._errado_field.setStringValue_("hostinguer")
+
+    controller.adicionarCorrecao_(None)
+
+    on_save.assert_not_called()
+    assert controller._status_label.stringValue().startswith("✗")

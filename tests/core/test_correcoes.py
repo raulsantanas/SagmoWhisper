@@ -6,6 +6,7 @@ import pytest
 from src.core.correcoes import (
     CORRECOES_INICIAIS,
     TranscriberCorrigido,
+    adicionar_correcao,
     aplicar,
     carregar_correcoes,
 )
@@ -83,3 +84,50 @@ def test_chave_com_maiuscula_funciona_sem_normalizar_antes():
     assert aplicar("abre o hostinguer", {"Hostinguer": "Hostinger"}) == (
         "abre o Hostinger"
     )
+
+
+def test_adicionar_grava_par_que_o_proximo_carregamento_ve(tmp_path):
+    caminho = tmp_path / "pasta_nova" / "correcoes.json"
+
+    adicionar_correcao("  Hostinguer ", " Hostinger ", caminho)
+
+    assert carregar_correcoes(caminho)["hostinguer"] == "Hostinger"
+
+
+def test_adicionar_preserva_pares_que_ja_estavam_no_arquivo(tmp_path):
+    caminho = tmp_path / "correcoes.json"
+    caminho.write_text(json.dumps({"laia": "Laya"}))
+
+    adicionar_correcao("Sagmo Whisper", "SagmoWhisper", caminho)
+
+    assert json.loads(caminho.read_text(encoding="utf-8")) == {
+        "laia": "Laya", "sagmo whisper": "SagmoWhisper",
+    }
+
+
+def test_adicionar_grava_acento_legivel(tmp_path):
+    caminho = tmp_path / "correcoes.json"
+
+    adicionar_correcao("neuroenfe", "NeuroEnf é", caminho)
+
+    assert "NeuroEnf é" in caminho.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize(("errado", "certo"), [("", "x"), ("x", "  "), (" ", "")])
+def test_adicionar_recusa_lado_vazio_sem_criar_arquivo(tmp_path, errado, certo):
+    caminho = tmp_path / "correcoes.json"
+
+    with pytest.raises(ValueError):
+        adicionar_correcao(errado, certo, caminho)
+
+    assert not caminho.exists()
+
+
+def test_adicionar_nao_sobrescreve_arquivo_invalido(tmp_path):
+    caminho = tmp_path / "correcoes.json"
+    caminho.write_text('{"cloud",}')
+
+    with pytest.raises(TranscriptionError, match="correcoes.json"):
+        adicionar_correcao("a", "b", caminho)
+
+    assert caminho.read_text() == '{"cloud",}'
