@@ -24,6 +24,10 @@ Regras de desempate (nesta ordem):
 
 O gate atual `prompt_register_triggered` ("isso é um prompt") continua funcionando como
 **atalho forçado**: se disparar, é `comando` sem consultar o classificador. Ele deixa de ser obrigatório.
+Como o Groq não é consultado, o atalho usa o padrão da §2: Sonnet medium, confiança 1,0, origem `regra`.
+
+As regras fixas (desempate 4, "Opus só medium", "só comando tem modelo e esforço") rodam em
+código **depois** do classificador (`aplicar_regras_fixas`), valendo também para o Laya.
 
 ### Exemplos que viram teste (casos reais do Raul)
 
