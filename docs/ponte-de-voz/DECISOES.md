@@ -57,3 +57,9 @@ O Raul não precisa dizer "isso é um prompt". O classificador decide pela inten
 (pedido de ação → `comando`), usando também o app em foco. Na dúvida entre dúvida e comando,
 vale `comando`. O gate `prompt_register_triggered` continua como atalho forçado, não obrigatório.
 Regras e casos de teste em `ROTEAMENTO.md` §1.
+
+**DEC-PV-011 — App em foco é o bundle id, não o nome.**
+`app_em_foco()` devolve o bundle id (`com.apple.MobileSMS`), porque o nome vem traduzido pelo
+macOS ("Mensagens", "Ajustes do Sistema") e mudaria com o idioma. Decisão do Raul (2026-10-23,
+item 2.1). Consequência: Google Docs roda dentro do navegador e não é detectável pelo app em
+foco; Chrome e Safari não favorecem nenhum tipo. Ids verificados no Mac do Raul em `ROTEAMENTO.md` §1.

@@ -13,8 +13,12 @@ não por palavras-chave. Ver DEC-PV-010.
 
 Regras de desempate (nesta ordem):
 1. **Pedido prevalece.** Se a fala tem uma dúvida **e** um pedido de ação, é `comando`.
-2. **App em foco.** VS Code, Terminal, Claude Code ou Claude Desktop → favorece `comando`/`duvida`.
-   Mail, WhatsApp, Messages, Word, Pages, Google Docs → favorece `ditado`.
+2. **App em foco** (bundle id, DEC-PV-011).
+   Favorece `comando`/`duvida`: VS Code `com.microsoft.VSCode`, Terminal `com.apple.Terminal`,
+   Claude Desktop `com.anthropic.claudefordesktop` (o Claude Code roda dentro do Terminal ou do VS Code).
+   Favorece `ditado`: Mail `com.apple.mail`, WhatsApp `net.whatsapp.WhatsApp`, Mensagens
+   `com.apple.MobileSMS`, Word `com.microsoft.Word`, Pages `com.apple.iWork.Pages` (não instalado;
+   id não verificado). Google Docs fica no navegador e não é detectável: navegador é neutro.
 3. **Fala longa com vários assuntos** ("e outra coisa...") → `comando` com várias `<tarefas>`.
 4. Confiança abaixo de 0,6 → `comando` (é mais barato confirmar um prompt do que perder um pedido).
 
@@ -54,7 +58,7 @@ Regras fixas:
 
 ```json
 {"ts": "2026-10-17T17:40:00-03:00",
- "app_em_foco": "Code",
+ "app_em_foco": "com.microsoft.VSCode",
  "texto_bruto": "corrige o teste do cloud code",
  "texto_corrigido": "corrige o teste do Claude Code",
  "decisao": {"tipo": "comando", "modelo": "sonnet", "esforco": "low", "confianca": 0.82, "origem": "groq"},
