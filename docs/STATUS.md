@@ -20,6 +20,6 @@
 | 1.1 | Glossário no Whisper | Termos vão no `prompt` da Groq (≤ 224 tokens); `~/.sagmowhisper/glossario.json` soma termos ao inicial | DONE (#40) |
 | 1.0 | Ponte de Voz: tecla F8 → segurar Control direito | Segurar sozinho grava; combinação ou toque < 0,3 s descarta; Control esquerdo nunca grava; F8 aceito | DONE (#34) |
 
-**Próxima:** 3.6 (registro de progresso pelos hooks), depois 3.7 (status em voz). Voz Thalita Multilingual a +10% (Raul, 23/10); reinstalar o app (TCC) depois do merge.
+**Próxima:** 3.6 (registro de progresso pelos hooks), depois 3.7 (status em voz). Voz Vivienne Multilingual a +13% (Raul, 23/10); reinstalar o app (TCC) depois do merge.
 **Limite da Groq (free tier):** 8000 tokens/min no `gpt-oss-120b`; cada limpeza gasta ~600 (~13 falas/min).
 **Suíte:** 437 passed / 0 falhas

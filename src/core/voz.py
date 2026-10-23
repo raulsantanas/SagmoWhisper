@@ -1,4 +1,4 @@
-"""Fala com a Thalita (Edge TTS) sem travar o app (ROADMAP 2.3, DEC-PV-003).
+"""Fala com a Vivienne (Edge TTS) sem travar o app (ROADMAP 2.3, DEC-PV-003).
 
 Uma thread só consome a fila: sintetiza o mp3 e toca com o afplay, que é um
 processo à parte e por isso pode ser morto no meio da frase (interromper)."""
@@ -12,10 +12,10 @@ from pathlib import Path
 
 logger = logging.getLogger("sagmowhisper")
 
-VOZ_PADRAO = "pt-BR-ThalitaMultilingualNeural"
-# Raul ouviu em 2026-10-23: velocidade +0/10/20/30% (escolheu +10%) e vozes
-# Francisca, Francisca grave e Thalita Multilingual (escolheu Thalita, mais natural).
-VELOCIDADE_PADRAO = "+10%"
+VOZ_PADRAO = "fr-FR-VivienneMultilingualNeural"
+# Escolha do Raul em 2026-10-23, de ouvido: Vivienne (multilíngue francesa, lê pt-BR
+# com sotaque) a +13% ganhou de Francisca, Thalita, Ava, Emma e Raquel.
+VELOCIDADE_PADRAO = "+13%"
 
 
 def sintetizar_edge(texto: str, voz: str, destino: Path) -> None:

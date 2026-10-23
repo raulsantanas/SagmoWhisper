@@ -57,7 +57,7 @@ def test_fala_as_frases_em_ordem_com_a_francisca():
 
     assert falso.tocados == ["primeira", "segunda"]
     assert falso.vozes == [VOZ_PADRAO, VOZ_PADRAO]
-    assert VOZ_PADRAO == "pt-BR-ThalitaMultilingualNeural"
+    assert VOZ_PADRAO == "fr-FR-VivienneMultilingualNeural"
 
 
 def test_falar_nao_bloqueia_quem_chama():
@@ -142,7 +142,7 @@ def test_arquivo_de_audio_temporario_e_apagado(tmp_path):
     assert not caminhos[0].exists()
 
 
-def test_edge_fala_10_por_cento_mais_rapido(monkeypatch, tmp_path):
+def test_edge_fala_13_por_cento_mais_rapido(monkeypatch, tmp_path):
     import sys
     from types import SimpleNamespace
 
@@ -162,5 +162,5 @@ def test_edge_fala_10_por_cento_mais_rapido(monkeypatch, tmp_path):
 
     sintetizar_edge("oi", VOZ_PADRAO, tmp_path / "a.mp3")
 
-    assert VELOCIDADE_PADRAO == "+10%"
-    assert pedidos == [("oi", VOZ_PADRAO, {"rate": "+10%"})]
+    assert VELOCIDADE_PADRAO == "+13%"
+    assert pedidos == [("oi", VOZ_PADRAO, {"rate": "+13%"})]
