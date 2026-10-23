@@ -86,6 +86,6 @@ Nada é falado sozinho durante o trabalho: só a resposta de status pedida e o r
 | Pergunta de status ("em que estágio está?") | App, a partir do registro de progresso dos hooks | Curta |
 | Fim do trabalho | Claude, linha `VOZ:` | Até 5 frases curtas: testes, fazendo, feito, próxima fase, falta |
 
-Voz: Edge TTS `pt-BR-FranciscaNeural`. Medido no Mac do Raul em 2026-10-17:
+Voz: Edge TTS `pt-BR-ThalitaMultilingualNeural`, 10% mais rápida (escolha do Raul, 2026-10-23, depois de ouvir Francisca, Francisca grave e Thalita). A medição abaixo foi feita com a Francisca. Medido no Mac do Raul em 2026-10-17:
 primeiro som entre 650 e 1.170 ms (normalmente ~700–900 ms); áudio completo de uma
 frase curta entre 0,9 e 1,8 s.

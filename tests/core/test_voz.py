@@ -57,7 +57,7 @@ def test_fala_as_frases_em_ordem_com_a_francisca():
 
     assert falso.tocados == ["primeira", "segunda"]
     assert falso.vozes == [VOZ_PADRAO, VOZ_PADRAO]
-    assert VOZ_PADRAO == "pt-BR-FranciscaNeural"
+    assert VOZ_PADRAO == "pt-BR-ThalitaMultilingualNeural"
 
 
 def test_falar_nao_bloqueia_quem_chama():
@@ -140,3 +140,27 @@ def test_arquivo_de_audio_temporario_e_apagado(tmp_path):
     voz.esperar()
 
     assert not caminhos[0].exists()
+
+
+def test_edge_fala_10_por_cento_mais_rapido(monkeypatch, tmp_path):
+    import sys
+    from types import SimpleNamespace
+
+    from src.core.voz import VELOCIDADE_PADRAO, sintetizar_edge
+
+    pedidos = []
+
+    class _Communicate:
+        def __init__(self, texto, voz, **opcoes):
+            pedidos.append((texto, voz, opcoes))
+
+        async def save(self, destino):
+            pass
+
+    falso = SimpleNamespace(Communicate=_Communicate)
+    monkeypatch.setitem(sys.modules, "edge_tts", falso)
+
+    sintetizar_edge("oi", VOZ_PADRAO, tmp_path / "a.mp3")
+
+    assert VELOCIDADE_PADRAO == "+10%"
+    assert pedidos == [("oi", VOZ_PADRAO, {"rate": "+10%"})]

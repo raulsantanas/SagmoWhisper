@@ -8,7 +8,7 @@
 |---|------|---------------------|--------|
 | — | Limpeza Groq: modelo vivo | Limpeza usa `openai/gpt-oss-120b` (único liberado na org); modelos removidos migram sozinhos | DONE (#35) |
 | — | Interface "de assistente" | Indicador (#36, #37), ícone+menu (#38) e Configurações escuras (#39). Ajuste futuro: onda um pouco lenta (Raul, 17/10) | DONE |
-| 3.1 | Hook `Stop` + regra `VOZ:` | Script `hooks/falar_stop.py` pronto e testado (27 testes; 0,13 s no python 3.9 do sistema). Falta ligar no `~/.claude` (CLAUDE.md + settings.json), com OK do Raul | EM ANDAMENTO |
+| 3.1 | Hook `Stop` + regra `VOZ:` | Ao terminar, a voz fala a linha `VOZ:` (ouvido pelo Raul em 23/10). Regra no `~/.claude/CLAUDE.md`, hook em `settings.json`; backup em `~/.claude-backups/voz-hook-2026-10-23/` | DONE (#50) |
 | 3.2 | Servidor local `POST /falar` | Hook entrega o texto em ~1 ms e a Francisca fala; app fechado ou porta ocupada não quebra nada (`cliente_voz.enviar` devolve `False`). Porta em `voice_port` (47821) | DONE |
 | 2.5 | Responder dúvida em voz | Descartado (DEC-PV-013): a voz só fala a saída do Claude Code; pergunta ditada é colada. Removido o que entrou no #47 | DESCARTADO |
 | 2.3 | Voz Francisca (Edge TTS) | `VozEdge.falar()` volta na hora e toca em fila (afplay); apertar a tecla de gravação corta a fala em ~5 ms. Síntese leva ~2 s por frase (internet) | DONE (#46) |
@@ -20,6 +20,6 @@
 | 1.1 | Glossário no Whisper | Termos vão no `prompt` da Groq (≤ 224 tokens); `~/.sagmowhisper/glossario.json` soma termos ao inicial | DONE (#40) |
 | 1.0 | Ponte de Voz: tecla F8 → segurar Control direito | Segurar sozinho grava; combinação ou toque < 0,3 s descarta; Control esquerdo nunca grava; F8 aceito | DONE (#34) |
 
-**Próxima:** ligar o hook no `~/.claude` (3.1, pede OK do Raul), depois 3.6/3.7.
+**Próxima:** 3.6 (registro de progresso pelos hooks), depois 3.7 (status em voz). Voz Thalita Multilingual a +10% (Raul, 23/10); reinstalar o app (TCC) depois do merge.
 **Limite da Groq (free tier):** 8000 tokens/min no `gpt-oss-120b`; cada limpeza gasta ~600 (~13 falas/min).
 **Suíte:** 437 passed / 0 falhas
