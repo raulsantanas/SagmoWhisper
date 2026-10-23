@@ -18,6 +18,6 @@
 | 1.1 | Glossário no Whisper | Termos vão no `prompt` da Groq (≤ 224 tokens); `~/.sagmowhisper/glossario.json` soma termos ao inicial | DONE (#40) |
 | 1.0 | Ponte de Voz: tecla F8 → segurar Control direito | Segurar sozinho grava; combinação ou toque < 0,3 s descarta; Control esquerdo nunca grava; F8 aceito | DONE (#34) |
 
-**Próxima:** 2.6 (ditado sem regressão) ou 2.4 (voz reserva Piper Faber), quando o Raul escolher. Reinstalar o app (TCC) depois deste merge.
+**Próxima:** 2.6 (ditado sem regressão) ou 2.4 (voz reserva Piper Faber), quando o Raul escolher. Fase 3 replanejada: sem confirmação (DEC-PV-014), status sob demanda (3.6, 3.7) e resumo final de até 5 frases. Reinstalar o app (TCC) depois deste merge.
 **Limite da Groq (free tier):** 8000 tokens/min no `gpt-oss-120b`; cada limpeza gasta ~600 (~13 falas/min).
 **Suíte:** 391 passed / 0 falhas

@@ -27,12 +27,13 @@ Cada item: teste RED primeiro, depois implementação mínima. Um item por PR.
 
 | Item | Entrega | Critério de aceite |
 |---|---|---|
-| 3.1 | Regra `VOZ:` no `~/.claude/CLAUDE.md` + hook `Stop` | Ao terminar, o Mac fala só a linha `VOZ:` |
+| 3.1 | Regra `VOZ:` no `~/.claude/CLAUDE.md` + hook `Stop` | Ao terminar, o Mac fala só a linha `VOZ:`: até 5 frases curtas (testes, fazendo, feito, próxima fase, falta) |
 | 3.2 | Servidor local `POST /falar` no app | Hook entrega o texto; falha do app não quebra o Claude Code |
 | 3.3 | Subagentes com modelo e esforço fixos em `~/.claude/agents/` | Um subagente por classe de `ROTEAMENTO.md` |
-| 3.4 | Confirmação com envio automático (DEC-PV-006) | Fala o resumo; sem Esc em 3 s após o fim da fala, envia; Esc cancela e nada é enviado |
+| 3.4 | ~~Confirmação com envio automático~~ | **Descartado** (DEC-PV-014): o comando vai direto ao Claude Code |
 | 3.5 | `ponte_claude.py` | Comando chega ao Claude Code com indicação do subagente/modelo certo (ver DEC-PV-004) |
-| 3.6 | Avisos de progresso (`PreToolUse`) | Fala só "subagente acionado" e "rodando testes"; resto em silêncio |
+| 3.6 | Registro de progresso (`PreToolUse`/`PostToolUse` → `POST /progresso`) | O app guarda o passo atual e os passos feitos; nada é falado durante o trabalho |
+| 3.7 | Pergunta de status em voz | "Em que estágio está?" é respondida em voz a partir do registro da 3.6; não cola e não aciona o Claude. Como reconhecer a pergunta de status: definir com o Raul no item |
 
 ## Fase 4 — Laya (só com dados)
 

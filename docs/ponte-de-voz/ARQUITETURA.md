@@ -10,9 +10,10 @@ Segurar Control direito → gravação (existe) → [1] Whisper Groq + glossári
    → [3] classificador de intenção (texto + app em foco)
         ├─ ditado  → limpeza (existe) → cola no cursor (existe)
         ├─ dúvida  → cola como ditado (sem voz, DEC-PV-013)
+        ├─ status  → resposta do registro de progresso → [6] voz (não cola, não toca o Claude)
         └─ comando → limpeza/prompt XML (existe)
-                     → [5] ponte Claude Code (modelo + esforço)
-                     → Claude trabalha
+                     → [5] ponte Claude Code (modelo + esforço), direto, sem confirmação (DEC-PV-014)
+                     → Claude trabalha; hooks gravam cada passo no registro de progresso (sem falar)
                      → hook Stop lê linha VOZ: → [6] voz
 Toda decisão de [3] → [7] registro de treino (JSONL)
 Tocar o Control direito enquanto ela fala → interrompe a voz
@@ -85,10 +86,12 @@ Nenhum outro módulo pode depender de qual classificador está ativo.
   extrai a linha que começa com `VOZ:` e envia o texto ao app.
 - **Canal hook → app:** HTTP local em `127.0.0.1` (porta definida em config), rota `POST /falar`.
   Assim o app controla a fila e a tecla consegue interromper. Ver DEC-PV-005.
-- **Hook `PreToolUse`** (fase 3): avisos de progresso só para subagente acionado e testes rodando.
-  O hook do RTK que já existe continua; este entra como uma entrada a mais.
-- **Regra no CLAUDE.md global:** toda resposta termina com uma linha `VOZ: <o que fez> <próximo passo>`,
-  em português, no máximo 2 frases, sem código.
+- **Hooks de progresso** (fase 3, `PreToolUse`/`PostToolUse`): enviam ao app o passo atual
+  (rodando testes, editando arquivo, subagente acionado) por `POST /progresso`. O app só guarda;
+  nada é falado. O hook do RTK que já existe continua; estes entram como entradas a mais.
+- **Regra no CLAUDE.md global:** toda resposta termina com uma linha `VOZ:` em português, sem código,
+  com até 5 frases curtas, uma por parte que se aplique: testes, o que está fazendo, o que já fez,
+  próxima fase e o que falta (DEC-PV-013).
 
 ## Fronteiras
 

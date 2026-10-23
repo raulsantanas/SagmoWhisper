@@ -26,7 +26,7 @@ Verificar a sintaxe exata na documentação antes de implementar o item 3.4.
 Motivo: o app precisa controlar a fila de fala e a tecla precisa interromper. Um script isolado
 tocando áudio não conseguiria ser interrompido pelo app.
 
-**DEC-PV-006 — Confirmação antes de enviar comando: envio automático após 3 s.**
+**DEC-PV-006 — Confirmação antes de enviar comando: envio automático após 3 s.** *Revogada pela DEC-PV-014.*
 Antes de mandar um comando ao Claude Code, ela fala o resumo do prompt em uma frase
 ("Vou pedir ao Claude: ..."). Se o Raul não apertar **Esc** em 3 segundos, envia sozinha.
 Esc cancela e não envia nada. Contagem começa quando a fala do resumo termina.
@@ -77,4 +77,13 @@ Decisão do Raul (2026-10-23), logo após a 2.5 ir para o app: "A voz tem que sa
 saída do Claude Code e não numa pergunta ou dúvida." A resposta de dúvida pelo Groq
 (`resposta_duvida.py`, #47) foi removida, e o classificador saiu do caminho do ditado: toda fala
 volta a colar como antes, sem a demora de 0,5 a 1,2 s nem os ~1.030 tokens a mais. A Francisca
-(`voz.py`) e a interrupção pela tecla ficam para a linha `VOZ:` do Claude Code (Fase 3).
+(`voz.py`) e a interrupção pela tecla ficam para a Fase 3. A voz fala só duas coisas (Raul,
+mesmo dia): a resposta quando ele pergunta o status do trabalho, gerada pelo app a partir do
+registro de progresso dos hooks (sem token Anthropic e sem interromper o Claude), e o resumo final
+da linha `VOZ:`, com até 5 frases curtas (testes, o que está fazendo, o que já fez, próxima fase,
+o que falta). Nenhum aviso automático durante o trabalho.
+
+**DEC-PV-014 — Comando vai direto ao Claude Code, sem confirmação falada.**
+Revoga a DEC-PV-006. Decisão do Raul (2026-10-23): "A voz está respondendo sem precisar de
+confirmação, como se fosse um assistente." O pedido é colado e executado; o Raul acompanha
+perguntando o status.
