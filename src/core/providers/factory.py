@@ -1,7 +1,7 @@
 import os
 from collections.abc import Mapping
 
-from src.core import correcoes, glossario, secrets
+from src.core import correcoes, glossario, registro_treino, secrets
 from src.core.config import Config
 from src.core.providers import (
     groq_provider,
@@ -49,7 +49,9 @@ def build_components(config: Config):
                 "API key ausente. Configure em Configurações…",
             )
     transcriber = correcoes.TranscriberCorrigido(
-        _build_transcriber(config, api_key), correcoes.carregar_correcoes()
+        _build_transcriber(config, api_key),
+        correcoes.carregar_correcoes(),
+        registro_treino.RegistroTreino(),
     )
     return transcriber, _build_cleaner(config, api_key, info)
 
