@@ -52,6 +52,6 @@ Primeiro prompt sugerido:
 | Parte | Quem faz | Custo |
 |---|---|---|
 | Transcrição, classificação, prompt | Groq (plano gratuito) | R$ 0 |
-| Voz de resposta | Edge TTS, voz pt-BR-ThalitaMultilingualNeural | R$ 0 (usa internet) |
+| Voz de resposta | Edge TTS, voz fr-FR-VivienneMultilingualNeural | R$ 0 (usa internet) |
 | Trabalho de código | Claude Code | plano Anthropic |
 | Resumo falado | linha `VOZ:` no fim da resposta | ~60 a 80 palavras por resposta |
